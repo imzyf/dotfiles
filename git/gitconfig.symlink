@@ -1,0 +1,9 @@
+# This is Git's per-user configuration file.
+[user]
+name = yifan
+email = 168@yifans.com
+[alias]
+co = checkout
+st = status
+[core]
+excludesfile = /Users/moma/.gitignore_global
