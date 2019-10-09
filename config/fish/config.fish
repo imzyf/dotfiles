@@ -8,5 +8,9 @@ set -gx GIT_EDITOR 'nvim'
 
 set -gx FZF_DEFAULT_COMMAND 'rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
 
+# disable greeting
+function fish_greeting
+end
+
 source $DOTFILES/config/fish/aliases.fish
 source $DOTFILES/config/fish/path.fish

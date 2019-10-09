@@ -1,0 +1,9 @@
+package foreign-env
+package nvm
+package osx
+package rvm
+package thefuck
+package vcs
+package z
+theme default
+theme robbyrusselltheme chain

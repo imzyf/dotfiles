@@ -1,7 +1,11 @@
 function fish_prompt --description 'Write out the prompt'
-	if test -z $WINDOW
-        printf '%s%s@%s%s%s%s%s> ' (set_color yellow) (whoami) (set_color purple) (prompt_hostname) (set_color $fish_color_cwd) (prompt_pwd) (set_color normal)
-    else
-        printf '%s%s@%s%s%s(%s)%s%s%s> ' (set_color yellow) (whoami) (set_color purple) (prompt_hostname) (set_color white) (echo $WINDOW) (set_color $fish_color_cwd) (prompt_pwd) (set_color normal)
+	if not set -q __fish_prompt_normal
+        set -g __fish_prompt_normal (set_color normal)
     end
+
+    if not set -q __fish_prompt_cwd
+        set -g __fish_prompt_cwd (set_color $fish_color_cwd)
+    end
+
+    echo -n -s "$USER" ' ' "$__fish_prompt_cwd" (prompt_pwd) (__fish_vcs_prompt) "$__fish_prompt_normal" '> '
 end
