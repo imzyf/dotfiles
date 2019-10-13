@@ -8,7 +8,7 @@ echo "Initializing submodule(s)..."
 git submodule update --init --recursive
 
 source $DOTFILES/scripts/link.sh
-# source $DOTFILES/scripts/brew.sh
+source $DOTFILES/scripts/brew.sh
 
 # # fish
 # chsh -s /usr/local/bin/fish
