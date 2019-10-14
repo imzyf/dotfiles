@@ -10,3 +10,9 @@
 	template = ~/.stCommitMsg
 [includeIf "gitdir:~/Documents/code/"]
     path = ~/Documents/code/.gitconfig
+[alias]
+    co = checkout
+    br = branch
+    st = status
+    me = merge
+    ci = commit

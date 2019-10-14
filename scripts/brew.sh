@@ -14,7 +14,7 @@ git -C "$(brew --repo homebrew/cask)" remote set-url origin https://mirrors.tuna
 
 echo -e "\nUpgrade homebrew packages..."
 brew update
-brew upgrade
+# brew upgrade
 
 echo -e "\nInstalling homebrew packages..."
 echo "=============================="
