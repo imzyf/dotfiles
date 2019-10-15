@@ -4,11 +4,12 @@
 
 ## Install
 
-```
-$ git clone https://github.com/ahonn/dotfiles.git ~/.dotfiles
+```sh
+$ git clone https://github.com/imzyf/dotfiles.git ~/.dotfiles
 $ cd ~/.dotfiles
 $ ./setup.sh
 ```
 
 > Reference:
+>
 > - [ahonn/dotfiles](https://github.com/ahonn/dotfiles)
