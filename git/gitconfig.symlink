@@ -7,3 +7,5 @@ co = checkout
 st = status
 [core]
 excludesfile = /Users/moma/.gitignore_global
+[push]
+default = current

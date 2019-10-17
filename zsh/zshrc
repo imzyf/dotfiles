@@ -10,7 +10,6 @@ export LANG=en_US.UTF-8
 # -- alias -- #
 alias zshconfig="vim ~/.zshrc"
 alias s9999="python -m SimpleHTTPServer 9999"
-alias zyfssh='sudo ssh -oProxyCommand="nc -x 127.0.0.1:7070 %h %p"  -i /home/moma/admin.pem ubuntu@admin.com'
 
 
 # -- shh add -- #
