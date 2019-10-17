@@ -1,11 +1,12 @@
 # This is Git's per-user configuration file.
 [user]
-name = yifan
-email = 168@yifans.com
-[alias]
-co = checkout
-st = status
+    name = yifan
+    email = zhaoyifans@gmail.com
 [core]
-excludesfile = /Users/moma/.gitignore_global
+    excludesfile = ~/.gitignore_global
 [push]
-default = current
+    default = current
+[commit]
+	template = ~/.stCommitMsg
+[includeIf "gitdir:~/Documents/code/"]
+    path = ~/Documents/code/.gitconfig
