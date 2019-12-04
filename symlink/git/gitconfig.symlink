@@ -1,9 +1,9 @@
 # This is Git's per-user configuration file.
 [user]
-    name = yifan
-    email = zhaoyifans@gmail.com
+	name = zhaoyifan
+	email = zhaoyifans@gmail.com
 [core]
-    excludesfile = ~/.gitignore_global
+	excludesfile = /Users/v_yfanzhao/.gitignore_global
 [push]
     default = current
 [commit]

@@ -40,7 +40,8 @@ Thumbs.db
 ######################
 *~
 .php_cs.cache
- 
+.idea
+
 # Vim workspace #
 #################
 .undodir/
