@@ -3,13 +3,11 @@
 	name = zhaoyifan
 	email = zhaoyifans@gmail.com
 [core]
-	excludesfile = /Users/v_yfanzhao/.gitignore_global
+	excludesfile = /Users/zhaoyifan/.gitignore_global
 [push]
     default = current
 [commit]
 	template = ~/.stCommitMsg
-[includeIf "gitdir:~/Documents/code/"]
-    path = ~/Documents/code/.gitconfig
 [alias]
     co = checkout
     br = branch
