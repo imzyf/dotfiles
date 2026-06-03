@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+# macOS preferences
+# https://macos-defaults.com/
+
+set -euo pipefail
+
+[[ "$OSTYPE" == darwin* ]] || exit 0
+
+defaults write com.apple.dock wvous-tr-corner 5
+defaults write com.apple.dock tilesize 35
+defaults write com.apple.dock orientation left
+
+defaults write com.apple.finder AppleShowAllFiles -bool true
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+
+# Reload processes that cache the Apple UI defaults.
+killall Dock Finder SystemUIServer 2>/dev/null || true
