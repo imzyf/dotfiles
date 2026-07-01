@@ -1,0 +1,15 @@
+export LAST30DAYS_MEMORY_DIR="$HOME/.local/share/last30days"
+export PNPM_HOME="$HOME/Code/.pnpm"
+export PROTO_HOME="$HOME/.proto"
+export NPM_CONFIG_PREFIX="$PROTO_HOME/tools/node/globals"
+export TZ=Asia/Singapore
+
+typeset -aU path
+path=(
+  "$PROTO_HOME/shims"
+  "$PROTO_HOME/bin"
+  "$NPM_CONFIG_PREFIX/bin"
+  "$PNPM_HOME/bin"
+  $path
+)
+export PATH

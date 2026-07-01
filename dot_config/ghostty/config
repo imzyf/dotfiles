@@ -1,0 +1,27 @@
+auto-update = check
+auto-update-channel = tip
+
+# Appearance
+macos-titlebar-style = tabs
+# ghostty +list-themes
+# theme = Raycast Dark
+theme = Dracula+
+# theme = iTerm2 Dark Background
+background-opacity = 0.98
+
+# Grant permissions to operate clipboard
+clipboard-read = allow
+clipboard-write = allow
+
+# Font
+font-family = Menlo
+font-size = 17
+
+# Keybindings
+keybind = cmd+right=next_tab
+keybind = cmd+left=previous_tab
+
+# 50MB
+scrollback-limit = 50000000
+
+window-save-state = always

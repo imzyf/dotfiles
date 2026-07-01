@@ -1,0 +1,25 @@
+# Global gitignore
+
+## Claude Code local settings (e.g. settings.local.json)
+*.local.*
+**/.claude/.cc-writes/
+**/.claude/worktrees/
+
+## General
+*.log
+._*
+
+## proto per-project tool pins
+.prototools
+
+## JetBrains
+.idea
+
+## macOS
+.DS_Store
+
+## Node.js
+node_modules
+
+## Visual Studio Code
+.vscode
