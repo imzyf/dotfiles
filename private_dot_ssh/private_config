@@ -1,0 +1,13 @@
+Include ~/.orbstack/ssh/config
+Include config.vps
+
+Host *
+  AddKeysToAgent yes
+  Compression yes
+  IgnoreUnknown UseKeychain
+  ServerAliveInterval 30
+  UseKeychain yes
+
+Host github.com
+  Hostname ssh.github.com
+  Port 443

@@ -1,18 +1,17 @@
-encryption = "age"
+encryption = "gpg"
 
 [data.work]
   name = {{ promptStringOnce . "work.name" "Work name" | quote }}
   email = {{ promptStringOnce . "work.email" "Work email" | quote }}
   gitlabHost = {{ promptStringOnce . "work.gitlabHost" "Work GitLab host" | quote }}
 
-[age]
-  identity = {{ (joinPath .chezmoi.homeDir ".config/chezmoi/key.txt") | quote }}
-  # Public half of the age key pair. Safe to publish. Run `make age-key` to create one.
-  recipient = "AGE_RECIPIENT_PLACEHOLDER"
-
 [edit]
   args = ["--wait"]
   command = "code"
+
+[gpg]
+  args = ["--quiet"]
+  recipients = ["19084855608DB9D5"]
 
 [merge]
   command = "bash"
