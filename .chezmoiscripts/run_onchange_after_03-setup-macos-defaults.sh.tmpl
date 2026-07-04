@@ -7,8 +7,8 @@ set -euo pipefail
 
 [[ "$OSTYPE" == darwin* ]] || exit 0
 
-defaults write com.apple.dock wvous-tr-corner 5
-defaults write com.apple.dock tilesize 35
+defaults write com.apple.dock wvous-tr-corner -int 5
+defaults write com.apple.dock tilesize -int 40
 defaults write com.apple.dock orientation left
 
 defaults write com.apple.finder AppleShowAllFiles -bool true

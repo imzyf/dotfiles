@@ -1,0 +1,10 @@
+[user]
+  email = 9289792+imzyf@users.noreply.github.com
+  name = Yifans_Z
+  signingkey = @SIGNINGKEY@
+
+[commit]
+  gpgsign = true
+
+[tag]
+  gpgsign = true
