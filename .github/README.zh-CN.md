@@ -1,9 +1,9 @@
 # dotfiles
 
-## Overview
+## 概览
 
-Managed with [chezmoi](https://www.chezmoi.io/). One command sets up a new Mac.
+使用 [chezmoi](https://www.chezmoi.io/) 管理，一条命令即可完成新 Mac 的配置。
 
-## Credits
+## 致谢
 
-Much of the design here comes from [liby/dotfiles](https://github.com/liby/dotfiles) — thank you.
+特别感谢 [liby/dotfiles](https://github.com/liby/dotfiles)，这里很多代码都直接来自它，帮我解决了太多难题。

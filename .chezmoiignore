@@ -1,6 +1,7 @@
 # Test files ship with their scripts but must never land in $HOME
 
 **/*.test.*
+**/*.tpl
 
 AGENTS.md
 Brewfile

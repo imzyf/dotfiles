@@ -1,0 +1,23 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /* Partially manage ~/.claude/settings.json. Managed top-level subtrees
+      replace live values, so nested removals apply; removing a top-level key
+      only stops ownership and requires separate live cleanup. Preserve
+      undeclared keys; seed model and effort only when missing. */ -}}
+{{- $managed := includeTemplate "claude-settings.json" . | fromJson -}}
+{{- $seeds := `{
+  "model": "sonnet",
+  "effortLevel": "xhigh"
+}` | fromJson -}}
+{{- $stdin := .chezmoi.stdin -}}
+{{- $current := dict -}}
+{{- if $stdin -}}{{- $current = fromJson $stdin -}}{{- end -}}
+{{- $out := deepCopy $current -}}
+{{- range $k, $v := $managed -}}{{- $out = set $out $k $v -}}{{- end -}}
+{{- range $k, $v := $seeds -}}
+{{-   if not (hasKey $out $k) -}}{{- $out = set $out $k $v -}}{{- end -}}
+{{- end -}}
+{{- if deepEqual $current $out -}}
+  {{- $stdin -}}
+{{- else -}}
+  {{ toPrettyJson $out }}
+{{- end -}}

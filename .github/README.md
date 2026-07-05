@@ -1,9 +1,7 @@
 # dotfiles
 
-## Overview
-
-Managed with [chezmoi](https://www.chezmoi.io/). One command sets up a new Mac.
+My personal dotfiles, managed with [chezmoi](https://www.chezmoi.io/) — one command bootstraps a fresh Mac.
 
 ## Credits
 
-Much of the design here comes from [liby/dotfiles](https://github.com/liby/dotfiles) — thank you.
+Huge thanks to [liby/dotfiles](https://github.com/liby/dotfiles) — a lot of this code comes straight from there, and it solved so many headaches for me.
