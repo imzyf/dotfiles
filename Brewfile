@@ -1,4 +1,4 @@
-tap "homebrew/autoupdate", trusted: true
+tap "domt4/autoupdate", trusted: true
 tap "resend/cli"
 
 # Simple, modern, secure file encryption
@@ -102,8 +102,6 @@ cask "itsycal"
 cask "jetbrains-toolbox"
 # Kubernetes IDE
 cask "lens"
-# Multi-platform web browser
-cask "microsoft-edge"
 # Knowledge base that works on top of a local folder of plain text Markdown files
 cask "obsidian"
 # Finder Toolbar app to open the current directory in Terminal or Editor
@@ -121,6 +119,6 @@ cask "wetype"
 mas "Bob", id: 1630034110
 mas "Hidden Bar", id: 1452453066
 mas "Slack", id: 803453959
-mas "Youdao Translate", id: 491854842
+mas "网易有道翻译", id: 491854842
 mas "The Unarchiver", id: 425424353
 mas "WeChat", id: 836500024

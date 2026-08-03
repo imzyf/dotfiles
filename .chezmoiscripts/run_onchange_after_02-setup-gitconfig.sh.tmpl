@@ -1,4 +1,7 @@
 #!/bin/zsh
+# Re-run whenever either template changes.
+# github.config.tpl hash: {{ include "dot_config/git/github.config.tpl" | sha256sum }}
+# work.config.tpl hash: {{ include "dot_config/git/work.config.tpl" | sha256sum }}
 set -euo pipefail
 
 git_config_dir="$HOME/.config/git"

@@ -14,12 +14,7 @@ path=(
 )
 export PATH
 
-# Non-interactive shells (Codex exec_command, CC sandbox) inherit launchd's
-# SSH_AUTH_SOCK, which lacks the signing key; point at gpg-agent's socket.
-if [[ ! -S "$SSH_AUTH_SOCK" || "$SSH_AUTH_SOCK" == *apple.launchd* ]]; then
-  _gpg_sock="$HOME/.gnupg/S.gpg-agent.ssh"
-  [[ -S "$_gpg_sock" ]] ||
-    /opt/homebrew/bin/gpg-connect-agent /bye >/dev/null 2>&1
-  [[ -S "$_gpg_sock" ]] && export SSH_AUTH_SOCK="$_gpg_sock"
-  unset _gpg_sock
-fi
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_CACHE_HOME="$HOME/.cache"

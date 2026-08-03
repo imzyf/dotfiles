@@ -1,0 +1,26 @@
+{
+  // https://github.com/DavidAnson/markdownlint/blob/v0.40.0/schema/.markdownlint.jsonc
+  // Default state for all rules
+  "default": true,
+  // Path to configuration file to extend
+  "extends": null,
+  // MD013/line-length : Line length : https://github.com/DavidAnson/markdownlint/blob/v0.40.0/doc/md013.md
+  "MD013": false,
+  // MD033/no-inline-html : Inline HTML : https://github.com/DavidAnson/markdownlint/blob/v0.40.0/doc/md033.md
+  "MD033": {
+    // Allowed elements
+    "allowed_elements": [
+      "img",
+      "iframe",
+      "kbd",
+      "cite",
+      "br",
+      "mark",
+      "sup",
+      "sub",
+      "abbr"
+    ],
+    // Allowed elements in tables
+    "table_allowed_elements": []
+  }
+}

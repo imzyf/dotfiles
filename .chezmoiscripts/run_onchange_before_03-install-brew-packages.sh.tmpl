@@ -35,7 +35,7 @@ if [[ -n "$current_locale" ]]; then
 fi
 
 echo "Installing brew packages..."
-brew bundle --file="$brewfile" --verbose
+brew bundle --file="$brewfile"
 
 # Homebrew 6.0+ refuses to load untrusted tap commands; the Brewfile's
 # `trusted: true` has `brew bundle` (above) write the trust-store entry on

@@ -1,0 +1,7 @@
+{
+  "name": "chezmoi-global-tools",
+  "private": true,
+  "devDependencies": {
+    "@openai/codex": "0.146.0"
+  }
+}

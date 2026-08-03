@@ -1,0 +1,11 @@
+onboarding = false
+
+[ui]
+agent_panel_sort = "priority"
+
+[theme]
+name = "one-dark"
+auto_switch = false
+
+[ui.sound]
+enabled = false

@@ -1,0 +1,24 @@
+# Paths synced from the upstream dotfiles repo by sync-upstream.sh.
+#
+# One repo-relative path per line, either a file or a directory.
+# A leading '!' excludes a path: the local version is kept and never
+# overwritten. An exclude also covers everything under it, so a directory can
+# be synced while a few of its files stay local. Order does not matter.
+# Blank lines and lines starting with '#' are ignored.
+#
+# Only list paths that upstream owns end to end. Anything carrying personal
+# identity (.chezmoi.toml.tmpl, dot_config/git/config, .secrets/seed.asc) must
+# stay out of this list, otherwise a sync overwrites local values.
+
+.chezmoiscripts/
+!.chezmoiscripts/run_once_after_02-setup-gitconfig.sh
+!.chezmoiscripts/run_once_before_04-setup-case-sensitive-volume.sh
+!.chezmoiscripts/run_onchange_after_03-setup-macos-defaults.sh.tmpl
+
+dot_config/git/executable_git-ssh-gpg-agent
+dot_config/git/github.config.tpl
+
+dot_zsh/functions/claude
+dot_zsh/functions/setup_gpg_tty
+
+.chezmoiexternal.toml

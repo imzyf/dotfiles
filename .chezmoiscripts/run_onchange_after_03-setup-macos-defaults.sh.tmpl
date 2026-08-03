@@ -11,7 +11,9 @@ defaults write com.apple.dock wvous-tr-corner -int 5
 defaults write com.apple.dock tilesize -int 40
 defaults write com.apple.dock orientation left
 
-defaults write com.apple.finder AppleShowAllFiles -bool false
+defaults write com.apple.finder AppleShowAllFiles -bool true
+defaults write com.apple.finder ShowPathbar -bool true
+defaults write com.apple.finder ShowStatusBar -bool true
 defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
 
 # Reload processes that cache the Apple UI defaults.

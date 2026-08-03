@@ -1,3 +1,5 @@
+English | [中文](./README.zh-CN.md)
+
 # dotfiles
 
 My personal dotfiles, managed with [chezmoi](https://www.chezmoi.io/) — one command bootstraps a fresh Mac.
