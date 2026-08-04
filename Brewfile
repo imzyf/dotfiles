@@ -1,37 +1,37 @@
-tap "domt4/autoupdate", trusted: { command: "autoupdate" }
-tap "resend/cli"
-
+tap "domt4/autoupdate", "https://github.com/DomT4/homebrew-autoupdate.git", trusted: true
 # Linter and formatter to improve copywriting, correct spaces, words between CJK
 brew "autocorrect"
-# Official Amazon AWS command-line interface
-brew "awscli"
+# General-purpose data compression with high compression ratio
+brew "xz"
+# Core application library for C
+brew "glib"
 # Manage your dotfiles across multiple diverse machines, securely
 brew "chezmoi"
-# Cross-platform make
-brew "cmake"
+# Get a file from an HTTP, HTTPS or FTP server
+brew "curl"
 # General-purpose scripting language
 brew "php"
 # Dependency Manager for PHP
 brew "composer"
-# Get a file from an HTTP, HTTPS or FTP server
-brew "curl"
 # Diff that understands syntax
 brew "difftastic"
-# Environment variables meet macOS Keychain and gnome-keyring
+# Secure your credentials in environment variables
 brew "envchain"
 # Modern, maintained replacement for ls
 brew "eza"
+# Like neofetch, but much faster because written mostly in C
+brew "fastfetch"
 # Simple, fast and user-friendly alternative to find
 brew "fd"
-# Play, record, convert, and stream select audio and video codecs
-brew "ffmpeg"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
 brew "git"
+# Small git utilities
+brew "git-extras"
 # Git extension for versioning large files
 brew "git-lfs"
-# GitLab command-line tool
+# Open-source GitLab command-line tool
 brew "glab"
 # GNU Privacy Guard (OpenPGP)
 brew "gnupg"
@@ -39,10 +39,10 @@ brew "gnupg"
 brew "go"
 # Kubernetes package manager
 brew "helm"
-# Configurable static site generator
-brew "hugo"
 # Agent multiplexer that lives in your terminal
 brew "herdr"
+# Configurable static site generator
+brew "hugo"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Tool that can switch between kubectl contexts easily and create aliases
@@ -63,25 +63,38 @@ brew "pie"
 brew "pinentry-mac"
 # Pluggable multi-language version manager
 brew "proto"
-# CLI for the Resend email API
-brew "resend/cli/resend", trusted: true
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # Cross-shell prompt for astronauts
 brew "starship"
+# Display directories as trees (with optional color/HTML output)
+brew "tree"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
 # Process YAML, JSON, XML, CSV and properties documents from the CLI
 brew "yq"
-brew "uv"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # Memory training application
 cask "anki"
 # Application uninstaller
 cask "appcleaner"
+# Tool to flash OS images to SD cards & USB drives
+cask "balenaetcher"
+# Desktop password and login vault
+cask "bitwarden"
 # OpenAI's official ChatGPT desktop app
 cask "chatgpt"
-# Inconsolata LGC Nerd Font
+# Continuation of Clash Verge - A Clash Meta GUI based on Tauri
+cask "clash-verge-rev"
+# Universal database tool and SQL client
+cask "dbeaver-community"
+# Collaborative team software
+cask "figma"
 cask "font-inconsolata-lgc-nerd-font"
+cask "font-symbols-only-nerd-font"
+# GIT client
+cask "fork"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
 # Web browser
@@ -96,6 +109,8 @@ cask "input-source-pro"
 cask "itsycal"
 # JetBrains tools manager
 cask "jetbrains-toolbox"
+# Open-source keystroke visualiser
+cask "keycastr"
 # Kubernetes IDE
 cask "lens"
 # Knowledge base that works on top of a local folder of plain text Markdown files
@@ -104,19 +119,27 @@ cask "obsidian"
 cask "openinterminal"
 # Replacement for Docker Desktop
 cask "orbstack"
+# Collaboration platform for API development
+cask "postman"
 # Chinese music streaming application
 cask "qqmusic"
 # Control your tools with a few keystrokes
 cask "raycast"
+# Cloud video conferencing
+cask "tencent-meeting"
+# Unpacks archive files
+cask "the-unarchiver"
 # Open-source code editor
 cask "visual-studio-code"
+# Free messaging and calling application
+cask "wechat"
 # Text input app from WeChat team for Chinese users
 cask "wetype"
-# General-purpose data compression with high compression ratio
-brew "xz"
+# Connect to Windows
+cask "windows-app"
+# Youdao Dictionary
+cask "youdaodict"
 mas "Bob", id: 1630034110
 mas "Hidden Bar", id: 1452453066
 mas "Slack", id: 803453959
-mas "网易有道翻译", id: 491854842
-mas "The Unarchiver", id: 425424353
-mas "WeChat", id: 836500024
+mas "Xcode", id: 497799835

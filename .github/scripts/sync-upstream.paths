@@ -7,6 +7,10 @@
 .chezmoitemplates/git/gitlab.config
 # .chezmoitemplates/claude-settings.json
 
+dot_agents/skills/commit/SKILL.md
+dot_agents/skills/deslop/SKILL.md
+dot_agents/README.md
+
 dot_config/git/executable_git-ssh-gpg-agent
 dot_config/git/executable_prototools.filter.sh
 
