@@ -4,7 +4,7 @@
   "env": {
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
-     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
     "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_ENABLE_CFC": "0",
@@ -121,7 +121,7 @@
         "*.githubusercontent.com",
         "*.claude.com",
         "context7.com",
-        "{{ .work.gitlabHost | trimPrefix "https://" | trimSuffix "/" }}",
+        "{{ .private.gitlabHost | trimPrefix "https://" | trimSuffix "/" }}",
         "nodejs.org",
         "registry.npmjs.org"
       ],

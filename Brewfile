@@ -1,8 +1,6 @@
-tap "domt4/autoupdate", trusted: true
+tap "domt4/autoupdate", trusted: { command: "autoupdate" }
 tap "resend/cli"
 
-# Simple, modern, secure file encryption
-brew "age"
 # Linter and formatter to improve copywriting, correct spaces, words between CJK
 brew "autocorrect"
 # Official Amazon AWS command-line interface
@@ -76,8 +74,6 @@ brew "yq"
 brew "uv"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
-# UNIX shell (command interpreter)
-brew "zsh"
 # Memory training application
 cask "anki"
 # Application uninstaller
@@ -116,6 +112,8 @@ cask "raycast"
 cask "visual-studio-code"
 # Text input app from WeChat team for Chinese users
 cask "wetype"
+# General-purpose data compression with high compression ratio
+brew "xz"
 mas "Bob", id: 1630034110
 mas "Hidden Bar", id: 1452453066
 mas "Slack", id: 803453959

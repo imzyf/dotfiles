@@ -1,5 +1,6 @@
 [user]
-  name = zhaoyifan
+  email = hi@zyf.im
+  name = zyf
 
 [alias]
   st = status
@@ -51,11 +52,11 @@
   quotepath = false
 
 [credential "https://gist.github.com"]
-  helper =
+  helper = 
   helper = !gh auth git-credential
 
 [credential "https://github.com"]
-  helper =
+  helper = 
   helper = !gh auth git-credential
 
 [diff]
@@ -103,8 +104,11 @@
 [includeIf "hasconfig:remote.*.url:git@github.com:*/**"]
   path = github.config
 
-[includeIf "hasconfig:remote.*.url:git@**{{ .work.gitlabHost }}**:*/**"]
-  path = work.config
+[includeIf "hasconfig:remote.*.url:https://github.com/*/**"]
+  path = github.config
+
+[includeIf "hasconfig:remote.*.url:git@{{ .private.gitlabHost }}:*/**"]
+  path = gitlab.config
 
 [includeIf "gitdir:~/Code/"]
   path = performance.config

@@ -1,9 +1,9 @@
 encryption = "gpg"
 
-[data.work]
-  name = {{ promptStringOnce . "work.name" "Work name" | quote }}
-  email = {{ promptStringOnce . "work.email" "Work email" | quote }}
-  gitlabHost = {{ promptStringOnce . "work.gitlabHost" "Work GitLab host" | quote }}
+[data.private]
+  gitlabEmail = {{ promptStringOnce . "private.gitlabEmail" "Private GitLab email" | quote }}
+  gitlabHost = {{ promptStringOnce . "private.gitlabHost" "Private GitLab host" | quote }}
+  gitlabName = {{ promptStringOnce . "private.gitlabName" "Private GitLab name" | quote }}
 
 [edit]
   args = ["--wait"]
