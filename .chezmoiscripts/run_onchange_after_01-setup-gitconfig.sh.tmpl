@@ -24,26 +24,26 @@ fi
 }
 
 gpg_ssh_pub_key_file="$ssh_dir/$gpg_key_id.pub"
-gpg_ssh_pub_key_tmp=$(mktemp "$ssh_dir/.${gpg_key_id}.pub.XXXXXX")
-"$gpg_bin" --export-ssh-key "$gpg_key_id" > "$gpg_ssh_pub_key_tmp" || {
-  export_status=$?
-  rm -f "$gpg_ssh_pub_key_tmp"
-  exit "$export_status"
-}
-[[ -s "$gpg_ssh_pub_key_tmp" ]] || {
+gpg_ssh_public_key=$("$gpg_bin" --export-ssh-key "$gpg_key_id") || exit $?
+[[ -n "$gpg_ssh_public_key" ]] || {
   print -u2 "Error: GPG exported an empty SSH public key"
-  rm -f "$gpg_ssh_pub_key_tmp"
   exit 1
 }
-if ! cmp -s "$gpg_ssh_pub_key_file" "$gpg_ssh_pub_key_tmp"; then
+if [[ ! -f "$gpg_ssh_pub_key_file" ]] ||
+   [[ "$(<"$gpg_ssh_pub_key_file")" != "$gpg_ssh_public_key" ]]; then
   echo "Exporting GPG key $gpg_key_id as SSH key..."
+  gpg_ssh_pub_key_tmp=$(mktemp "$ssh_dir/.${gpg_key_id}.pub.XXXXXX")
+  print -r -- "$gpg_ssh_public_key" > "$gpg_ssh_pub_key_tmp" || {
+    write_status=$?
+    rm -f "$gpg_ssh_pub_key_tmp"
+    exit "$write_status"
+  }
   mv "$gpg_ssh_pub_key_tmp" "$gpg_ssh_pub_key_file" || {
     move_status=$?
     rm -f "$gpg_ssh_pub_key_tmp"
     exit "$move_status"
   }
 fi
-rm -f "$gpg_ssh_pub_key_tmp"
 
 install_config() {
   local destination=$1 signing_key=$2 temporary install_status=0

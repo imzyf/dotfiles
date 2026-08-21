@@ -103,16 +103,12 @@ cask "google-chrome"
 cask "iina"
 # Tool to optimise images to a smaller size
 cask "imageoptim"
-# Tool for multi-language users
-cask "input-source-pro"
 # Menu bar calendar
 cask "itsycal"
 # JetBrains tools manager
 cask "jetbrains-toolbox"
 # Open-source keystroke visualiser
 cask "keycastr"
-# Kubernetes IDE
-cask "lens"
 # Knowledge base that works on top of a local folder of plain text Markdown files
 cask "obsidian"
 # Finder Toolbar app to open the current directory in Terminal or Editor
@@ -125,8 +121,6 @@ cask "postman"
 cask "qqmusic"
 # Control your tools with a few keystrokes
 cask "raycast"
-# Cloud video conferencing
-cask "tencent-meeting"
 # Unpacks archive files
 cask "the-unarchiver"
 # Open-source code editor
@@ -135,11 +129,8 @@ cask "visual-studio-code"
 cask "wechat"
 # Text input app from WeChat team for Chinese users
 cask "wetype"
-# Connect to Windows
-cask "windows-app"
 # Youdao Dictionary
 cask "youdaodict"
-mas "Bob", id: 1630034110
 mas "Hidden Bar", id: 1452453066
 mas "Slack", id: 803453959
 mas "Xcode", id: 497799835

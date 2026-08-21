@@ -4,25 +4,26 @@
 !.chezmoiscripts/run_once_before_05-setup-case-sensitive-volume.py
 !.chezmoiscripts/run_onchange_after_02-setup-macos-defaults.sh.tmpl
 
-.chezmoitemplates/git/gitlab.config
-# .chezmoitemplates/claude-settings.json
+.chezmoitemplates/
+!.chezmoitemplates/codex/
+!.chezmoitemplates/git/github.config
+!.chezmoitemplates/claude-settings.json
 
-dot_agents/skills/commit/SKILL.md
+# dot_agents/skills/commit/SKILL.md
 dot_agents/skills/deslop/SKILL.md
 dot_agents/README.md
 
-dot_config/git/executable_git-ssh-gpg-agent
-dot_config/git/executable_prototools.filter.sh
-
 dot_claude/hooks/executable_pre-compact-instructions.sh
 dot_claude/hooks/executable_pre-edit-warn-chezmoi.sh
-dot_claude/rules/anti-slop.md
-dot_claude/scripts/executable_statusline.sh
+dot_claude/rules
+dot_claude/scripts
 dot_claude/modify_private_settings.json
 
-dot_proto/dot_prototools
+dot_config/git/
+!dot_config/git/config
 
-dot_zsh/functions/claude
-dot_zsh/functions/setup_gpg_tty
+dot_proto/
+
+dot_zsh/functions/
 
 .chezmoiexternal.toml

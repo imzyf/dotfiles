@@ -12,7 +12,7 @@ stripComponents = 1
 [".zsh/plugins/zsh-completions"]
 type = "archive"
 # renovate: currentValue=master
-url = "https://github.com/zsh-users/zsh-completions/archive/334c14d1b49ec8393292b16b2a972f20570361ac.tar.gz"
+url = "https://github.com/zsh-users/zsh-completions/archive/d1968bd3329c9376b7ce6e37e835e61ca22baab1.tar.gz"
 exact = true
 stripComponents = 1
 

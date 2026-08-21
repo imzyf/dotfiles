@@ -5,12 +5,10 @@ set -euo pipefail
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-for dependency in proto xz; do
-  command -v "$dependency" &>/dev/null || {
-    print -u2 "Required Brewfile dependency not found: $dependency"
-    exit 1
-  }
-done
+command -v proto &>/dev/null || {
+  print -u2 "Required Brewfile dependency not found: proto"
+  exit 1
+}
 
 # Changing a run_once script gives it a new identity. Avoid moving an existing
 # channel-based install merely because this bootstrap script was maintained.

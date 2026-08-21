@@ -13,6 +13,54 @@ if [[ ! -f "$brewfile" ]]; then
   exit 1
 fi
 
+# Brewfile installs these apps on new machines, while their own updaters own
+# later upgrades. This is the complete chezmoi-managed cask pin set.
+managed_cask_pins=(
+  chatgpt
+  ghostty
+  google-chrome
+  input-source-pro
+  itsycal
+  orbstack
+  raycast
+  visual-studio-code
+)
+
+contains_cask() {
+  local needle="$1"
+  shift
+  local cask
+  for cask in "$@"; do
+    [[ "$cask" == "$needle" ]] && return 0
+  done
+  return 1
+}
+
+reconcile_cask_pins() {
+  local cask
+  local -a installed_casks current_cask_pins casks_to_pin casks_to_unpin
+
+  installed_casks=(${(f)"$(brew list --cask)"})
+  current_cask_pins=(${(f)"$(brew list --pinned --cask)"})
+
+  for cask in "${current_cask_pins[@]}"; do
+    contains_cask "$cask" "${managed_cask_pins[@]}" ||
+      casks_to_unpin+=("$cask")
+  done
+
+  for cask in "${managed_cask_pins[@]}"; do
+    if contains_cask "$cask" "${installed_casks[@]}" &&
+       ! contains_cask "$cask" "${current_cask_pins[@]}"; then
+      casks_to_pin+=("$cask")
+    fi
+  done
+
+  (( ${#casks_to_unpin} == 0 )) ||
+    brew unpin --cask "${casks_to_unpin[@]}"
+  (( ${#casks_to_pin} == 0 )) ||
+    brew pin --cask "${casks_to_pin[@]}"
+}
+
 # mas-cli requires en_US locale to search the App Store
 # https://github.com/mas-cli/mas/blob/ed676787f0a0a26e23a10548eb841bc15411fa52/Sources/mas/Controllers/ITunesSearchAppStoreSearcher.swift#L18-L23
 current_locale=$(defaults read NSGlobalDomain AppleLocale 2>/dev/null || true)
@@ -31,33 +79,41 @@ if [[ -n "$current_locale" ]]; then
 fi
 
 echo "Installing brew packages..."
+reconcile_cask_pins
 brew bundle --file="$brewfile"
+reconcile_cask_pins
 
 # Homebrew 6.0+ refuses to load untrusted tap commands. The Brewfile grants
 # command-scoped trust to `domt4/autoupdate/autoupdate` on every run, so no
 # manual `brew trust` is needed before loading the management command.
-# A running daemon may have been started with different options, so replace it
+# A running job may have been started with different options, so replace it
 # whenever this run_onchange script executes.
-autoupdate_service="gui/$UID/com.github.domt4.homebrew-autoupdate"
-autoupdate_status="$(brew autoupdate status)"
-if [[ "$autoupdate_status" == *"installed and "* ]]; then
-  brew autoupdate delete
-  if launchctl print "$autoupdate_service" >/dev/null 2>&1; then
-    print -u2 "Homebrew autoupdate is still loaded after delete"
-    exit 1
-  fi
-  autoupdate_status="$(brew autoupdate status)"
-  [[ "$autoupdate_status" == *"not configured"* ]] || {
-    print -u2 "Homebrew autoupdate is still configured after delete"
-    exit 1
-  }
+autoupdate_label="com.github.domt4.homebrew-autoupdate"
+autoupdate_gui_domain="gui/$UID"
+autoupdate_service="$autoupdate_gui_domain/$autoupdate_label"
+autoupdate_plist="$HOME/Library/LaunchAgents/$autoupdate_label.plist"
+if launchctl print "$autoupdate_service" >/dev/null 2>&1; then
+  launchctl bootout "$autoupdate_service"
 fi
-echo "Setting up brew autoupdate (daily update + upgrade + cleanup)..."
+if [[ -f "$autoupdate_plist" ]]; then
+  brew autoupdate delete
+fi
+echo "Setting up brew autoupdate (10:00 daily and at load, with upgrade + cleanup)..."
 PATH="$(brew --prefix)/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
   brew autoupdate start 86400 --upgrade --cleanup
 
-# Upstream does not propagate `launchctl load` failures from `start`.
+# Unload upstream's relative timer before adding the fixed-time and login
+# triggers in the canonical GUI domain.
+launchctl unload "$autoupdate_plist" >/dev/null 2>&1 || true
+/usr/bin/plutil -insert StartCalendarInterval \
+  -json '{"Hour":10,"Minute":0}' "$autoupdate_plist"
+/usr/bin/plutil -insert RunAtLoad -bool true "$autoupdate_plist"
+/usr/bin/plutil -remove StartInterval "$autoupdate_plist"
+launchctl bootstrap "$autoupdate_gui_domain" "$autoupdate_plist"
+
+# Upstream's status command only sees the caller's bootstrap namespace and
+# does not understand calendar schedules.
 launchctl print "$autoupdate_service" >/dev/null 2>&1 || {
-  print -u2 "Homebrew autoupdate was configured but launchd did not load it; rerun chezmoi apply from Terminal.app"
+  print -u2 "Homebrew autoupdate was configured but launchd did not load it"
   exit 1
 }

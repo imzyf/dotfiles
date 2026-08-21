@@ -52,8 +52,11 @@ typeset -aU path
 }
 
 # Alias Set
-alias cc='claude'
-alias ccm='claude --switch-provider'
+alias cc='claude --switch-provider'
+alias ccg='claude --gateway'
+alias ccm='claude-model'
+alias ccs='claude --subscription'
+
 alias cm='chezmoi'
 alias cx='open -a /Applications/ChatGPT.app'
 alias hr='herdr'

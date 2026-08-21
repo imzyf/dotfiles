@@ -142,33 +142,12 @@
         "matcher": "Bash",
         "hooks": [
         ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-edit-warn-chezmoi.sh",
-            "timeout": 10
-          }
-        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-compact-instructions.sh",
-            "timeout": 10
-          }
         ]
       }
     ]
