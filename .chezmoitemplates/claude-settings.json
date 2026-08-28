@@ -2,11 +2,13 @@
 {
   "cleanupPeriodDays": 99999,
   "env": {
+    "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-fable-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
     "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_DISABLE_MOUSE": "1",
     "CLAUDE_CODE_ENABLE_CFC": "0",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "125000",
@@ -30,11 +32,14 @@
   "disableRemoteControl": true,
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
+  "disableDeepLinkRegistration": "disable",
   "permissions": {
     "defaultMode": "auto",
     "allow": [
       "Agent",
+      "Bash(herdr:*)",
       "Bash(oracle:*)",
+      "Bash(snow:*)",
       "Edit",
       "LSP",
       "mcp__chrome-devtools__*",
@@ -92,6 +97,7 @@
       "codex:*",
       "docker:*",
       "git:*",
+      "herdr:*",
       "node *codex-companion.mjs*",
       "oracle:*",
       "snow:*"
@@ -106,6 +112,7 @@
         "~/.codex",
         "~/.local/share/uv",
         "~/.npm",
+        "~/.oracle",
         "~/.pnpm-store",
         "~/.proto",
         "~/.rustup",
@@ -137,38 +144,15 @@
     }
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-        ]
-      }
-    ]
   },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/scripts/statusline.sh"
   },
-  "enabledPlugins": {
-    "codex@openai-codex": true
-  },
-  "extraKnownMarketplaces": {
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      },
-      "autoUpdate": true
-    }
-  },
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {},
   "spinnerTipsEnabled": false,
+  "tui": "default",
   "spinnerVerbs": {
     "mode": "replace",
     "verbs": [

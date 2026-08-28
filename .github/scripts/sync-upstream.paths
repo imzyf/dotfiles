@@ -5,12 +5,11 @@
 !.chezmoiscripts/run_onchange_after_02-setup-macos-defaults.sh.tmpl
 
 .chezmoitemplates/
-!.chezmoitemplates/codex/
 !.chezmoitemplates/git/github.config
-!.chezmoitemplates/claude-settings.json
 
-# dot_agents/skills/commit/SKILL.md
-dot_agents/skills/deslop/SKILL.md
+dot_agents/skills/deslop/
+dot_agents/skills/new-branch/
+dot_agents/skills/write-skill/
 dot_agents/README.md
 
 dot_claude/hooks/executable_pre-compact-instructions.sh
@@ -25,5 +24,7 @@ dot_config/git/
 dot_proto/
 
 dot_zsh/functions/
+
+private_dot_pi/
 
 .chezmoiexternal.toml

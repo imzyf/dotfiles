@@ -1,0 +1,95 @@
+# This template is merged by dot_codex/modify_private_config.toml. Before
+# editing either path, read their governing AGENTS.md files.
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+cli_auth_credentials_store = "keyring"
+default_permissions = "development"
+experimental_compact_prompt_file = "compact-prompt.md"
+mcp_oauth_credentials_store = "keyring"
+model = "gpt-5.6-sol"
+model_reasoning_summary = "concise"
+project_doc_fallback_filenames = [".claude/CLAUDE.md", "CLAUDE.md"]
+web_search = "live"
+
+[desktop]
+ambient-suggestions-enabled = false
+enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "ultra", "max"]
+# Keep the selected UI behavior when the desktop default writes queue.
+followUpQueueMode = "steer"
+mac-menu-bar-enabled = false
+reduced-motion-preference = "on"
+show-context-window-usage = true
+
+[features]
+memories = true
+# Keep direct networking while the permission profile controls filesystem access.
+network_proxy = false
+prevent_idle_sleep = true
+
+[permissions.development.filesystem]
+":root" = "write"
+"{{ .chezmoi.homeDir }}/.codex/plugins/cache/openai-bundled/browser" = "read"
+
+[permissions.development.filesystem.":workspace_roots"]
+".env" = "read"
+".env.local" = "read"
+
+[permissions.development.network]
+enabled = true
+
+[permissions.development.network.unix_sockets]
+"{{ .chezmoi.homeDir }}/.gnupg/S.gpg-agent.ssh" = "allow"
+
+[shell_environment_policy.set]
+# Keep Snowflake's localhost SAML listener alive so the snow skill can open an
+# emitted login URL while the original query waits. Undocumented connector flag
+# (connector auth/webbrowser.py); re-check after CLI upgrades.
+SNOWFLAKE_AUTH_FORCE_SERVER = "true"
+
+[mcp_servers.context7]
+enabled = true
+command = "/opt/homebrew/bin/envchain"
+args = ["context7", "npx", "-y", "@upstash/context7-mcp"]
+
+[mcp_servers.openaiDeveloperDocs]
+enabled = true
+url = "https://developers.openai.com/mcp"
+
+[mcp_servers.node_repl]
+# Keep the desktop-provided ChatGPT runtime path.
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+args = []
+startup_timeout_sec = 120
+
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = false
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = false
+
+[plugins."sites@openai-bundled"]
+enabled = false
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = false
+
+[plugins."visualize@openai-bundled"]
+enabled = false

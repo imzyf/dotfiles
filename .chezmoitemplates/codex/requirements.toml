@@ -1,0 +1,27 @@
+default_permissions = "development"
+allowed_approval_policies = ["on-request"]
+allowed_approvals_reviewers = ["auto_review"]
+
+[allowed_permission_profiles]
+development = true
+
+[features]
+hooks = true
+
+[hooks]
+managed_dir = "{{ .chezmoi.homeDir }}/.codex/managed-hooks"
+
+[[hooks.PreToolUse]]
+matcher = "^Bash$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = "{{ .chezmoi.homeDir }}/.codex/managed-hooks/guard-bash"
+timeout = 5
+
+[[hooks.UserPromptSubmit]]
+
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "{{ .chezmoi.homeDir }}/.codex/managed-hooks/contextual-markdown-links"
+timeout = 5
