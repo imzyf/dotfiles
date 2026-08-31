@@ -1,19 +1,19 @@
-English | [中文](./README.zh-CN.md)
+<h4 align="right"><strong>中文</strong> | <a href="./README.en.md">English</a></h4>
 
 # dotfiles
 
-My personal dotfiles, managed with [chezmoi](https://www.chezmoi.io/): one command bootstraps a fresh Mac.
+我的个人 dotfiles，使用 [chezmoi](https://www.chezmoi.io/) 管理，一条命令即可完成新 Mac 的配置。
 
-## Bootstrap a new machine
+## 新设备初始化
 
-On a new Apple Silicon Mac, open Terminal.app and run:
+在新的 Apple Silicon Mac 上打开 Terminal.app，运行：
 
 ```sh
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply imzyf
 ```
 
-Insert the YubiKey first: it holds the GPG private key `19084855608DB9D5`, and without it encrypted files cannot be decrypted. The first run prompts for the private GitLab name, email and host.
+运行前需插入 YubiKey，GPG 私钥 `19084855608DB9D5` 存放在卡上，否则加密文件无法解密。首次运行会提示输入 private GitLab 的 name、email 和 host。
 
-## Credits
+## 致谢
 
-Huge thanks to [liby/dotfiles](https://github.com/liby/dotfiles) — a lot of this code comes straight from there, and it solved so many headaches for me.
+特别感谢 [liby/dotfiles](https://github.com/liby/dotfiles)，这里很多代码都直接来自它，帮我解决了太多难题。
