@@ -1,4 +1,3 @@
 **/*.test.*
 AGENTS.md
 Brewfile
-.gitignore

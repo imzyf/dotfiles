@@ -5,7 +5,6 @@ encryption = "gpg"
   gitlabEmail = {{ promptStringOnce . "private.gitlabEmail" "Private GitLab email" | quote }}
   gitlabHost = {{ promptStringOnce . "private.gitlabHost" "Private GitLab host" | quote }}
   gitlabName = {{ promptStringOnce . "private.gitlabName" "Private GitLab name" | quote }}
-  npmHost = {{ promptStringOnce . "private.npmHost" "Private npm registry host" | quote }}
 
 [edit]
   args = ["--wait"]

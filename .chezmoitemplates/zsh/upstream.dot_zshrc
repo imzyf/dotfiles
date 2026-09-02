@@ -63,15 +63,12 @@ typeset -aU path
 }
 
 # Alias Set
-alias cc='claude --switch-provider'
-alias ccg='claude --gateway'
-alias ccs='claude --subscription'
-alias ccm='claude-model'
-
+alias c='open -a "Visual Studio Code"'
+alias cc='claude'
+alias ccm='claude --switch-provider'
 alias cm='chezmoi'
 alias cx='open -a /Applications/ChatGPT.app'
 alias hr='herdr'
-
 alias ip="curl ip.sb"
 alias ipcn="curl myip.ipip.net"
 alias ka='caffeinate -is'
@@ -81,22 +78,8 @@ alias ls='eza --group-directories-first --hyperlink=auto'
 alias lt='ll --tree --level=2 --git-ignore --ignore-glob=.git'
 alias python='python3'
 
-# PHP / Laravel
-alias c="composer"
-alias art="php artisan"
-
-# DevOps
-alias kb="$(brew --prefix kubernetes-cli)/bin/kubectl"
-alias kctx="kubectx"
-alias kns="kubens"
-alias minikb="minikube kubectl --"
-alias reloaddns="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
-alias ipinfo="curl https://ipinfo.io/json"
-
 # Functions (autoloaded from ~/.zsh/functions/)
 autoload -Uz $HOME/.zsh/functions/*(N:t)
-# Topic files: small functions and their aliases, grouped one file per topic.
-for lib_file ($HOME/.zsh/lib/*.zsh(N)) source $lib_file
 
 # Skip per-precmd widget rebinding for faster prompt
 ZSH_AUTOSUGGEST_MANUAL_REBIND=""
@@ -118,4 +101,4 @@ ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(bracketed-paste)
 [[ -r ~/.orbstack/shell/init.zsh ]] && source ~/.orbstack/shell/init.zsh
 (( $+commands[proto] )) && eval "$(proto activate zsh)"
 eval "$(starship init zsh)"
-eval "$(zoxide init zsh --cmd cd)"
+eval "$(zoxide init zsh)"

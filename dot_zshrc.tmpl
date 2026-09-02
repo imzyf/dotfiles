@@ -1,0 +1,32 @@
+{{- $upstream := includeTemplate "zsh/upstream.dot_zshrc" . -}}
+{{- $functions := `# Functions (autoloaded from ~/.zsh/functions/)
+autoload -Uz $HOME/.zsh/functions/*(N:t)
+` -}}
+{{- $zoxide := `eval "$(zoxide init zsh)"` -}}
+{{- if ne (len (splitList $functions $upstream)) 2 }}{{ fail "zsh/upstream.dot_zshrc no longer contains exactly one autoload block; update the override in dot_zshrc.tmpl" }}{{ end -}}
+{{- if ne (len (splitList $zoxide $upstream)) 2 }}{{ fail "zsh/upstream.dot_zshrc no longer contains exactly one plain zoxide init; update the override in dot_zshrc.tmpl" }}{{ end -}}
+{{- $head := index (splitList $functions $upstream) 0 -}}
+{{- $tail := replace $zoxide `eval "$(zoxide init zsh --cmd cd)"` (index (splitList $functions $upstream) 1) -}}
+{{ $head }}
+
+# Claude launcher, redefining the upstream cc and ccm
+alias cc='claude --switch-provider'
+alias ccg='claude --gateway'
+alias ccs='claude --subscription'
+alias ccm='claude-model'
+
+# PHP / Laravel, redefining the upstream c
+alias c="composer"
+alias art="php artisan"
+
+# DevOps
+alias kb="$(brew --prefix kubernetes-cli)/bin/kubectl"
+alias kctx="kubectx"
+alias kns="kubens"
+alias minikb="minikube kubectl --"
+alias reloaddns="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
+alias ipinfo="curl https://ipinfo.io/json"
+
+{{ $functions }}# Topic files: small functions and their aliases, grouped one file per topic.
+for lib_file ($HOME/.zsh/lib/*.zsh(N)) source $lib_file
+{{ $tail -}}

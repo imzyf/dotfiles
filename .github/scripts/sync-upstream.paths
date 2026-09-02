@@ -1,11 +1,15 @@
-# Paths synced from the upstream dotfiles repo by sync-upstream.sh.
+# sync-upstream.sh 从上游 dotfiles 仓库同步的路径清单。
+# 以 '!' 开头的行表示这个路径保留本地版本，不被覆盖。
+# '上游路径 > 本地路径' 表示把上游文件复制到另一个本地路径，
+# 上游路径对应的本地文件保持不动。
 
 .chezmoiscripts/
 !.chezmoiscripts/run_once_before_05-setup-case-sensitive-volume.py
 !.chezmoiscripts/run_onchange_after_02-setup-macos-defaults.sh.tmpl
 
 .chezmoitemplates/
-!.chezmoitemplates/git/github.config
+.chezmoitemplates/claude/settings.json > .chezmoitemplates/claude/upstream.settings.json
+.chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 
 .github/CONCEPTS.md
 .github/renovate.json
@@ -13,18 +17,22 @@
 dot_agents/skills/deslop/
 dot_agents/skills/new-branch/
 dot_agents/skills/write-skill/
-dot_agents/README.md
 
 dot_claude/
-!dot_claude/CLAUDE.md
+dot_claude/CLAUDE.md > .chezmoitemplates/claude/upstream.CLAUDE.md
 
 dot_config/git/
-!dot_config/git/config
+dot_config/git/config > .chezmoitemplates/git/upstream.config
 
 dot_proto/
 
-dot_zsh/functions/
+dot_zsh/
+dot_zsh/functions/claude.test.zsh > .chezmoitemplates/zsh/upstream.claude.test.zsh
 
 private_dot_pi/
 
 .chezmoiexternal.toml
+.chezmoiignore
+dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
+dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc
+modify_dot_claude.json

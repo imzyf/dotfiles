@@ -16,4 +16,6 @@ Insert the YubiKey first: it holds the GPG private key `19084855608DB9D5`, and w
 
 ## Credits
 
-Huge thanks to [liby/dotfiles](https://github.com/liby/dotfiles) — a lot of this code comes straight from there, and it solved so many headaches for me.
+Huge thanks to [liby/dotfiles](https://github.com/liby/dotfiles), which solved so many headaches for me. Most files here use its version as is, kept in sync by [`sync-upstream.sh`](scripts/sync-upstream.sh).
+
+A few files I have adapted to my own habits, so upstream can no longer overwrite them wholesale. For those, the upstream version is kept separately under `.chezmoitemplates/`, and the local file pulls that copy in with `includeTemplate` and layers my changes on top, leaving only the difference to maintain. That way I stand on the shoulders of giants, keep things the way I like them, and still pick up whatever upstream improves later.

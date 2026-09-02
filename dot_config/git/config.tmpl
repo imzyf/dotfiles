@@ -1,99 +1,15 @@
+{{- $upstream := includeTemplate "git/upstream.config" . -}}
+{{- if not (regexMatch `(?s)\n\[include\]\n\s+path = github\.config\n+\[includeIf "gitdir:~/Code/GitLab/"\]\n\s+path = gitlab\.config\n+\[includeIf "gitdir:~/Code/"\]\n\s+path = performance\.config\n\z` $upstream) }}{{ fail "git/upstream.config no longer ends with the expected include block; update the override in dot_config/git/config.tmpl" }}{{ end -}}
+{{ regexReplaceAllLiteral `(?s)\n\[include\].*\z` $upstream "" }}
 [user]
   email = hi@zyf.im
-  name = zyf
+  name = imzyf
 
 [alias]
-  st = status
-
-  ### amend ###
-  aa = "!git add -A && git commit --amend --no-edit"
-  as = commit --amend --no-edit
-
-  ### diff ###
-  df = "-c diff.external=difft diff"
-  dh = "-c diff.external=difft diff HEAD"
-
-  ### log ###
-  lg = log --graph --abbrev-commit --date=short --boundary --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %Cblue[%cn]%Creset'
-
-  ### push ###
-  pf = push --force-with-lease
-
-  ### rebase ###
-  fix = "!f() { git add -A && git commit --fixup $1 && GIT_SEQUENCE_EDITOR=true git rebase -i $1^; }; f"
-  rb = rebase
-  rba = rebase --abort
-  rbc = rebase --continue
-  rbs = rebase --skip
-
-  ### sync ###
-  base = !git fetch origin && git reset --hard origin/HEAD
-  sync = !git fetch origin && git reset --hard @{u}
-
-  ### tag ###
-  lt = for-each-ref --merged=HEAD --sort=-creatordate --count=1 --format='%(refname:short)' refs/tags
-
   co = checkout
-  psf = push --force-with-lease
   ps = push
+  psf = push --force-with-lease
   psf-skip = push --force-with-lease -o ci.skip
-
-[branch]
-  autosetuprebase = always
-  sort = -committerdate
-
-[column]
-  ui = auto
-
-[core]
-  autocrlf = input
-  editor = vim
-  quotepath = false
-
-[credential "https://gist.github.com"]
-  helper = 
-  helper = !gh auth git-credential
-
-[credential "https://github.com"]
-  helper = 
-  helper = !gh auth git-credential
-
-[diff]
-  algorithm = histogram
-  colorMoved = plain
-
-[fetch]
-  prune = true
-  pruneTags = false
-  writeCommitGraph = true
-
-[filter "lfs"]
-  clean = git-lfs clean -- %f
-  process = git-lfs filter-process
-  required = true
-  smudge = git-lfs smudge -- %f
-
-[help]
-  autocorrect = prompt
-
-[pull]
-  rebase = true
-
-[push]
-  autoSetupRemote = true
-  useForceIfIncludes = true
-
-[rebase]
-  autosquash = true
-  autostash = true
-  missingCommitsCheck = error
-  updateRefs = false
-
-[rerere]
-  enabled = true
-
-[status]
-  showStash = true
 
 [includeIf "hasconfig:remote.*.url:git@github.com:*/**"]
   path = github.config
