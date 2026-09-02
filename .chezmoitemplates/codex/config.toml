@@ -1,5 +1,4 @@
-# This template is merged by dot_codex/modify_private_config.toml. Before
-# editing either path, read their governing AGENTS.md files.
+# Read dot_codex/modify_private_config.toml before editing this template; the modifier controls how these values are merged into the live file.
 approval_policy = "on-request"
 approvals_reviewer = "auto_review"
 cli_auth_credentials_store = "keyring"
@@ -11,14 +10,43 @@ model_reasoning_summary = "concise"
 project_doc_fallback_filenames = [".claude/CLAUDE.md", "CLAUDE.md"]
 web_search = "live"
 
+[analytics]
+enabled = false
+
 [desktop]
 ambient-suggestions-enabled = false
+composerPlainTextMode = true
 enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "ultra", "max"]
 # Keep the selected UI behavior when the desktop default writes queue.
 followUpQueueMode = "steer"
+git-always-force-push = true
+git-branch-prefix = ""
+git-pull-request-merge-method = "squash"
 mac-menu-bar-enabled = false
+open-link-in-target-preference = "external-browser"
+realtimeVoiceScreenContextEnabled = false
 reduced-motion-preference = "on"
+reviewDelivery = "detached"
 show-context-window-usage = true
+worktree-upstream-refresh-mode = "best-effort"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#339cff"
+accentSource = "custom"
+contrast = 60
+ink = "#ffffff"
+opaqueWindows = false
+surface = "#181818"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#40c977"
+diffRemoved = "#fa423e"
+skill = "#ad7bf9"
+
+[feedback]
+enabled = false
 
 [features]
 memories = true

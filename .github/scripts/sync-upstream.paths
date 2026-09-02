@@ -7,6 +7,9 @@
 .chezmoitemplates/
 !.chezmoitemplates/git/github.config
 
+.github/CONCEPTS.md
+.github/renovate.json
+
 dot_agents/skills/deslop/
 dot_agents/skills/new-branch/
 dot_agents/skills/write-skill/

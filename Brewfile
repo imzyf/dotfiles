@@ -57,8 +57,6 @@ brew "mas"
 brew "minikube"
 # Simple tool to make locally trusted development certificates
 brew "mkcert"
-# PHP Installer for Extensions
-brew "pie"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
 # Pluggable multi-language version manager

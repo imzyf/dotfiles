@@ -1,9 +1,11 @@
 # Global gitignore
 
-## Claude Code local settings (e.g. settings.local.json)
-*.local.*
+## Claude Code runtime directories
 **/.claude/.cc-writes/
 **/.claude/worktrees/
+
+## Local-only overrides
+*.local.*
 
 ## General
 *.log
@@ -13,13 +15,17 @@
 .prototools
 
 ## JetBrains
-.idea
+.idea/
 
 ## macOS
 .DS_Store
 
 ## Node.js
-node_modules
+node_modules/
+
+## Python
+__pycache__/
+*.py[cod]
 
 ## Visual Studio Code
-.vscode
+.vscode/
