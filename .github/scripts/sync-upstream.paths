@@ -15,11 +15,15 @@
 .github/renovate.json
 
 dot_agents/skills/deslop/
+dot_agents/skills/gh/
 dot_agents/skills/new-branch/
+dot_agents/skills/set-goal/
 dot_agents/skills/write-skill/
 
 dot_claude/
 dot_claude/CLAUDE.md > .chezmoitemplates/claude/upstream.CLAUDE.md
+
+# dot_codex/
 
 dot_config/git/
 dot_config/git/config > .chezmoitemplates/git/upstream.config
@@ -27,7 +31,7 @@ dot_config/git/config > .chezmoitemplates/git/upstream.config
 dot_proto/
 
 dot_zsh/
-dot_zsh/functions/claude.test.zsh > .chezmoitemplates/zsh/upstream.claude.test.zsh
+!dot_zsh/functions/claude.test.zsh
 
 private_dot_pi/
 
