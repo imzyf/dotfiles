@@ -7,5 +7,5 @@
 {{- $network := $settings.sandbox.network -}}
 {{- if not (has $npmHost $network.allowedDomains) }}{{ fail "claude/upstream.settings.json no longer lists private.npmHost in sandbox.network.allowedDomains; update the override in claude/settings.json" }}{{ end -}}
 {{- $_ := set $network "allowedDomains" (without $network.allowedDomains $npmHost) -}}
-{{- $_ := set $settings "autoCompactWindow" 600000 -}}
+{{- $_ := set $settings "autoCompactWindow" 800000 -}}
 {{ toPrettyJson $settings }}

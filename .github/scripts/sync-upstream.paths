@@ -37,6 +37,7 @@ private_dot_pi/
 
 .chezmoiexternal.toml
 .chezmoiignore
+AGENTS.md > .github/AGENTS.md
 dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
 dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc
 modify_dot_claude.json
