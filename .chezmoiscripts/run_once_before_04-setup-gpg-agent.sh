@@ -89,10 +89,10 @@ EOF
   launchctl bootstrap "gui/$UID" "$plist"
   # While the gui domain is in on-demand-only mode (login app restore or Setup
   # Assistant), bootstrap leaves the RunAtLoad spawn pended until that phase
-  # ends, long after the wait below gives up (liby/dotfiles#28); kickstart
-  # starts it now. Skip it once launchd reports a run: a second parent would
-  # exit 2 on the held socket and leave that exit code in the diagnostics the
-  # error below points at.
+  # ends, long after the wait below gives up (issue #28); kickstart starts it
+  # now. Skip it once launchd reports a run: a second parent would exit 2 on
+  # the held socket and leave that exit code in the diagnostics the error
+  # below points at.
   launchctl print "$service" | grep -q 'runs = [1-9]' || launchctl kickstart "$service"
 done
 
