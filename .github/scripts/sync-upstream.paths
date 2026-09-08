@@ -1,7 +1,12 @@
 # sync-upstream.sh 从上游 dotfiles 仓库同步的路径清单。
 # 以 '!' 开头的行表示这个路径保留本地版本，不被覆盖。
+# 排除规则匹配本地目标路径：'*'、'?' 和 '[...]' 只匹配单级路径，
+# '**' 匹配零级或多级目录，也匹配以点开头的路径。
+# 匹配到目录时，该目录下的所有内容也会被排除。
 # '上游路径 > 本地路径' 表示把上游文件复制到另一个本地路径，
 # 上游路径对应的本地文件保持不动。
+
+!**/*.test.*
 
 .chezmoiscripts/
 !.chezmoiscripts/run_once_before_05-setup-case-sensitive-volume.py
@@ -21,9 +26,9 @@ dot_agents/skills/set-goal/
 dot_agents/skills/write-skill/
 
 dot_claude/
-dot_claude/CLAUDE.md > .chezmoitemplates/claude/upstream.CLAUDE.md
+dot_claude/CLAUDE.md.tmpl > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 
-# dot_codex/
+dot_codex/
 
 dot_config/git/
 dot_config/git/config > .chezmoitemplates/git/upstream.config
@@ -31,12 +36,10 @@ dot_config/git/config > .chezmoitemplates/git/upstream.config
 dot_proto/
 
 dot_zsh/
-!dot_zsh/functions/claude.test.zsh
 
 private_dot_pi/
 
 .chezmoiexternal.toml
-.chezmoiignore
 AGENTS.md > .github/AGENTS.md
 dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
 dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc

@@ -23,7 +23,7 @@ repo_root="$(git -C "$script_dir" rev-parse --show-toplevel)"
 
 # includes 和 destinations 一一对应：destinations[i] 是 includes[i] 复制到的本地
 # 路径，除非这一行写了映射，否则两者相同。
-typeset -a includes destinations excludes
+typeset -a includes destinations excludes preserved_sources
 for line in ${(f)"$(grep -v -e '^[[:space:]]*#' -e '^[[:space:]]*$' "$script_dir/sync-upstream.paths" || true)"}; do
   line="${${line##[[:space:]]#}%%[[:space:]]#}"
   if [[ "$line" == '!'* ]]; then
@@ -38,19 +38,43 @@ for line in ${(f)"$(grep -v -e '^[[:space:]]*#' -e '^[[:space:]]*$' "$script_dir
     includes+=("$src")
     destinations+=("$dest")
     # src 上的本地文件保留自己的内容，整个父目录被同步时也一样。
-    excludes+=("$src")
+    preserved_sources+=("$src")
   else
     includes+=("${line%%/}")
     destinations+=("${line%%/}")
   fi
 done
 
+# 逐级匹配路径，避免普通 glob 跨越 '/'。单独的 '**' 路径部分可以匹配零级
+# 或多级目录。
+matches_exclusion() {
+  local rel="$1" pattern="$2" component="${2%%/*}"
+  if [[ "$component" == '**' ]]; then
+    [[ "$pattern" != */* ]] && return 0
+    matches_exclusion "$rel" "${pattern#*/}" && return 0
+    if [[ "$rel" == */* ]]; then
+      matches_exclusion "${rel#*/}" "$pattern" && return 0
+    fi
+  elif [[ "${rel%%/*}" == ${~component} ]]; then
+    # 匹配到目录时，也排除该目录下的所有内容。
+    [[ "$pattern" != */* ]] && return 0
+    if [[ "$rel" == */* ]]; then
+      matches_exclusion "${rel#*/}" "${pattern#*/}" && return 0
+    fi
+  fi
+  return 1
+}
+
 # 本地路径本身被列出，或者位于被排除的目录之下，就算排除。用目的路径来匹配，
 # 因为 '!' 的含义是这个路径保留本地版本。
 is_excluded() {
   local rel="$1" pattern
-  for pattern in ${excludes[@]:-}; do
+  # 即使映射源路径包含 glob 字符，也仍然按字面路径处理。
+  for pattern in "${excludes[@]}" "${preserved_sources[@]}"; do
     [[ "$rel" == "$pattern" || "$rel" == "$pattern"/* ]] && return 0
+  done
+  for pattern in "${excludes[@]}"; do
+    matches_exclusion "$rel" "$pattern" && return 0
   done
   return 1
 }
