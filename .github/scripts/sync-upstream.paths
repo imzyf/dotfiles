@@ -16,6 +16,7 @@
 .chezmoitemplates/claude/settings.json > .chezmoitemplates/claude/upstream.settings.json
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 
+github/dev-tools/
 .github/CONCEPTS.md
 .github/renovate.json
 
@@ -32,6 +33,7 @@ dot_codex/
 
 dot_config/git/
 dot_config/git/config > .chezmoitemplates/git/upstream.config
+dot_config/uv/
 
 dot_proto/
 
@@ -40,7 +42,7 @@ dot_zsh/
 private_dot_pi/
 
 .chezmoiexternal.toml
-AGENTS.md > .github/AGENTS.md
+AGENTS.md > .github/upstream.AGENTS.md
 dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
 dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc
 modify_dot_claude.json

@@ -97,7 +97,6 @@
       "docker:*",
       "git:*",
       "herdr:*",
-      "node *codex-companion.mjs*",
       "oracle:*",
       "snow:*"
     ],
@@ -220,13 +219,29 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/scripts/statusline.sh"
   },
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
   "extraKnownMarketplaces": {},
   "spinnerTipsEnabled": false,
   "tui": "default",

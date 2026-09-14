@@ -6,36 +6,20 @@
       "apiKey": "!envchain pi sh -c 'printf %s \"$RC_GATEWAY_API_KEY\"'",
       "models": [
         {
-          "id": "deepseek/deepseek-v4-flash-0731",
-          "name": "DeepSeek V4 Flash 0731",
+          "id": "deepseek/deepseek-v4.1-flash",
+          "name": "DeepSeek V4.1 Flash",
           "reasoning": true,
           "thinkingLevelMap": {
             "off": null,
             "minimal": null,
-            "low": null,
+            "low": "low",
             "medium": null,
-            "high": null,
+            "high": "high",
             "max": "max"
           },
-          "input": ["text"],
-          "contextWindow": 1000000,
-          "maxTokens": 384000
-        },
-        {
-          "id": "deepseek/deepseek-v4-pro-0813",
-          "name": "DeepSeek V4 Pro 0813",
-          "reasoning": true,
-          "thinkingLevelMap": {
-            "off": null,
-            "minimal": null,
-            "low": null,
-            "medium": null,
-            "high": null,
-            "max": "max"
-          },
-          "input": ["text"],
-          "contextWindow": 1048600,
-          "maxTokens": 1048600
+          "input": ["text", "image"],
+          "contextWindow": 1048576,
+          "maxTokens": 32768
         },
         {
           "id": "moonshotai/kimi-k3-fast",
@@ -44,14 +28,31 @@
           "thinkingLevelMap": {
             "off": null,
             "minimal": null,
-            "low": null,
+            "low": "low",
             "medium": null,
-            "high": null,
+            "high": "high",
             "max": "max"
           },
           "input": ["text", "image"],
           "contextWindow": 1000000,
           "maxTokens": 131072
+        },
+        {
+          "id": "openai/gpt-6-astra",
+          "name": "GPT-6 Astra",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "input": ["text", "image"],
+          "contextWindow": 1050000,
+          "maxTokens": 128000
         },
         {
           "id": "zai/glm-5.3",
@@ -60,30 +61,14 @@
           "thinkingLevelMap": {
             "off": null,
             "minimal": null,
-            "low": null,
+            "low": "low",
             "medium": null,
-            "high": null,
+            "high": "high",
             "max": "max"
           },
           "input": ["text"],
           "contextWindow": 1000000,
           "maxTokens": 1000000
-        },
-        {
-          "id": "zai/glm-5.3-flash",
-          "name": "GLM 5.3 Flash",
-          "reasoning": true,
-          "thinkingLevelMap": {
-            "off": null,
-            "minimal": null,
-            "low": null,
-            "medium": null,
-            "high": null,
-            "max": "max"
-          },
-          "input": ["text", "image"],
-          "contextWindow": 1000000,
-          "maxTokens": 131000
         }
       ]
     }

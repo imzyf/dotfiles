@@ -1,4 +1,4 @@
 **/*.test.*
+
 AGENTS.md
 Brewfile
-**/.DS_Store
