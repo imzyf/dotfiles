@@ -1,0 +1,153 @@
+# Read dot_codex/modify_private_config.toml before editing this template; the modifier controls how these values are merged into the live file.
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+# Codex upgrades come from the pinned version in .github/dev-tools/package.json;
+# the startup check only adds a prompt that waits for a keypress.
+check_for_update_on_startup = false
+cli_auth_credentials_store = "keyring"
+default_permissions = "development"
+mcp_oauth_credentials_store = "keyring"
+model = "gpt-6-astra"
+model_reasoning_summary = "concise"
+project_doc_fallback_filenames = [".claude/CLAUDE.md", "CLAUDE.md"]
+suppress_unstable_features_warning = true
+web_search = "live"
+
+[analytics]
+enabled = false
+
+[desktop]
+ambient-suggestions-enabled = false
+composerPlainTextMode = true
+enabled-reasoning-efforts = ["medium", "xhigh", "max", "ultra"]
+# Keep the selected UI behavior when the desktop default writes queue.
+followUpQueueMode = "steer"
+git-always-force-push = true
+git-branch-prefix = ""
+git-pull-request-merge-method = "squash"
+mac-menu-bar-enabled = false
+open-link-in-target-preference = "external-browser"
+# Desktop's power-save blocker is separate from features.prevent_idle_sleep.
+preventSleepWhileRunning = true
+realtimeVoiceScreenContextEnabled = false
+reduced-motion-preference = "on"
+reviewDelivery = "detached"
+show-context-window-usage = true
+usePointerCursors = true
+worktree-upstream-refresh-mode = "best-effort"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#339cff"
+accentSource = "custom"
+contrast = 60
+ink = "#ffffff"
+opaqueWindows = false
+surface = "#181818"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#40c977"
+diffRemoved = "#fa423e"
+skill = "#ad7bf9"
+
+[feedback]
+enabled = false
+
+[features]
+memories = true
+# Keep direct networking while the permission profile controls filesystem access.
+network_proxy = false
+prevent_idle_sleep = true
+
+[notice]
+# The answer here is always to keep the current model, and the prompt blocks the
+# session until someone answers it.
+hide_rate_limit_model_nudge = true
+
+[permissions.development.filesystem]
+":root" = "write"
+"{{ .chezmoi.homeDir }}/.codex/plugins/cache/openai-bundled/browser" = "read"
+# Codex read rules take exact paths, so ~/.ssh is denied as a whole and only the
+# files ssh and Git signature verification need are reopened; public keys stay
+# unreadable here.
+"{{ .chezmoi.homeDir }}/.ssh" = "deny"
+"{{ .chezmoi.homeDir }}/.ssh/config" = "read"
+"{{ .chezmoi.homeDir }}/.ssh/allowed_signers" = "read"
+"{{ .chezmoi.homeDir }}/.ssh/known_hosts" = "write"
+
+[permissions.development.filesystem.":workspace_roots"]
+".env" = "read"
+".env.local" = "read"
+
+[permissions.development.network]
+enabled = true
+
+# Codex enforces socket rules only while the network proxy is on; keep the
+# signing and SSH sockets listed so enabling the proxy later does not cut off
+# the YubiKey. Socket rules reject `~` (the proxy fails to start), so every
+# home path in this profile is rendered absolute for one consistent form.
+[permissions.development.network.unix_sockets]
+"{{ .chezmoi.homeDir }}/.gnupg/S.gpg-agent" = "allow"
+"{{ .chezmoi.homeDir }}/.gnupg/S.gpg-agent.ssh" = "allow"
+"{{ .chezmoi.homeDir }}/.gnupg/S.keyboxd" = "allow"
+
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+# Keep Snowflake's localhost SAML listener alive so the snow skill can open an
+# emitted login URL while the original query waits. Undocumented connector flag
+# (connector auth/webbrowser.py); re-check after CLI upgrades.
+SNOWFLAKE_AUTH_FORCE_SERVER = "true"
+
+[mcp_servers.context7]
+enabled = true
+url = "https://mcp.context7.com/mcp"
+http_headers_helper = "/opt/homebrew/bin/envchain context7 /opt/homebrew/bin/jq -cen 'env.CONTEXT7_API_KEY | select(length > 0) | {Authorization: (\"Bearer \" + .)}'"
+
+[mcp_servers.openaiDeveloperDocs]
+enabled = true
+url = "https://developers.openai.com/mcp"
+
+[mcp_servers.node_repl]
+# Keep the desktop-provided ChatGPT runtime path.
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+args = []
+startup_timeout_sec = 120
+
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = false
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = false
+
+[plugins."sites@openai-bundled"]
+enabled = false
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = false
+
+[plugins."visualize@openai-bundled"]
+enabled = false

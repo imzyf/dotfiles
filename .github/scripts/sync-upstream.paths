@@ -15,6 +15,7 @@
 !.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
 
 .chezmoitemplates/
+.chezmoitemplates/codex/config.toml > .chezmoitemplates/codex/upstream.config.toml
 .chezmoitemplates/claude/settings.json > .chezmoitemplates/claude/upstream.settings.json
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 !.chezmoitemplates/input-source-pro/
