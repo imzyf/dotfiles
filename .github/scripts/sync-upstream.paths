@@ -9,12 +9,15 @@
 !**/*.test.*
 
 .chezmoiscripts/
-!.chezmoiscripts/run_once_before_05-setup-case-sensitive-volume.py
-!.chezmoiscripts/run_onchange_after_02-setup-macos-defaults.sh.tmpl
+!.chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
+!.chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
+!.chezmoiscripts/run_onchange_after_setup-apps.sh
+!.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
 
 .chezmoitemplates/
 .chezmoitemplates/claude/settings.json > .chezmoitemplates/claude/upstream.settings.json
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
+!.chezmoitemplates/input-source-pro/
 
 github/dev-tools/
 .github/CONCEPTS.md
@@ -30,6 +33,7 @@ dot_claude/
 dot_claude/CLAUDE.md.tmpl > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 
 dot_codex/
+!dot_codex/rules/snow.rules
 
 dot_config/git/
 dot_config/git/config > .chezmoitemplates/git/upstream.config

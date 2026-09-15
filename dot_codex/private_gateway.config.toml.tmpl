@@ -1,0 +1,8 @@
+model = "openai/gpt-6-astra"
+model_provider = "rc-gateway"
+
+[model_providers.rc-gateway]
+name = "RC Gateway"
+base_url = "{{ .private.rcGatewayBaseUrl }}"
+env_key = "RC_GATEWAY_API_KEY"
+wire_api = "responses"

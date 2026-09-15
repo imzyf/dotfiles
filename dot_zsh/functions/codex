@@ -1,0 +1,100 @@
+# codex: provider-aware launcher wrapping the Codex CLI.
+#
+# codex [args...]                       Launch in the current mode.
+# codex --switch-provider [args...]     Pick a provider, save it, then launch.
+# codex --gateway [args...]             Use the gateway for this call.
+# codex --subscription [args...]        Use the ChatGPT subscription for this call.
+
+emulate -L zsh
+
+local pick=0
+local mode_override=
+while (( $# )); do
+  case $1 in
+    --switch-provider)
+      pick=1
+      shift
+      ;;
+    --gateway|--subscription)
+      mode_override=${1#--}
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/codex"
+local mode_file="$config_dir/mode"
+local gateway_namespace=codex-gateway
+
+local mode=subscription
+[[ -f $mode_file ]] && mode=$(< $mode_file)
+[[ -n $mode_override ]] && mode=$mode_override
+
+if (( pick )); then
+  [[ -t 0 && -t 1 ]] || { print -u2 "codex: --switch-provider requires an interactive terminal"; return 1 }
+
+  local selected=1
+  [[ $mode == gateway ]] && selected=0
+
+  local cursor=$selected
+  local -a labels=(Gateway Subscription) modes=(gateway subscription)
+  local key seq first=1
+  local teardown=$'\e[2A\e[J\e[?25h'
+  local i marker line
+
+  print -n '\e[?25l'
+
+  while true; do
+    (( first )) || print -n '\e[2A'
+    first=0
+    for i in 0 1; do
+      (( i == selected )) && marker='●' || marker='○'
+      line="  $marker ${labels[i+1]}"
+      if (( i == cursor )); then
+        print -rn -- $'\e[48;5;237m'"$line"$'\e[K\e[0m'
+      else
+        print -rn -- "$line"$'\e[K'
+      fi
+      print
+    done
+
+    read -rsk1 key
+    case $key in
+      $'\e')
+        seq=; read -rsk1 -t 0.05 seq 2>/dev/null
+        if [[ -z $seq ]]; then
+          print -n $teardown
+          return 1
+        fi
+        seq=; read -rsk1 -t 0.05 seq 2>/dev/null
+        [[ $seq == [AB] ]] && (( cursor ^= 1 ))
+        ;;
+      ' '|$'\n')
+        selected=$cursor
+        break
+        ;;
+      $'\x03')
+        print -n $teardown
+        return 130
+        ;;
+    esac
+  done
+
+  print -n $teardown
+
+  mode=$modes[selected+1]
+  mkdir -p "$config_dir" || return 1
+  print -n "$mode" > "$mode_file" || return 1
+fi
+
+# envchain warns but still runs the command when a namespace is missing.
+if [[ $mode == gateway ]]; then
+  (( $+commands[envchain] )) || { print -u2 "codex: envchain not found"; return 1 }
+  envchain --list | grep -qx "$gateway_namespace" || { print -u2 "codex: envchain namespace $gateway_namespace not found"; return 1 }
+  envchain "$gateway_namespace" codex --profile gateway "$@"
+else
+  command codex "$@"
+fi

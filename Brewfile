@@ -1,4 +1,3 @@
-tap "domt4/autoupdate", "https://github.com/DomT4/homebrew-autoupdate.git", trusted: true
 # Linter and formatter to improve copywriting, correct spaces, words between CJK
 brew "autocorrect"
 # General-purpose data compression with high compression ratio
@@ -37,12 +36,8 @@ brew "glab"
 brew "gnupg"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
-# Kubernetes package manager
-brew "helm"
 # Agent multiplexer that lives in your terminal
 brew "herdr"
-# Configurable static site generator
-brew "hugo"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Tool that can switch between kubectl contexts easily and create aliases
@@ -113,14 +108,14 @@ cask "obsidian"
 cask "openinterminal"
 # Replacement for Docker Desktop
 cask "orbstack"
-# Collaboration platform for API development
-cask "postman"
 # Chinese music streaming application
 cask "qqmusic"
 # Control your tools with a few keystrokes
 cask "raycast"
 # Unpacks archive files
 cask "the-unarchiver"
+# Network toolbox
+cask "surge"
 # Open-source code editor
 cask "visual-studio-code"
 # Free messaging and calling application
