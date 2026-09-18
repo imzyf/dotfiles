@@ -104,8 +104,10 @@ cask "jetbrains-toolbox"
 cask "keycastr"
 # Knowledge base that works on top of a local folder of plain text Markdown files
 cask "obsidian"
-# Finder Toolbar app to open the current directory in Terminal or Editor
-cask "openinterminal"
+# Open source, cross-platform, and extensible code editor
+cask "openineditor-lite"
+# Open source terminal emulator for macOS
+cask "openinterminal-lite"
 # Replacement for Docker Desktop
 cask "orbstack"
 # Chinese music streaming application
@@ -124,6 +126,5 @@ cask "wechat"
 cask "wetype"
 # Youdao Dictionary
 cask "youdaodict"
-mas "Hidden Bar", id: 1452453066
 mas "Slack", id: 803453959
 mas "Xcode", id: 497799835

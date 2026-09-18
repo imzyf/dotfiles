@@ -20,7 +20,7 @@
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 !.chezmoitemplates/input-source-pro/
 
-github/dev-tools/
+.github/dev-tools/
 .github/CONCEPTS.md
 .github/renovate.json
 
@@ -35,6 +35,8 @@ dot_claude/CLAUDE.md.tmpl > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 
 dot_codex/
 !dot_codex/rules/snow.rules
+
+dot_homebrew/
 
 dot_config/git/
 dot_config/git/config > .chezmoitemplates/git/upstream.config
