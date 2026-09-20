@@ -25,6 +25,8 @@
 .github/renovate.json
 
 dot_agents/skills/deslop/
+dot_agents/skills/draft/
+dot_agents/skills/glab/
 dot_agents/skills/gh/
 dot_agents/skills/new-branch/
 dot_agents/skills/set-goal/
