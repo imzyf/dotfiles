@@ -20,16 +20,18 @@
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 !.chezmoitemplates/input-source-pro/
 
+.claude/
+
 .github/dev-tools/
 .github/CONCEPTS.md
 .github/renovate.json
 
+dot_agents/skills/context7/
 dot_agents/skills/deslop/
 dot_agents/skills/draft/
 dot_agents/skills/glab/
 dot_agents/skills/gh/
 dot_agents/skills/new-branch/
-dot_agents/skills/set-goal/
 dot_agents/skills/write-skill/
 
 dot_claude/
@@ -51,7 +53,7 @@ dot_zsh/
 private_dot_pi/
 
 .chezmoiexternal.toml
-AGENTS.md > .github/upstream.AGENTS.md
+AGENTS.md > .chezmoitemplates/upstream.AGENTS.md
 dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
 dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc
 modify_dot_claude.json

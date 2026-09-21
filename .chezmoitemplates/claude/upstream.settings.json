@@ -15,6 +15,7 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "125000",
     "CLAUDE_CODE_FORK_SUBAGENT": "1",
+    "CLAUDE_CODE_GB_DISK_CACHE_WHEN_TELEMETRY_OFF": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "DISABLE_ERROR_REPORTING": "1",
     "DISABLE_EXTRA_USAGE_COMMAND": "1",
@@ -22,6 +23,7 @@
     "DISABLE_TELEMETRY": "1",
     "ENABLE_PROMPT_CACHING_1H": "1",
     "ENABLE_TOOL_SEARCH": "1",
+    "NODE_USE_ENV_PROXY": "1",
     "USE_BUILTIN_RIPGREP": "0"
   },
   "attribution": {
@@ -34,7 +36,18 @@
   "disableRemoteControl": true,
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
+  "syncClaudeAiSkills": false,
+  "syncClaudeAiPlugins": false,
+  "skillOverrides": {
+    "auto-mode-setup": "off"
+  },
   "disableDeepLinkRegistration": "disable",
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "**Secrets management**: envchain (namespaces in the macOS Keychain) is the personal credential store; legitimate use is `envchain <namespace> <command>` to inject a namespace's secrets into one command, and `envchain --list` enumerates namespaces; never print or echo values"
+    ]
+  },
   "permissions": {
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable",
@@ -46,7 +59,6 @@
       "Edit",
       "LSP",
       "mcp__chrome-devtools__*",
-      "mcp__ide__*",
       "mcp__plugin_atlassian_atlassian__*",
       "Read",
       "Skill",
@@ -84,8 +96,7 @@
       "Read(~/*/auth.json*)",
       "RemoteTrigger",
       "ReportFindings",
-      "ScheduleWakeup",
-      "TaskOutput"
+      "ScheduleWakeup"
     ]
   },
   "sandbox": {
@@ -254,14 +265,12 @@
   "alwaysThinkingEnabled": true,
   "autoCompactWindow": 400000,
   "precomputeCompactionEnabled": true,
-  "worktree": {
-    "baseRef": "head"
-  },
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "showTurnDuration": false,
+  "timeFormat": "24-hour",
   "skipAutoPermissionPrompt": true,
   "skipWorkflowUsageWarning": true
 }
