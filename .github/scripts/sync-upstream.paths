@@ -20,7 +20,7 @@
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 !.chezmoitemplates/input-source-pro/
 
-.claude/
+.claude/rules/claude-code-settings.md > .chezmoitemplates/claude/rules/upstream.claude-code-settings.md
 
 .github/dev-tools/
 .github/CONCEPTS.md
@@ -38,6 +38,7 @@ dot_claude/
 dot_claude/CLAUDE.md.tmpl > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 
 dot_codex/
+dot_codex/AGENTS.md.tmpl > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
 !dot_codex/rules/snow.rules
 
 dot_homebrew/
@@ -51,6 +52,7 @@ dot_proto/
 dot_zsh/
 
 private_dot_pi/
+private_dot_pi/private_agent/private_AGENTS.md.tmpl > .chezmoitemplates/pi/private_agent/upstream.private_AGENTS.md.tmpl 
 
 .chezmoiexternal.toml
 AGENTS.md > .chezmoitemplates/upstream.AGENTS.md
