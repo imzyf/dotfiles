@@ -15,7 +15,7 @@
 !.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
 
 .chezmoitemplates/
-.chezmoitemplates/codex/config.toml > .chezmoitemplates/codex/upstream.config.toml
+.chezmoitemplates/codex/config.toml
 .chezmoitemplates/claude/settings.json > .chezmoitemplates/claude/upstream.settings.json
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 !.chezmoitemplates/input-source-pro/
@@ -26,6 +26,7 @@
 .github/CONCEPTS.md
 .github/renovate.json
 
+dot_agents/skills/commit/
 dot_agents/skills/context7/
 dot_agents/skills/deslop/
 dot_agents/skills/draft/
@@ -34,28 +35,41 @@ dot_agents/skills/gh/
 dot_agents/skills/new-branch/
 dot_agents/skills/write-skill/
 
+dot_cargo/config.toml
+
 dot_claude/
 dot_claude/CLAUDE.md.tmpl > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 
 dot_codex/
 dot_codex/AGENTS.md.tmpl > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
-!dot_codex/rules/snow.rules
 
-dot_homebrew/
-
+!dot_config/ghostty/
 dot_config/git/
 dot_config/git/config > .chezmoitemplates/git/upstream.config
+!dot_config/herdr/
+dot_config/starship/
 dot_config/uv/
 
+dot_homebrew/
 dot_proto/
-
 dot_zsh/
 
 private_dot_pi/
 private_dot_pi/private_agent/private_AGENTS.md.tmpl > .chezmoitemplates/pi/private_agent/upstream.private_AGENTS.md.tmpl 
 
+!private_dot_ssh/private_config
+
+!.chezmoi.toml.tmpl
 .chezmoiexternal.toml
+.chezmoiignore
+
 AGENTS.md > .chezmoitemplates/upstream.AGENTS.md
+
+!Brewfile
+
+dot_ignore
+
 dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
 dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc
+
 modify_dot_claude.json

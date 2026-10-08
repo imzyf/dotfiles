@@ -9,13 +9,6 @@ url = "https://github.com/zsh-users/zsh-autosuggestions/archive/85919cd1ffa7d2d5
 exact = true
 stripComponents = 1
 
-[".zsh/plugins/zsh-completions"]
-type = "archive"
-# renovate: currentValue=master
-url = "https://github.com/zsh-users/zsh-completions/archive/de02bb84ab0af51e328c6ae85ab5555397c31277.tar.gz"
-exact = true
-stripComponents = 1
-
 [".zsh/plugins/fsh"]
 type = "archive"
 # renovate: currentValue=master

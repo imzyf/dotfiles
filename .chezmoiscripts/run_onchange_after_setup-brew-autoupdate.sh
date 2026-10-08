@@ -10,7 +10,7 @@ autoupdate_plist="$HOME/Library/LaunchAgents/$autoupdate_label.plist"
 autoupdate_helper_dir="$HOME/Library/Application Support/$autoupdate_label"
 autoupdate_helper="$autoupdate_helper_dir/brew-autoupdate"
 
-echo "Setting up brew autoupdate (10:00 daily and at load)..."
+echo "Setting up brew autoupdate (every 6 hours and at load)..."
 # A fresh macOS account may lack any of these; launchd creates a missing log file but not its
 # directory.
 mkdir -p "$HOME/Library/LaunchAgents" "$autoupdate_helper_dir" "$HOME/Library/Logs"
@@ -18,29 +18,43 @@ mkdir -p "$HOME/Library/LaunchAgents" "$autoupdate_helper_dir" "$HOME/Library/Lo
 # Login Items names a legacy job by the basename of the file launchd runs, so the commands live in
 # their own file, and the helper sets its own PATH because launchd gives it a minimal environment.
 # The steps are deliberately not chained, so a failure neither skips the rest nor goes unreported.
-# pi has no Homebrew channel and never updates itself, so the helper also runs `pi update --self`;
-# that step needs the proto environment on PATH to find Node and install into the proto prefix.
-# Codex is a binary-only cask, so unlike an app bundle it gets no upgrade-time approval and each
-# executable it ships prompts Gatekeeper after Homebrew's reinstall; no other cask this job upgrades needs it.
+# pi has no Homebrew channel and never updates itself, so the helper also runs `pi update`;
+# the managed install lives in ~/.pi/agent/install and its launcher needs Node on PATH.
 cat > "$autoupdate_helper" <<'HELPER'
 #!/bin/sh
 export PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 export PROTO_HOME="$HOME/.proto"
-export NPM_CONFIG_PREFIX="$PROTO_HOME/tools/node/globals"
-export PATH="$PROTO_HOME/shims:$PROTO_HOME/bin:$NPM_CONFIG_PREFIX/bin:$PATH"
+export PATH="$HOME/.local/bin:$PROTO_HOME/shims:$PROTO_HOME/bin:$PATH"
 
 status=0
 date
 brew update || status=$?
 brew upgrade --no-ask || status=$?
-xattr -dr com.apple.quarantine /opt/homebrew/Caskroom/codex || status=$?
-"$NPM_CONFIG_PREFIX/bin/pi" update --self || status=$?
+# Approval of the CLI does not cover its helper executables or carry over on upgrade.
+if [ -d /opt/homebrew/Caskroom/codex ]; then
+  xattr -dr com.apple.quarantine /opt/homebrew/Caskroom/codex
+fi || status=$?
+# gpg-agent and keyboxd keep the pre-upgrade binary and libraries mapped, and
+# no-autostart stops clients from starting replacements, so restart them here;
+# the chezmoi GPG script only reruns on a later apply. Check both daemons, or a
+# keyboxd left down by a partial restart is skipped on the next run; skip only
+# when both already match, so an unrelated upgrade does not clear the PIN cache.
+installed=$(/opt/homebrew/bin/gpg --version 2>/dev/null | /usr/bin/awk 'NR == 1 { print $NF }')
+agent_version=$(/opt/homebrew/bin/gpg-connect-agent --no-autostart 'getinfo version' /bye 2>/dev/null | /usr/bin/awk '$1 == "D" { print $2; exit }')
+keyboxd_version=$(/opt/homebrew/bin/gpg-connect-agent --keyboxd --no-autostart 'getinfo version' /bye 2>/dev/null | /usr/bin/awk '$1 == "D" { print $2; exit }')
+if [ "$installed" != "$agent_version" ] || [ "$installed" != "$keyboxd_version" ]; then
+  /opt/homebrew/bin/gpgconf --kill gpg-agent || status=$?
+  /opt/homebrew/bin/gpgconf --kill keyboxd || status=$?
+  /bin/launchctl kickstart "gui/$UID/org.gnupg.gpg-agent" || status=$?
+  /bin/launchctl kickstart "gui/$UID/org.gnupg.keyboxd" || status=$?
+fi
+pi update || status=$?
 brew cleanup || status=$?
 exit "$status"
 HELPER
 chmod +x "$autoupdate_helper"
 
-# The background keys keep a daily upgrade off the foreground's I/O.
+# The background keys keep the periodic upgrade off the foreground's I/O.
 cat > "$autoupdate_plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -59,12 +73,32 @@ cat > "$autoupdate_plist" <<EOF
     <key>LowPriorityBackgroundIO</key>
     <true/>
     <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key>
-        <integer>10</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
+    <array>
+        <dict>
+            <key>Hour</key>
+            <integer>2</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key>
+            <integer>8</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key>
+            <integer>14</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key>
+            <integer>20</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>

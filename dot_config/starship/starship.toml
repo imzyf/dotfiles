@@ -1,4 +1,3 @@
-# Inserts a blank line between shell prompts
 add_newline = true
 command_timeout = 3600
 
@@ -29,6 +28,10 @@ format = '\[[$symbol($context)]($style)\]'
 [git_branch]
 format = '\[[$symbol$branch]($style)\]'
 symbol = "󰘬·"
+
+[golang]
+format = '\[[$symbol($version)]($style)\]'
+symbol = " "
 
 [memory_usage]
 disabled = false

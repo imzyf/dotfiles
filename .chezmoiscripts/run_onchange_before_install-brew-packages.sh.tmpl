@@ -27,6 +27,10 @@ if [[ ! -f "$brewfile" ]]; then
   exit 1
 fi
 
+# agent-guard depends on Bun from this tap; bundle cannot load an untrusted formula.
+brew tap oven-sh/bun
+brew trust --formula oven-sh/bun/bun
+
 # mas-cli requires en_US locale to search the App Store
 # https://github.com/mas-cli/mas/blob/ed676787f0a0a26e23a10548eb841bc15411fa52/Sources/mas/Controllers/ITunesSearchAppStoreSearcher.swift#L18-L23
 current_locale=$(defaults read NSGlobalDomain AppleLocale 2>/dev/null || true)
@@ -52,3 +56,8 @@ until brew bundle --file="$brewfile"; do
   echo "brew bundle failed; retrying (attempt $attempt/3)..."
   sleep 10
 done
+
+# Approval of the CLI does not cover its helper executables or carry over on upgrade.
+if [ -d /opt/homebrew/Caskroom/codex ]; then
+  xattr -dr com.apple.quarantine /opt/homebrew/Caskroom/codex
+fi

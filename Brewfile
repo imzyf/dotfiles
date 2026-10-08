@@ -1,5 +1,8 @@
+tap "loophubs/tap"
 tap "steipete/tap"
 
+# macOS pre-tool guard for coding agents
+brew "loophubs/tap/agent-guard", trusted: true
 # Linter and formatter to improve copywriting, correct spaces, words between CJK
 brew "autocorrect"
 # Manage your dotfiles across multiple diverse machines, securely
@@ -88,8 +91,6 @@ cask "codex"
 cask "clash-verge-rev"
 # Universal database tool and SQL client
 cask "dbeaver-community"
-# Collaborative team software
-cask "figma"
 # Inconsolata LGC Nerd Font
 cask "font-inconsolata-lgc-nerd-font"
 # GIT client
