@@ -1,34 +1,43 @@
+{{- /*
+===============================================================================
+LOCAL OVERRIDE OF UPSTREAM dot_zshrc
+Upstream copy: .chezmoitemplates/zsh/upstream.dot_zshrc
+===============================================================================
+*/ -}}
 {{- $upstream := includeTemplate "zsh/upstream.dot_zshrc" . -}}
-{{- $functions := `# Functions (autoloaded from ~/.zsh/functions/)
-autoload -Uz $HOME/.zsh/functions/*(N:t)
-` -}}
+{{- /* Initialize zoxide with cd instead of upstream's default z; require exactly one upstream init before replacing it. */ -}}
 {{- $zoxide := `eval "$(zoxide init zsh)"` -}}
-{{- if ne (len (splitList $functions $upstream)) 2 }}{{ fail "zsh/upstream.dot_zshrc no longer contains exactly one autoload block; update the override in dot_zshrc.tmpl" }}{{ end -}}
 {{- if ne (len (splitList $zoxide $upstream)) 2 }}{{ fail "zsh/upstream.dot_zshrc no longer contains exactly one plain zoxide init; update the override in dot_zshrc.tmpl" }}{{ end -}}
-{{- $head := index (splitList $functions $upstream) 0 -}}
-{{- $tail := replace $zoxide `eval "$(zoxide init zsh --cmd cd)"` (index (splitList $functions $upstream) 1) -}}
-
-{{ $head }}
-
-# Claude launcher, redefining the upstream cc and ccm
+{{ replace $zoxide `eval "$(zoxide init zsh --cmd cd)"` $upstream }}
+# Define local aliases after upstream so they take precedence.
+# Claude launchers
+# Replace upstream's cc (claude) with the provider picker, then launch Claude.
 alias cc='claude --switch-provider'
+# Launch Claude through the gateway for this call.
 alias ccg='claude --gateway'
+# Launch Claude in subscription mode for this call.
 alias ccs='claude --subscription'
+# Replace upstream's ccm (provider picker) with the gateway model picker.
 alias ccm='claude-model'
+# Run the latest skills CLI through npx.
 alias skills='npx skills@latest'
 
-# PHP / Laravel, redefining the upstream c
+# Replace upstream's c (Visual Studio Code) with Composer for PHP / Laravel.
 alias c="composer"
 
 # DevOps
-alias kb="$(brew --prefix kubernetes-cli)/bin/kubectl"
+# Use kubectl from PATH without a Homebrew lookup during shell startup.
+alias kb='kubectl'
+# Switch Kubernetes contexts with kubectx.
 alias kctx="kubectx"
+# Switch Kubernetes namespaces with kubens.
 alias kns="kubens"
+# Run kubectl through minikube.
 alias minikb="minikube kubectl --"
+# Flush the macOS DNS cache and ask mDNSResponder to reload.
 alias reloaddns="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
+# Fetch public IP details from ipinfo.io as JSON.
 alias ipinfo="curl https://ipinfo.io/json"
 
-{{ $functions }}
-# Topic files: small functions and their aliases, grouped one file per topic.
+# Load local topic functions, aliases, and completions after upstream compinit.
 for lib_file ($HOME/.zsh/lib/*.zsh(N)) source $lib_file
-{{ $tail -}}

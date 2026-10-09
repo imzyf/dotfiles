@@ -1,3 +1,9 @@
+{{- /*
+===============================================================================
+LOCAL OVERRIDE OF UPSTREAM dot_zshenv
+Upstream copy: .chezmoitemplates/zsh/upstream.dot_zshenv
+===============================================================================
+*/ -}}
 {{ includeTemplate "zsh/upstream.dot_zshenv" . }}
 
 export XDG_CONFIG_HOME="$HOME/.config"

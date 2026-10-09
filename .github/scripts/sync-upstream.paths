@@ -20,7 +20,7 @@
 .chezmoitemplates/git/github.config > .chezmoitemplates/git/upstream.github.config
 !.chezmoitemplates/input-source-pro/
 
-.claude/rules/claude-code-settings.md > .chezmoitemplates/claude/rules/upstream.claude-code-settings.md
+.claude/rules/claude-code-settings.md > .github/.upstream/.claude/rules/claude-code-settings.md
 
 .github/dev-tools/
 .github/CONCEPTS.md > .github/.upstream/CONCEPTS.md

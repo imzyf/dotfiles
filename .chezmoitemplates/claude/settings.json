@@ -1,11 +1,24 @@
-{{- /* Upstream settings plus local overrides; dot_claude/modify_private_settings.json merges the result. */ -}}
-{{- /* private.npmHost is gone from the chezmoi data: pass a placeholder, then drop it below. */ -}}
-{{- $npmHost := "npm-host-removed.invalid" -}}
-{{- $data := deepCopy . -}}
-{{- $_ := set $data.private "npmHost" $npmHost -}}
-{{- $settings := includeTemplate "claude/upstream.settings.json" $data | fromJson -}}
-{{- $network := $settings.sandbox.network -}}
-{{- if not (has $npmHost $network.allowedDomains) }}{{ fail "claude/upstream.settings.json no longer lists private.npmHost in sandbox.network.allowedDomains; update the override in claude/settings.json" }}{{ end -}}
-{{- $_ := set $network "allowedDomains" (without $network.allowedDomains $npmHost) -}}
+{{- /*
+===============================================================================
+LOCAL OVERRIDE OF UPSTREAM .chezmoitemplates/claude/settings.json
+Upstream copy: .chezmoitemplates/claude/upstream.settings.json
+Merged into live settings by dot_claude/modify_private_settings.json.
+===============================================================================
+*/ -}}
+
+{{- /* Upstream still requires private.npmHost; supply a placeholder without changing shared template data. */ -}}
+{{- $removedNpmHost := "npm-host-removed.invalid" -}}
+{{- $upstreamData := deepCopy . -}}
+{{- $_ := set $upstreamData.private "npmHost" $removedNpmHost -}}
+{{- $settings := includeTemplate "claude/upstream.settings.json" $upstreamData | fromJson -}}
+
+{{- /* Remove the retired private.npmHost entry from sandbox.network.allowedDomains. */ -}}
+{{- $allowedDomains := $settings.sandbox.network.allowedDomains -}}
+{{- if not (has $removedNpmHost $allowedDomains) -}}
+  {{- fail "claude/upstream.settings.json no longer lists private.npmHost in sandbox.network.allowedDomains; update the override in claude/settings.json" -}}
+{{- end -}}
+{{- $_ := set $settings.sandbox.network "allowedDomains" (without $allowedDomains $removedNpmHost) -}}
+
+{{- /* Increase autoCompactWindow from upstream's 400000 to the local value 600000. */ -}}
 {{- $_ := set $settings "autoCompactWindow" 600000 -}}
 {{ toPrettyJson $settings }}

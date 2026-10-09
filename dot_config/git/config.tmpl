@@ -1,3 +1,9 @@
+{{- /*
+===============================================================================
+LOCAL OVERRIDE OF UPSTREAM dot_config/git/config
+Upstream copy: .chezmoitemplates/git/upstream.config
+===============================================================================
+*/ -}}
 {{- $upstream := includeTemplate "git/upstream.config" . -}}
 {{- if not (regexMatch `(?s)\n\[include\]\n\s+path = github\.config\n+\[includeIf "gitdir:~/Code/GitLab/"\]\n\s+path = gitlab\.config\n+\[includeIf "gitdir:~/Code/"\]\n\s+path = performance\.config\n\z` $upstream) }}{{ fail "git/upstream.config no longer ends with the expected include block; update the override in dot_config/git/config.tmpl" }}{{ end -}}
 {{ regexReplaceAllLiteral `(?s)\n\[include\].*\z` $upstream "" }}

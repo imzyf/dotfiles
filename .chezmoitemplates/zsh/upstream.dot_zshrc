@@ -36,6 +36,23 @@ SAVEHIST=100000
 setopt EXTENDED_HISTORY INC_APPEND_HISTORY
 
 # Environment variables
+# Herdr sets TERM_PROGRAM=herdr in its panes, and Ghostty sets its own value for its shells.
+# Pane variables under another TERM_PROGRAM came from an app launched in a pane: they name a pane
+# this shell is not in and make `herdr` refuse to start as nested. Every app launchd runs with that
+# pane's environment hands it to whatever it opens next, so name those apps for relaunching.
+# Pane jobs that outlive their parent also end up under launchd, and Homebrew python3 runs as
+# Python.framework/.../Python.app, so app bundles inside a framework are skipped.
+# The unset list is what Herdr 0.9.3 puts in a pane's environment (src/pane.rs
+# apply_pane_launch_env, plus HERDR_SESSION from src/session.rs in a named session); other
+# HERDR_* variables such as HERDR_CONFIG_PATH are user settings.
+if [[ -n $HERDR_ENV && $TERM_PROGRAM != herdr ]]; then
+  () {
+    local -a apps=(${(uf)"$(ps -A -E -ww -o ppid= -o command= | awk -v id="HERDR_PANE_ID=$HERDR_PANE_ID" \
+      '$1 == 1 && index($0 " ", id " ") && /^[^=]*\.app\/Contents\/MacOS\// { sub(/\.app\/Contents\/MacOS\/.*/, ""); if (/\.framework\//) next; sub(/.*\//, ""); print }')"})
+    print -u2 "zshrc: removed the Herdr pane variables this terminal inherited. Quit and reopen from Spotlight or the Dock: ${(j:, :)apps:-this terminal app}"
+  }
+  unset HERDR_ENV HERDR_SOCKET_PATH HERDR_BIN_PATH HERDR_WORKSPACE_ID HERDR_TAB_ID HERDR_PANE_ID HERDR_SESSION
+fi
 export HOMEBREW_BUNDLE_DUMP_NO_VSCODE=1
 export HOMEBREW_NO_ENV_HINTS=1
 export ORACLE_ENGINE="browser"
@@ -56,11 +73,13 @@ typeset -aU path
 }
 
 # Alias Set
-alias c='open -a "Visual Studio Code"'
+# c and cx launch apps with the launchd environment a Dock launch gets; `open` otherwise
+# hands them this shell's environment, including a Herdr pane identity.
+alias c='env -i /usr/bin/open -a "Visual Studio Code"'
 alias cc='claude'
 alias ccm='claude --switch-provider'
 alias cm='chezmoi'
-alias cx='open -a /Applications/ChatGPT.app'
+alias cx='env -i /usr/bin/open -a /Applications/ChatGPT.app'
 alias hr='herdr'
 # Run outside Herdr; stopping the server terminates its pane processes.
 alias hrr='herdr server stop && herdr'
