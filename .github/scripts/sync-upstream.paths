@@ -23,7 +23,7 @@
 .claude/rules/claude-code-settings.md > .chezmoitemplates/claude/rules/upstream.claude-code-settings.md
 
 .github/dev-tools/
-.github/CONCEPTS.md
+.github/CONCEPTS.md > .github/.upstream/CONCEPTS.md
 .github/renovate.json
 
 dot_agents/skills/commit/
@@ -63,7 +63,7 @@ private_dot_pi/private_agent/private_AGENTS.md.tmpl > .chezmoitemplates/pi/priva
 .chezmoiexternal.toml
 .chezmoiignore
 
-AGENTS.md > .chezmoitemplates/upstream.AGENTS.md
+AGENTS.md > .github/.upstream/AGENTS.md
 
 !Brewfile
 

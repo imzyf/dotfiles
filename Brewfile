@@ -1,8 +1,8 @@
-tap "loophubs/tap"
+tap "entwining/tap"
 tap "steipete/tap"
 
 # macOS pre-tool guard for coding agents
-brew "loophubs/tap/agent-guard", trusted: true
+brew "entwining/tap/agent-guard", trusted: true
 # Linter and formatter to improve copywriting, correct spaces, words between CJK
 brew "autocorrect"
 # Manage your dotfiles across multiple diverse machines, securely
@@ -67,6 +67,8 @@ brew "pinentry-mac"
 brew "proto"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
+# Index local coding agent session logs for lookup and counts
+brew "entwining/tap/sessidx", trusted: true
 # Cross-shell prompt for astronauts
 brew "starship"
 # Extremely fast Python package installer and resolver, written in Rust
@@ -127,11 +129,10 @@ cask "the-unarchiver"
 cask "surge"
 # Open-source code editor
 cask "visual-studio-code"
-# Free messaging and calling application
-cask "wechat"
 # Text input app from WeChat team for Chinese users
 cask "wetype"
 # Youdao Dictionary
 cask "youdaodict"
 mas "Slack", id: 803453959
+mas "WeChat", id: 836500024
 mas "Xcode", id: 497799835
