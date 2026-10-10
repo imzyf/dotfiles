@@ -23,8 +23,7 @@
     "DISABLE_TELEMETRY": "1",
     "ENABLE_PROMPT_CACHING_1H": "1",
     "ENABLE_TOOL_SEARCH": "1",
-    "NODE_USE_ENV_PROXY": "1",
-    "USE_BUILTIN_RIPGREP": "0"
+    "NODE_USE_ENV_PROXY": "1"
   },
   "attribution": {
     "commit": "",
@@ -55,7 +54,6 @@
   },
   "permissions": {
     "defaultMode": "auto",
-    "disableBypassPermissionsMode": "disable",
     "allow": [
       "Agent",
       "Bash(codex:*)",
@@ -90,7 +88,6 @@
       "Edit(~/*/auth.json*)",
       "EnterPlanMode",
       "ExitPlanMode",
-      "Glob",
       "NotebookEdit",
       "PushNotification",
       "Read(**/.env.*.local)",
@@ -154,17 +151,21 @@
     },
     "network": {
       "allowedDomains": [
-        "github.com",
-        "*.github.com",
-        "*.githubusercontent.com",
+        "{{ .private.gitlabHost | trimPrefix "https://" | trimSuffix "/" }}",
+        "{{ .private.npmHost | trimPrefix "https://" | trimSuffix "/" }}",
+        "{{ (urlParse .private.rcGatewayBaseUrl).hostname }}",
+        "api.anthropic.com",
+        "*.atlassian.com",
+        "formulae.brew.sh",
+        "chatgpt.com",
         "*.claude.com",
         "context7.com",
         "*.context7.com",
-        "formulae.brew.sh",
-        "*.atlassian.com",
-        "{{ .private.gitlabHost | trimPrefix "https://" | trimSuffix "/" }}",
+        "github.com",
+        "*.github.com",
+        "*.githubusercontent.com",
+        "cli.inngest.com",
         "nodejs.org",
-        "{{ .private.npmHost | trimPrefix "https://" | trimSuffix "/" }}",
         "registry.npmjs.org"
       ],
       "allowLocalBinding": true,
@@ -172,6 +173,7 @@
         "com.apple.trustd.agent"
       ],
       "allowUnixSockets": [
+        "/private/tmp/claude-{{ .chezmoi.uid }}",
         "~/.gnupg/S.gpg-agent",
         "~/.gnupg/S.gpg-agent.ssh",
         "~/.gnupg/S.keyboxd"

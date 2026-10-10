@@ -51,6 +51,8 @@ dot_config/starship/
 dot_config/uv/
 
 dot_homebrew/
+dot_local/bin/executable_open
+dot_local/share/claude-launcher/bin/executable_claude
 dot_proto/
 dot_zsh/
 

@@ -3,14 +3,7 @@
 # shellenv short-circuits and never adds /opt/homebrew/bin to PATH.
 eval "$(env -u HOMEBREW_BREW_FILE -u HOMEBREW_PATH /opt/homebrew/bin/brew shellenv)"
 
-# Homebrew zsh completion path
-__BRYAN_HOMEBREW_ZSH_COMPLETION="${HOMEBREW_PREFIX}/share/zsh/site-functions"
-
-# ZSH completions
-# https://docs.brew.sh/Shell-Completion#configuring-completions-in-zsh
-if (( ! ${fpath[(I)${__BRYAN_HOMEBREW_ZSH_COMPLETION}]} && $+commands[brew] )); then
-  fpath+=${__BRYAN_HOMEBREW_ZSH_COMPLETION}
-fi
+# brew shellenv already put Homebrew's site-functions on fpath.
 fpath+=$HOME/.zsh/functions
 ## Initialize the completion system
 ## This must be done after all fpath modifications
@@ -36,22 +29,24 @@ SAVEHIST=100000
 setopt EXTENDED_HISTORY INC_APPEND_HISTORY
 
 # Environment variables
-# Herdr sets TERM_PROGRAM=herdr in its panes, and Ghostty sets its own value for its shells.
-# Pane variables under another TERM_PROGRAM came from an app launched in a pane: they name a pane
-# this shell is not in and make `herdr` refuse to start as nested. Every app launchd runs with that
-# pane's environment hands it to whatever it opens next, so name those apps for relaunching.
-# Pane jobs that outlive their parent also end up under launchd, and Homebrew python3 runs as
-# Python.framework/.../Python.app, so app bundles inside a framework are skipped.
-# The unset list is what Herdr 0.9.3 puts in a pane's environment (src/pane.rs
-# apply_pane_launch_env, plus HERDR_SESSION from src/session.rs in a named session); other
-# HERDR_* variables such as HERDR_CONFIG_PATH are user settings.
+# A terminal opened by an app launched from a Herdr pane inherits the pane's HERDR_*, so `herdr`
+# refuses to start as nested and agents act as that pane. ~/.local/bin/open prevents most such
+# launches; this cleans up the rest and names every app still holding a pane's environment, so
+# it can be relaunched. Terminal apps set their own TERM_PROGRAM, so in an interactive shell only
+# a pane has herdr. Framework bundles are skipped: orphaned Homebrew python3 jobs run as one.
+# The inherited SSH_AUTH_SOCK is Herdr's agent link, which leaves a Herdr server started here
+# without an agent once the link is gone, so use launchd's (`launchctl getenv` does not show it).
 if [[ -n $HERDR_ENV && $TERM_PROGRAM != herdr ]]; then
   () {
-    local -a apps=(${(uf)"$(ps -A -E -ww -o ppid= -o command= | awk -v id="HERDR_PANE_ID=$HERDR_PANE_ID" \
-      '$1 == 1 && index($0 " ", id " ") && /^[^=]*\.app\/Contents\/MacOS\// { sub(/\.app\/Contents\/MacOS\/.*/, ""); if (/\.framework\//) next; sub(/.*\//, ""); print }')"})
-    print -u2 "zshrc: removed the Herdr pane variables this terminal inherited. Quit and reopen from Spotlight or the Dock: ${(j:, :)apps:-this terminal app}"
+    local -a apps=(${(uf)"$(ps -A -E -ww -o ppid= -o command= | awk \
+      '$1 == 1 && index(" " $0 " ", " HERDR_ENV=1 ") && /^[^=]*\.app\/Contents\/MacOS\// { sub(/\.app\/Contents\/MacOS\/.*/, ""); if (/\.framework\//) next; sub(/.*\//, ""); print }')"})
+    print -u2 "zshrc: removed the HERDR_* variables this terminal inherited from a Herdr pane. Quit and reopen from Spotlight or the Dock: ${(j:, :)apps:-this terminal app}"
+    if [[ $SSH_AUTH_SOCK == $HERDR_SOCKET_PATH.agent ]]; then
+      local agent=$(launchctl print gui/$UID | awk '$1 == "SSH_AUTH_SOCK" && $2 == "=>" { print $3; exit }')
+      [[ -S $agent ]] && SSH_AUTH_SOCK=$agent
+    fi
   }
-  unset HERDR_ENV HERDR_SOCKET_PATH HERDR_BIN_PATH HERDR_WORKSPACE_ID HERDR_TAB_ID HERDR_PANE_ID HERDR_SESSION
+  unset -m 'HERDR_*'
 fi
 export HOMEBREW_BUNDLE_DUMP_NO_VSCODE=1
 export HOMEBREW_NO_ENV_HINTS=1
@@ -64,22 +59,18 @@ typeset -aU path
 () {
   local -a path_dirs=(
     "$HOMEBREW_PREFIX/opt/curl/bin"
-    "$HOMEBREW_PREFIX/opt/uv/bin"
     "$HOME/bin"
-    "$HOME/.cargo/bin"
   )
   # Re-front: /etc/zprofile's path_helper demoted the zshenv toolchain dirs.
   path=($__BRYAN_TOOLCHAIN_PATH $path_dirs $path[@])
 }
 
 # Alias Set
-# c and cx launch apps with the launchd environment a Dock launch gets; `open` otherwise
-# hands them this shell's environment, including a Herdr pane identity.
-alias c='env -i /usr/bin/open -a "Visual Studio Code"'
+alias c='open -a "Visual Studio Code"'
 alias cc='claude'
 alias ccm='claude --switch-provider'
 alias cm='chezmoi'
-alias cx='env -i /usr/bin/open -a /Applications/ChatGPT.app'
+alias cx='open -a /Applications/ChatGPT.app'
 alias hr='herdr'
 # Run outside Herdr; stopping the server terminates its pane processes.
 alias hrr='herdr server stop && herdr'
