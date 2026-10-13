@@ -1,8 +1,8 @@
 ## Execution Host
 
-Create new Git worktrees outside every project checkout; Git ignore rules do not keep recursive build, lint, and test tools from scanning nested sources. Use a stable external directory when the worktree must survive the task.
-
 Create scratch files and directories in runtime-provided temporary space under unique names, such as those `mktemp` returns, keep each path, and remove exactly those paths once the task no longer needs them. Other sessions and agents share that space and the machine's temporary roots such as `/tmp`, so never delete in shared temporary space by a wildcard or by any path other than one you created and kept.
+
+Create new Git worktrees outside every project checkout, since Git ignore rules do not keep recursive build, lint, and test tools from scanning nested sources. Put a worktree that must survive the task in `~/Code/worktrees`. Any other worktree is scratch, and the directory `mktemp -d` returns is the worktree itself, as in `wt=$(mktemp -d "$TMPDIR/<repo>-wt.XXXXXX") && git worktree add "$wt" <ref>`: Git names the worktree's metadata after that directory's name, and a sandbox can keep denying a name registered earlier in the session.
 
 For headless browser jobs you launch, use a dedicated automation binary such as Chrome for Testing or chrome-headless-shell. Set a finite execution deadline and ensure the job's browser processes terminate when the job ends or times out. Never launch these jobs with `/Applications/Google Chrome.app`: a hung headless instance can hold the Chrome app identity and prevent normal GUI launches. When connected to the user's existing browser, release automation control when finished instead of terminating the browser or closing the user's tabs.
 
@@ -12,5 +12,3 @@ Never start gpg-agent or keyboxd from a sandboxed shell: inherited sandboxing pr
 
 - `no gpg-agent running in this session` or `No pinentry`: `gpgconf --kill gpg-agent && launchctl kickstart gui/$UID/org.gnupg.gpg-agent`.
 - `no keyboxd running in this session`: `gpgconf --kill keyboxd && launchctl kickstart gui/$UID/org.gnupg.keyboxd`.
-
-In a sandbox that denies writes to `~/.gnupg`, signing works but verifying an OpenPGP signature can hang: gpg cannot open its trust database, and GnuPG 2.5.24 can deadlock while exiting on that fatal error, so one run that exits promptly does not show the hang is gone. Git picks the verifier from each signature, not from `gpg.format`, so any `%G` format placeholder (`%G?`, `%GS`, `%GK`, and the rest), `verify-commit`, `verify-tag` or `tag -v`, `--verify-signatures`, or `--show-signature` can hang as soon as one commit or tag it checks carries an OpenPGP signature (`-----BEGIN PGP SIGNATURE-----` in `git cat-file`), and a plain `gpg --verify` can hang the same way; SSH signatures go to `ssh-keygen` and are unaffected. Verify OpenPGP signatures outside the sandbox; where no such path exists, run `gpg --trust-model always --verify` on the signature and payload split out of `git cat-file`, which skips the trust database, or report the check as not run. Remove this once gpg reliably exits on that error.

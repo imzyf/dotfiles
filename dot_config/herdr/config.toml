@@ -1,11 +1,22 @@
 onboarding = false
 
-[ui]
-agent_panel_sort = "priority"
+[experimental]
+switch_ascii_input_source_in_prefix = true
 
 [theme]
 name = "one-dark"
-auto_switch = false
+
+[ui]
+agent_panel_sort = "priority"
+copy_on_select = false
+pane_scrollbars = false
+window_title = "{terminal_title}"
 
 [ui.sound]
 enabled = false
+
+[ui.toast]
+delivery = "terminal"
+
+[worktrees]
+directory = "~/.config/herdr/worktrees"

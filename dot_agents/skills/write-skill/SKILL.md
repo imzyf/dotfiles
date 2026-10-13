@@ -1,6 +1,6 @@
 ---
 name: write-skill
-description: Create, test, improve, or audit agent skills and behavior-bearing reusable instructions, including output styles, AGENTS.md/CLAUDE.md, agent rules or prompts, and examples or explanatory prose within those surfaces. Use for evidence-driven refinement, routing, workflow or wording optimization, validation, structural redesign, and instruction-owner audits. Not for application code, code comments, ordinary project documentation, running an unchanged skill, or deletion without redesign or replacement.
+description: Create, edit, audit, or advise on agent skills and reusable agent instructions (SKILL.md and bundled files, AGENTS.md/CLAUDE.md, rules, output styles, and agent prompts), including examples and explanatory prose within them. Use for writing or rewriting them, fixing routing or wording, slimming, splitting or merging, and judging whether one needs changes, why it led an agent to act as it did, or where an instruction belongs. Its rules decide what such a change may add, keep, or remove and how to verify it, which a capable model does not already know, so read it before editing such a file or answering whether or how one should change, even when no edit is requested yet, the change looks small or fully specified, or it is one step of other work. Not for application code, code comments, ordinary project documentation, messages or documents for people, harness settings files, installing skills or explaining how runtimes store or load them, running an unchanged skill, or deletion without redesign or replacement.
 allowed-tools:
   - Bash
   - Agent
@@ -11,7 +11,7 @@ allowed-tools:
   - WebSearch
 ---
 
-Write skills and reusable instructions that change agent behavior. A line earns its place when it carries what the agent would otherwise get wrong: an environment fact it cannot derive, runtime behavior that is not explicit, a capability boundary, a lesson from a real failure, or a convention the user settled. Test each line by naming the realistic case where omitting it causes a wrong action. Cut competent-agent defaults, restated best practice, intermediate history, and standards or principle lists every reader already accepts; write the concrete check they imply instead.
+Write skills and reusable instructions that change agent behavior. A line earns its place when it carries what the agent would otherwise get wrong or have to rediscover: context or an environment fact it does not know, an unwritten project convention, a high-risk path, runtime behavior that is not explicit, a capability boundary, a lesson from a real failure, or a convention the user settled. Test each line by naming the realistic case where omitting it causes a wrong action or makes activations repeat substantial discovery work; a fact that one file or one command shows at a glance costs no such work. Cut competent-agent defaults, restated best practice, intermediate history, and standards or principle lists every reader already accepts; write the concrete check they imply instead.
 
 ## Before editing
 
@@ -64,7 +64,7 @@ Target the local Claude Code, Codex and Pi setup in one `SKILL.md`. Add `when_to
 
 ## Writing the body
 
-Organize the instruction around the decisions the agent must make: prerequisites before their dependent actions, the completion condition beside the step it closes, and each section establishing what the next may assume. Review order, transitions and sentence construction as one instruction. State the trigger, action, and boundary in established domain terms when those terms preserve the intended trigger and boundary. Use a condition-to-action list when branches differ; keep a dense single-condition sentence when every clause affects behavior. Do not turn a feedback example into a new universal prohibition or add a list of synonyms to make a rule appear comprehensive.
+Organize the instruction around the decisions the agent must make: prerequisites before their dependent actions, the completion condition beside the step it closes, and each section establishing what the next may assume. Review order, transitions and sentence construction across the whole instruction, not sentence by sentence. State the trigger, action, and boundary in established domain terms when those terms preserve the intended trigger and boundary. Use a condition-to-action list when branches differ; keep a dense single-condition sentence when every clause affects behavior. Do not turn a feedback example into a new universal prohibition or add a list of synonyms to make a rule appear comprehensive.
 
 Keep exact identifiers needed for execution, but derive changing counts, paths, and amounts from their owning source rather than copying a current census into prose. Mask private project, personal, host, client, customer, and credential identifiers in reusable skills; keep them only in skills explicitly scoped to that environment. This applies to every line you add, including an identifier copied from existing text or from the real case you are generalizing.
 

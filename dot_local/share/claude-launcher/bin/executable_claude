@@ -99,9 +99,7 @@ if [[ $mode == gateway ]]; then
 fi
 
 # Children of a gateway session inherit the namespace, which would still select the gateway.
-# Listing a namespace's names makes envchain decrypt every value, so list it only when the
-# variable every gateway route sets shows the environment came from one.
-if [[ -n ${CLAUDE_CODE_USE_VERTEX-} ]] && (( $+commands[envchain] )) && envchain --list | grep -qx "$gateway_namespace"; then
-  unset -- ${(f)"$(envchain --list "$gateway_namespace")"}
-fi
+# Unset the names the credential contract declares rather than asking envchain: listing a
+# namespace decrypts every value, and the cleanup must hold when envchain or the namespace is gone.
+unset ANTHROPIC_AUTH_TOKEN ANTHROPIC_VERTEX_BASE_URL ANTHROPIC_VERTEX_PROJECT_ID CLAUDE_CODE_SKIP_VERTEX_AUTH CLAUDE_CODE_USE_VERTEX
 exec "$native" "$@"
