@@ -7,9 +7,7 @@ switch_ascii_input_source_in_prefix = true
 name = "one-dark"
 
 [ui]
-agent_panel_sort = "priority"
-copy_on_select = false
-pane_scrollbars = false
+agent_panel_sort = "spaces"
 window_title = "{terminal_title}"
 
 [ui.sound]

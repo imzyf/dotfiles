@@ -25,13 +25,10 @@
 .github/CONCEPTS.md > .github/.upstream/CONCEPTS.md
 .github/renovate.json > .github/.upstream/renovate.json
 
-dot_agents/skills/commit/
 dot_agents/skills/context7/
 dot_agents/skills/deslop/
 dot_agents/skills/draft/
 dot_agents/skills/gh/
-dot_agents/skills/glab/
-dot_agents/skills/new-branch/
 dot_agents/skills/write-skill/
 
 dot_cargo/

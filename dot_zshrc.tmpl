@@ -17,8 +17,8 @@ alias cc='claude --switch-provider'
 alias ccg='claude --gateway'
 # Launch Claude in subscription mode for this call.
 alias ccs='claude --subscription'
-# Replace upstream's ccm (provider picker) with the gateway model picker.
-alias ccm='claude-model'
+# Remove upstream's ccm alias.
+unalias ccm
 # Run the latest skills CLI through npx.
 alias skills='npx skills@latest'
 

@@ -19,7 +19,6 @@
     "DISABLE_EXTRA_USAGE_COMMAND": "1",
     "DISABLE_FEEDBACK_COMMAND": "1",
     "DISABLE_TELEMETRY": "1",
-    "ENABLE_PROMPT_CACHING_1H": "1",
     "ENABLE_TOOL_SEARCH": "1",
     "NODE_USE_ENV_PROXY": "1"
   },
@@ -265,11 +264,19 @@
     "command": "~/.claude/scripts/statusline.sh"
   },
   "enabledPlugins": {
+    "preallow@entwining-mods": true,
     "pyright-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true
   },
-  "extraKnownMarketplaces": {},
+  "extraKnownMarketplaces": {
+    "entwining-mods": {
+      "source": {
+        "source": "github",
+        "repo": "Entwining/mods"
+      }
+    }
+  },
   "spinnerTipsEnabled": false,
   "tui": "default",
   "spinnerVerbs": {
@@ -278,7 +285,8 @@
       "Vibing"
     ]
   },
-  "autoCompactWindow": 400000,
+  "autoCompactWindow": 350000,
+  "promptCacheTtl": "1h",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "showThinkingSummaries": true,
