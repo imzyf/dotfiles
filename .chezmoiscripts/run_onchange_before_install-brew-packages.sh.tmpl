@@ -3,19 +3,9 @@ set -euo pipefail
 
 # Brewfile hash: {{ include "Brewfile" | sha256sum }}
 
-[[ "$OSTYPE" == darwin* ]] || exit 0
-
 if [[ ! -x /opt/homebrew/bin/brew ]]; then
   echo "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-  # The Homebrew installer prints this line as a next step but never edits .zprofile.
-  zprofile="$HOME/.zprofile"
-  if [[ ! -e "$zprofile" ]] || ! grep -q "brew shellenv" "$zprofile"; then
-    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$zprofile"
-    echo "typeset -U path" >> "$zprofile"
-  fi
-
   /opt/homebrew/bin/brew analytics off
 fi
 
@@ -27,7 +17,8 @@ if [[ ! -f "$brewfile" ]]; then
   exit 1
 fi
 
-# mas-cli requires en_US locale to search the App Store
+# mas derives its catalog region from macOS, which can differ from the signed-in US App Store.
+# Keep that catalog on the US store only while installing the Brewfile's apps.
 # https://github.com/mas-cli/mas/blob/ed676787f0a0a26e23a10548eb841bc15411fa52/Sources/mas/Controllers/ITunesSearchAppStoreSearcher.swift#L18-L23
 current_locale=$(defaults read NSGlobalDomain AppleLocale 2>/dev/null || true)
 restore_locale() {

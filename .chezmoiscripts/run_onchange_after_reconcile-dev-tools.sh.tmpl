@@ -1,25 +1,22 @@
 #!/bin/zsh
 set -euo pipefail
 
-[[ "$OSTYPE" == darwin* ]] || exit 0
-
 # prototools hash: {{ include "dot_proto/dot_prototools" | sha256sum }}
+# mbx installer hash: {{ include ".github/dev-tools/install-mbx.sh" | sha256sum }}
 {{- $manifest := include ".github/dev-tools/package.json" | fromJson -}}
 {{- $tools := index $manifest "devDependencies" }}
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+source "$CHEZMOI_SOURCE_DIR/.chezmoiscripts/.lib/step.zsh"
 
-# Chezmoi scripts do not load the interactive shell configuration.
-export PROTO_HOME="$HOME/.proto"
-export NPM_CONFIG_PREFIX="$PROTO_HOME/tools/node/globals"
-export PATH="$PROTO_HOME/shims:$PROTO_HOME/bin:$HOME/.cargo/bin:$PATH"
+eval "$(/opt/homebrew/bin/brew shellenv)"
+path=($__BRYAN_TOOLCHAIN_PATH $path)
 npm_prefix="$NPM_CONFIG_PREFIX"
 
 # Tool declarations live in `~/.proto/.prototools`. The default `upwards` config mode walks up
 # from the working directory without merging that file, leaving a bare `proto install` nothing
 # to install. proto skips each declared version it already has. The fixed path keeps a lookup
 # from falling back to a self-managed proto in `$PROTO_HOME/bin`; Brewfile owns the executable.
-/opt/homebrew/bin/proto install --config-mode global
+step /opt/homebrew/bin/proto install --config-mode global
 
 # Keep this at most as long as the npm rule in .github/renovate.json, or the pins below
 # become unreachable.
@@ -45,31 +42,21 @@ for spec in "${npm_tools[@]}"; do
 done
 
 if (( ${#npm_pending[@]} )); then
-  npm install --global \
+  step npm install --global \
     --prefix "$npm_prefix" \
     --ignore-scripts \
     -- "${npm_pending[@]}"
 fi
 
-pyright_requirement="{{ include ".github/dev-tools/requirements.txt" | trim }}"
-pyright_version="${pyright_requirement#pyright==}"
-current_pyright="$(
-  uv tool list |
-    awk '$1 == "pyright" && $2 ~ /^v/ { sub(/^v/, "", $2); print $2; exit }'
-)"
+# uv skips a requirement already installed and replaces a different version. Renovate gates the
+# pin but not Pyright's transitive dependencies. Take the window from source so the command
+# carries it without depending on uv discovering `~/.config/uv/uv.toml`.
+step uv tool install \
+  --exclude-newer '{{ index (include "dot_config/uv/uv.toml" | fromToml) "exclude-newer" }}' \
+  '{{ include ".github/dev-tools/requirements.txt" | trim }}'
 
-if [[ "$current_pyright" != "$pyright_version" ]]; then
-  # Renovate gates the pin but not Pyright's transitive dependencies. Take the window from
-  # source so the command carries it without depending on uv discovering `~/.config/uv/uv.toml`.
-  uv tool install --force \
-    --exclude-newer '{{ index (include "dot_config/uv/uv.toml" | fromToml) "exclude-newer" }}' \
-    "$pyright_requirement"
-fi
-
-# renovate: datasource=crate depName=mbx
-mbx_version=1.24.1
-# Stable Cargo has no release-age filter; --locked at least pins the release's own dependency
-# graph. Cargo skips a version that is already installed, so unlike the tools above this needs
-# no version check.
-cargo install --locked --version "$mbx_version" mbx
-mbx setup --yes
+sh "{{ .chezmoi.sourceDir }}/.github/dev-tools/install-mbx.sh" "$HOME/.local/bin"
+# The store shares the Code volume with the checkouts, so mbx adopts an existing `target/` by
+# rename and restores outputs as APFS clones. `settings set` keeps the file's other keys.
+mbx settings set cache_dir "$HOME/Code/.mbx"
+step mbx setup --yes

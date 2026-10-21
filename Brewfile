@@ -7,8 +7,8 @@ brew "entwining/tap/agent-guard", trusted: true
 brew "autocorrect"
 # Manage your dotfiles across multiple diverse machines, securely
 brew "chezmoi"
-# Cross-platform make
-brew "cmake"
+# GNU File, Shell, and Text utilities
+brew "coreutils"
 # Context7 documentation lookup for coding agents
 brew "ctx7"
 # Get a file from an HTTP, HTTPS or FTP server
@@ -17,10 +17,10 @@ brew "curl"
 brew "php"
 # Dependency Manager for PHP
 brew "composer"
-# Diff that understands syntax
-brew "difftastic"
 # Secure your credentials in environment variables
 brew "envchain"
+# Perl lib for reading and writing EXIF metadata
+brew "exiftool"
 # Modern, maintained replacement for ls
 brew "eza"
 # Like neofetch, but much faster because written mostly in C
@@ -37,6 +37,8 @@ brew "git"
 brew "git-extras"
 # Git extension for versioning large files
 brew "git-lfs"
+# Audit git repos for secrets
+brew "gitleaks"
 # Open-source GitLab command-line tool
 brew "glab"
 # GNU Privacy Guard (OpenPGP)
@@ -47,16 +49,10 @@ brew "go"
 brew "herdr"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
-# Tool that can switch between kubectl contexts easily and create aliases
-brew "kubectx"
-# Kubernetes command-line interface
-brew "kubernetes-cli"
-# Fast, flexible, config-based cli for linting Markdown/CommonMark files
-brew "markdownlint-cli2"
+# Fast, async, resource-friendly link checker
+brew "lychee"
 # Mac App Store command-line interface
 brew "mas"
-# Run a Kubernetes cluster locally
-brew "minikube"
 # Simple tool to make locally trusted development certificates
 brew "mkcert"
 # Bundle prompts + files for second-model review
@@ -77,8 +73,6 @@ brew "uv"
 brew "yq"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
-# Memory training application
-cask "anki"
 # Application uninstaller
 cask "appcleaner"
 # Tool to flash OS images to SD cards & USB drives

@@ -1,13 +1,10 @@
+{{- $gitlabHost := .private.gitlabHost | trimPrefix "https://" | trimSuffix "/" -}}
 [alias]
   st = status
 
   ### amend ###
   aa = "!git add -A && git commit --amend --no-edit"
   as = commit --amend --no-edit
-
-  ### diff ###
-  df = "-c diff.external=difft diff"
-  dh = "-c diff.external=difft diff HEAD"
 
   ### log ###
   lg = log --graph --abbrev-commit --date=short --boundary --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %Cblue[%cn]%Creset'
@@ -49,11 +46,15 @@
 
 [credential "https://gist.github.com"]
   helper = 
-  helper = !gh auth git-credential
+  helper = !/opt/homebrew/bin/gh auth git-credential
 
 [credential "https://github.com"]
   helper = 
-  helper = !gh auth git-credential
+  helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential "https://{{ $gitlabHost }}"]
+  helper =
+  helper = !/opt/homebrew/bin/glab auth git-credential
 
 [diff]
   algorithm = histogram
@@ -65,10 +66,10 @@
   writeCommitGraph = true
 
 [filter "lfs"]
-  clean = git-lfs clean -- %f
-  process = git-lfs filter-process
+  clean = /opt/homebrew/bin/git-lfs clean -- %f
+  process = /opt/homebrew/bin/git-lfs filter-process
   required = true
-  smudge = git-lfs smudge -- %f
+  smudge = /opt/homebrew/bin/git-lfs smudge -- %f
 
 [help]
   autocorrect = prompt
@@ -95,6 +96,14 @@
 [status]
   showStash = true
 
+# Claude Code's macOS sandbox cannot tunnel SSH (anthropics/claude-code#70684), so Git reaches both forges over HTTPS
+# with the forge CLIs' tokens. Remove once a sandboxed `git ls-remote ssh://git@github.com/<owner>/<repo>.git` succeeds;
+# a `git@github.com:` URL cannot test this because these rules send it over HTTPS.
+{{ range list "github.com" $gitlabHost -}}
+[url "https://{{ . }}/"]
+  insteadOf = git@{{ . }}:
+
+{{ end -}}
 [include]
   path = github.config
 

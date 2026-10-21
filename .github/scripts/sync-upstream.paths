@@ -41,7 +41,7 @@ dot_codex/AGENTS.md.tmpl > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
 
 !dot_config/ghostty/
 dot_config/git/
-dot_config/git/config > .chezmoitemplates/git/upstream.config
+dot_config/git/config.tmpl > .chezmoitemplates/git/upstream.config.tmpl
 !dot_config/herdr/
 dot_config/starship/
 dot_config/uv/
@@ -59,6 +59,8 @@ private_dot_pi/private_agent/private_AGENTS.md.tmpl > .chezmoitemplates/pi/priva
 
 !private_dot_ssh/private_config
 
+private_Library/
+
 !.chezmoi.toml.tmpl
 .chezmoiexternal.toml
 .chezmoiignore
@@ -69,6 +71,7 @@ AGENTS.md > .github/.upstream/AGENTS.md
 
 dot_ignore
 
+dot_zprofile
 dot_zshenv > .chezmoitemplates/zsh/upstream.dot_zshenv
 dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc
 
