@@ -1,4 +1,3 @@
-{{- /* Read modify_dot_claude.json before editing this template; the modifier controls how these values are merged into the live file. */ -}}
 {
   "externalEditorContext": true,
   "leftArrowOpensAgents": false,
@@ -7,6 +6,10 @@
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"]
+    },
+    "superlogical": {
+      "type": "http",
+      "url": "https://www.superlogical.com/rex/community-mcp"
     }
   }
 }
