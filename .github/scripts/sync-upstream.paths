@@ -9,10 +9,14 @@
 !**/*.test.*
 
 .chezmoiscripts/
+!.chezmoiscripts/run_after_check-skill-versions.sh.tmpl
+!.chezmoiscripts/run_after_setup-macos-notifications.py
 !.chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
 !.chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
+!.chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
 !.chezmoiscripts/run_onchange_after_setup-apps.sh
-!.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
+.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl > .github/.upstream/.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
+!.chezmoiscripts/run_onchange_after_setup-rex.sh
 
 .chezmoitemplates/
 .chezmoitemplates/claude/settings.json > .chezmoitemplates/claude/upstream.settings.json
@@ -23,7 +27,7 @@
 
 .github/dev-tools/
 .github/CONCEPTS.md > .github/.upstream/CONCEPTS.md
-.github/renovate.json > .github/.upstream/renovate.json
+.github/renovate.json
 
 dot_agents/skills/context7/
 dot_agents/skills/deslop/
@@ -39,10 +43,8 @@ dot_claude/CLAUDE.md.tmpl > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 dot_codex/
 dot_codex/AGENTS.md.tmpl > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
 
-!dot_config/ghostty/
 dot_config/git/
 dot_config/git/config.tmpl > .chezmoitemplates/git/upstream.config.tmpl
-!dot_config/herdr/
 dot_config/starship/
 dot_config/uv/
 

@@ -45,8 +45,6 @@ brew "glab"
 brew "gnupg"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
-# Agent multiplexer that lives in your terminal
-brew "herdr"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Fast, async, resource-friendly link checker
@@ -61,6 +59,8 @@ brew "steipete/tap/oracle", trusted: true
 brew "pinentry-mac"
 # Pluggable multi-language version manager
 brew "proto"
+# Restore Rex sessions and their coding agent conversations after the server stops
+brew "entwining/tap/rexume", trusted: true
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # Index local coding agent session logs for lookup and counts
@@ -91,8 +91,6 @@ cask "dbeaver-community"
 cask "font-inconsolata-lgc-nerd-font"
 # GIT client
 cask "fork"
-# Terminal emulator that uses platform-native UI and GPU acceleration
-cask "ghostty"
 # Web browser
 cask "google-chrome"
 # Free and open-source media player
