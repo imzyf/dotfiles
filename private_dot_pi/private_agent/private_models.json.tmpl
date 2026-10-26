@@ -2,21 +2,13 @@
   "providers": {
     "anthropic": {
       "apiKey": "!envchain pi printenv ANTHROPIC_API_KEY",
-      "modelOverrides": {
-        "claude-fable-5-1": { "contextWindow": 400000 },
-        "claude-haiku-5-5": { "contextWindow": 400000 },
-        "claude-opus-5-5": { "contextWindow": 400000 },
-        "claude-sonnet-5-5": { "contextWindow": 400000 }
-      }
+      "modelOverrides": {{ (includeTemplate "pi/model-overrides.json" . | fromJson).anthropic | toPrettyJson | indent 6 | trim }}
     },
     "rc-gateway": {
       "baseUrl": "{{ .private.rcGatewayBaseUrl }}",
       "api": "openai-completions",
       "compat": {
         "sendSessionAffinityHeaders": true
-      },
-      "headers": {
-        "User-Agent": "codex_cli_rs/0.159.2"
       },
       "apiKey": "!envchain pi printenv RC_GATEWAY_API_KEY",
       "models": [
@@ -50,42 +42,6 @@
           "input": ["text", "image"],
           "contextWindow": 400000,
           "maxTokens": 65536
-        },
-        {
-          "id": "openai/gpt-6-luna",
-          "api": "openai-responses",
-          "name": "GPT-6 Luna",
-          "reasoning": true,
-          "thinkingLevelMap": {
-            "off": "none",
-            "minimal": null,
-            "low": "low",
-            "medium": "medium",
-            "high": "high",
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "input": ["text", "image"],
-          "contextWindow": 300000,
-          "maxTokens": 128000
-        },
-        {
-          "id": "openai/gpt-6.1-sol",
-          "api": "openai-responses",
-          "name": "GPT-6.1 Sol",
-          "reasoning": true,
-          "thinkingLevelMap": {
-            "off": null,
-            "minimal": null,
-            "low": "low",
-            "medium": "medium",
-            "high": "high",
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "input": ["text", "image"],
-          "contextWindow": 300000,
-          "maxTokens": 128000
         },
         {
           "id": "zai/glm-5.3",
