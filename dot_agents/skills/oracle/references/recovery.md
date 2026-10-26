@@ -1,0 +1,26 @@
+# Oracle recovery
+
+## Recover the bound run
+
+After detachment, compaction, a timeout, stale status, or ambiguous submission, inspect `oracle status` and `oracle session <id>` before doing anything that could resend. An error status, an exited worker, or a submit-stage timeout does not establish that the prompt was never sent; a `promptSubmitted` flag alone does not establish its actual user turn. Use `oracle session <id> --live` to follow the bound page and `--harvest` to recover its current answer; use `--render` for a saved completed answer.
+
+When the saved session has no recoverable conversation URL and the user supplies the exact one, harvest that page explicitly with `oracle session <id> --harvest --browser-tab "<conversation-url>"`. The override selects an existing tab and bypasses the saved prompt fingerprint, so verify the actual user turn, attached inputs, corresponding answer, and requested Project; never substitute the current tab or a title match. Do not append a follow-up just to retrieve an existing answer.
+
+- If the exact page remains unchanged at `Finalizing answer` across a finite observation, or appears finished after controller loss while harvest is unexpectedly empty, reload that same conversation at most once and recheck its user turn and answer. Account for any reload already performed by Oracle. Changing Thinking text or other progress means keep waiting.
+- If harvest reports an identity mismatch, stop using that capture and resolve the exact saved conversation. Non-empty `--live`/`--harvest` output or stale `running` metadata alone does not prove completion or failure.
+- If upload or send readiness times out, establish whether submission occurred first. Only an attempt that did not submit and can no longer submit, because its process has exited or been stopped, may be retried with `--browser-bundle-files`.
+- A `prompt-paste-incomplete` failure means that turn was not sent; the whole command is safe to retry only when the run had no earlier submitted turn.
+
+`oracle status` and an id-less `oracle session` cover 24 hours and 100 entries by default, so an empty list does not prove the run is gone; widen the window and never run `--clear`, which deletes sessions. When session retention is configured (`--retain-hours`, `sessionRetentionHours`, or `ORACLE_RETAIN_HOURS`), every non-preview run prunes older sessions before it resolves a `--followup` target, so protect a parent you still need. A model-selection failure can be a transient ChatGPT throttle (`Too many requests`, `Got it`): wait and retry the same request rather than changing the model or opening another conversation. An API background run that times out locally leaves its `resp_...` id in the session log but not in the session metadata; `oracle --followup <id> --engine api` still resolves it from that log, and the provider's Responses retrieve does too. When the task requires a delivered file, verify the file and its saved path, because Oracle can return metadata and still mark the session completed.
+
+Use `--force` only after establishing that the worker, controller, and bound target are dead and the original conversation or answer cannot be recovered.
+
+## Reconcile provider fidelity
+
+When capture is enabled, `browser.providerNativeCapture.answerFidelity` is one of: `matched` on the active branch's assistant message; `divergent` reconciled against that message's text in `~/.oracle/sessions/<session-id>/artifacts/conversation-<id>-raw.json`, where a difference limited to the page's rendering (padded table columns, heading markers, file-citation chips) is the same answer, any other difference makes the provider record the answer, and a missing record or message leaves the result unresolved; or `unknown` for a Deep Research report without an assistant message ID. Any other `unknown` is unresolved. A multi-turn run compares its last turn against the full transcript, so `divergent` is expected there; keep the transcript.
+
+For an ordinary answer, require the actual user turn and corresponding assistant message, not just the same conversation. For Deep Research's allowed `unknown`, verify the completed report for this request and its usable citations without requiring an assistant message ID, and report completion without claiming provider-native fidelity.
+
+## Manual fallback
+
+If automation did not submit and can no longer submit, established under Recover the bound run, run the original prompt and text-file arguments with `oracle --render-markdown`, inspect the rendered text, and submit it in a new tab of the signed-in browser opened at the requested target, such as the supplied Project URL. Attach each original non-text file or a byte-preserving archive and verify readiness before sending. Preserve browser defaults unless selection was requested; verify any requested model/effort and Project, then require a completed answer to that turn and a saved URL. A preceding failed session supplies no selection or completion evidence for this manual answer. Apply the main skill's acceptance conditions except the automated-completion and provider-native fidelity items, which do not apply to a manual turn.

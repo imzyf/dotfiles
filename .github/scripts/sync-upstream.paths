@@ -33,6 +33,8 @@ dot_agents/skills/context7/
 dot_agents/skills/deslop/
 dot_agents/skills/draft/
 dot_agents/skills/gh/
+dot_agents/skills/oracle/
+dot_agents/skills/orc/
 dot_agents/skills/write-skill/
 
 dot_cargo/
