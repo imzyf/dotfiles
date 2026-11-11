@@ -1,0 +1,111 @@
+# 上游同步的处理方式规则。格式和含义见 .github/docs/upstream-sync-design.md 第 3 节。
+# 同一个文件匹配多条处理方式规则时，后面的规则生效。
+
+# 起点：这个上游 commit 之后的 commit 才进入待处理列表
+base       2e8b1f355
+
+# 跟随：本地文件和上游保持一致
+follow     .chezmoiexternal.toml
+follow     .chezmoiignore
+follow     .chezmoiscripts/**
+follow     .chezmoitemplates/**
+follow     .github/dev-tools/**
+follow     dot_agents/skills/context7/**
+follow     dot_agents/skills/deslop/**
+follow     dot_agents/skills/draft/**
+follow     dot_agents/skills/gh/**
+follow     dot_agents/skills/oracle/**
+follow     dot_agents/skills/orc/**
+follow     dot_agents/skills/write-skill/**
+follow     dot_cargo/**
+follow     dot_claude/**
+follow     dot_codex/**
+follow     dot_config/git/**
+follow     dot_config/starship/**
+follow     dot_config/uv/**
+follow     dot_homebrew/**
+follow     dot_ignore
+follow     dot_local/bin/executable_open
+follow     dot_local/share/claude-launcher/**
+follow     dot_proto/**
+follow     dot_zprofile
+follow     dot_zsh/**
+follow     modify_dot_claude.json
+follow     private_dot_pi/**
+follow     private_Library/**
+
+# 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
+follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
+follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
+follow     dot_claude/CLAUDE.md.tmpl                              > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
+follow     dot_codex/AGENTS.md.tmpl                               > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
+follow     dot_config/git/config.tmpl                             > .chezmoitemplates/git/upstream.config.tmpl
+follow     dot_zshenv                                             > .chezmoitemplates/zsh/upstream.dot_zshenv
+follow     dot_zshrc                                              > .chezmoitemplates/zsh/upstream.dot_zshrc
+follow     private_dot_pi/private_agent/private_AGENTS.md.tmpl    > .chezmoitemplates/pi/private_agent/upstream.private_AGENTS.md.tmpl
+
+# 自己维护
+own        .chezmoi.toml.tmpl
+own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
+own        .github/README.md
+own        AGENTS.md
+own        Brewfile
+own        private_dot_ssh/private_config
+
+# 观察学习
+watch      .chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
+watch      .chezmoiscripts/run_onchange_after_setup-rex.sh
+watch      .claude/rules/claude-code-settings.md
+watch      .github/CONCEPTS.md
+watch      .github/README_CN.md
+watch      dot_config/rex/**
+watch      dot_local/bin/executable_setup-rex
+watch      private_dot_oracle/**
+
+# 不需要
+skip       .chezmoiscripts/run_after_check-skill-versions.sh.tmpl
+skip       .chezmoiscripts/run_after_setup-macos-notifications.py
+skip       .chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
+skip       .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
+skip       .chezmoiscripts/run_onchange_after_setup-apps.sh
+skip       .chezmoitemplates/input-source-pro/**
+skip       .github/renovate.json
+skip       .github/tests/**
+skip       .github/workflows/**
+skip       .secrets/**
+skip       dot_agents/skills/commit/**
+skip       dot_agents/skills/glab/**
+skip       dot_agents/skills/jev/**
+skip       dot_agents/skills/new-branch/**
+skip       dot_agents/skills/review/**
+skip       dot_agents/skills/sessidx/**
+skip       dot_agents/skills/set-goal/**
+skip       dot_agents/skills/snow/**
+skip       dot_config/private_glab-cli/**
+skip       dot_local/bin/executable_snow
+skip       private_dot_snowflake/**
+skip       **/encrypted_*
+skip       **/*.test.*
+
+# 风险类别：silent 出了问题也不报错，machine-state 直接改变机器状态，daily-tool 影响日常离不开的工具
+risk       silent         dot_config/git/**
+risk       silent         .chezmoitemplates/git/**
+risk       silent         .chezmoiignore
+risk       machine-state  .chezmoiscripts/**
+risk       machine-state  .chezmoiexternal.toml
+risk       machine-state  dot_homebrew/**
+risk       machine-state  private_Library/**
+risk       daily-tool     dot_claude/**
+risk       daily-tool     .chezmoitemplates/claude/**
+risk       daily-tool     modify_dot_claude.json
+risk       daily-tool     dot_codex/**
+risk       daily-tool     .chezmoitemplates/codex/**
+risk       daily-tool     dot_local/share/claude-launcher/**
+risk       daily-tool     dot_zsh/**
+risk       daily-tool     dot_zprofile
+risk       daily-tool     dot_zshenv
+risk       daily-tool     dot_zshrc
+risk       daily-tool     .chezmoitemplates/agents/**
+risk       daily-tool     .chezmoitemplates/sandbox/**
+risk       daily-tool     private_dot_pi/**
+risk       daily-tool     .chezmoitemplates/pi/**
