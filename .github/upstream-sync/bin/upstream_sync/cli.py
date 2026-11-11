@@ -9,6 +9,7 @@ import re
 import sys
 
 from . import sync
+from .affected import AffectedError, affected
 from .github import GitHub, GitHubError
 from .gitcmd import GitError, git
 from .rules import Report
@@ -68,6 +69,18 @@ def cmd_pending(cfg: sync.Config, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_affected(cfg: sync.Config, args: argparse.Namespace) -> int:
+    targets, config_changed = affected(cfg.repo, args.old, args.new)
+    home = os.path.expanduser("~")
+    for t in targets:
+        kind = "script" if t.is_script else "file"
+        print(f"{t.change:<8} {kind:<6} {os.path.join(home, t.path)}")
+    print(f"{len(targets)} targets affected")
+    if config_changed:
+        print("warning: .chezmoi.toml.tmpl changed; run chezmoi init to regenerate the config")
+    return 0
+
+
 def cmd_prepare(cfg: sync.Config, args: argparse.Namespace) -> int:
     gh = None if args.local else GitHub(cfg.github_repo)
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -92,13 +105,16 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("check", help="validate the rules file in the current checkout")
     sub.add_parser("mirror", help="fast-forward the local mirror branch from upstream")
     sub.add_parser("pending", help="list upstream commits that are not in main yet")
+    affected_cmd = sub.add_parser("affected", help="list targets whose rendered content differs between two commits")
+    affected_cmd.add_argument("old")
+    affected_cmd.add_argument("new")
     prepare = sub.add_parser("prepare", help="prepare pending upstream commits on the ticket branch")
     prepare.add_argument("--no-mirror", action="store_true", help="skip updating the mirror branch")
     prepare.add_argument("--local", action="store_true", help="do not push or touch the pull request")
     args = parser.parse_args(argv)
-    handlers = {"check": cmd_check, "mirror": cmd_mirror, "pending": cmd_pending, "prepare": cmd_prepare}
+    handlers = {"affected": cmd_affected, "check": cmd_check, "mirror": cmd_mirror, "pending": cmd_pending, "prepare": cmd_prepare}
     try:
         return handlers[args.command](config(), args)
-    except (sync.SyncError, GitHubError, GitError) as error:
+    except (sync.SyncError, GitHubError, GitError, AffectedError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
