@@ -39,7 +39,7 @@ base       2e8b1f355
 
 # 处理方式  上游路径模式                                   [> 本地路径]
 follow     .chezmoiscripts/**
-own        .chezmoiscripts/run_onchange_after_setup-apps.sh
+own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
 follow     dot_zshrc                                      > .chezmoitemplates/zsh/upstream.dot_zshrc
 follow     .chezmoitemplates/claude/settings.json         > .chezmoitemplates/claude/upstream.settings.json
 own        Brewfile
@@ -61,6 +61,14 @@ risk       daily-tool     dot_claude/**
 - `> 本地路径` 只用于跟随的文件，表示上游文件复制到这个本地路径，由本地模板继承后再修改，也就是 R4 说的继承后调整。
 - 风险规则可以叠加，一个文件可以同时属于几个风险类别（R24）。三个类别对应 R24 的三条标准：`silent` 出了问题也不报错，`machine-state` 直接改变机器状态，`daily-tool` 影响日常离不开的工具。路径规则只是最低保证：AI 写说明时还要按 R24 的三条标准逐个判断，路径没标出来、但符合标准的改动也要标出来。
 - 默认带两条 `skip`：上游的加密文件本项目解不开（C4），上游的测试不重复运行。
+- 准备任务每次运行先校验规则文件，处理会话改过规则文件以后也要校验，再提交。以下情况是错误，准备任务停下来报错，不猜测用户的意思：
+  - 关键字不是 `base`、`follow`、`own`、`watch`、`skip`、`risk` 之一，或者字段数不对；`>` 用在 `follow` 以外的规则上；风险类别不是 `silent`、`machine-state`、`daily-tool` 之一；路径里有空格。
+  - `base` 不是正好一行，或者这个 commit 不在镜像分支上。
+  - `>` 后面的本地路径不存在。
+- 以下情况不算错误，写进报告提醒用户：
+  - 某条规则在上游当前版本里一个文件都匹配不到，可能是拼错了，也可能是上游改名或删除了文件（C10）。
+  - 某条规则匹配到的文件全被后面的规则改了处理方式，这条规则已经没有作用。
+  - 未分类的文件（R2）。
 
 ### 3.2 改变处理方式
 
@@ -196,16 +204,17 @@ Upstream-Decision: pending
 ## 9. 迁移
 
 1. 在 GitHub 的仓库设置里关闭 GitHub Actions，放在第一次 push 镜像分支之前。
-2. 把 `sync-upstream.paths` 转成规则文件，起点定为 `2e8b1f355`，也就是最后一次完整同步时上游的位置：
+2. 在 Renovate App 的授权范围里移除本仓库，版本升级全部跟着上游走。本仓库的 Renovate 只改跟随的文件，会让它们偏离上游（R17），之后上游改同一行时，准备 commit 就会应用失败。上游的 `.github/renovate.json` 归入不需要。
+3. 把 `sync-upstream.paths` 转成规则文件，起点定为 `2e8b1f355`，也就是最后一次完整同步时上游的位置：
    - 普通路径转成 `follow`。
    - `上游 > 本地` 转成带本地路径的 `follow`。本地路径在 `.github/.upstream/` 下的，原来只是参考副本：本地有对应文件的转成 `own`，比如 `AGENTS.md`；没有的转成 `watch`，比如 `.github/CONCEPTS.md`。
    - `!路径`：本地有这个文件的转成 `own`，没有的转成 `skip`。这些规则排在目录的 `follow` 后面，因为后面的规则生效。
    - 清单里没有的上游文件，逐个归入 `watch` 或 `skip`，拿不准的先归入 `skip`。
-3. 核对跟随文件的起点：逐个比较本地的跟随文件和 `2e8b1f355` 时的上游版本。准备 commit 按 diff 应用上游的改动，本地文件和起点不一致，应用就会失败，或者把本地的偏离藏起来。有差异的查明来源：本地修改的，改成 `own` 或者改用继承后调整；上次没做完的同步留下的，恢复成起点的版本，让工单重新带进来。
-4. 规则文件和上面的修正提交到 `main`。然后建立镜像分支，生成第一张工单，起点之后的 55 个上游 commit 都在里面。
-5. 删除 `.github/.upstream/`。自己维护的文件，上游的版本以后从镜像分支查看。
-6. 更新本仓库的 `AGENTS.md`，把同步清单和 `.github/.upstream/` 的说明换成新的规则文件和流程。
-7. 第一张工单处理完以后，删除 `sync-upstream.sh`、`sync-upstream.paths`、外部 clone `~/Code/o-liby-dotfiles` 和 `stash@{0}`。
+4. 核对跟随文件的起点：逐个比较本地的跟随文件和 `2e8b1f355` 时的上游版本。准备 commit 按 diff 应用上游的改动，本地文件和起点不一致，应用就会失败，或者把本地的偏离藏起来。有差异的查明来源：本地修改的，改成 `own` 或者改用继承后调整；上次没做完的同步或本仓库的 Renovate 留下的，恢复成起点的版本，让工单重新带进来。
+5. 规则文件和上面的修正提交到 `main`。然后建立镜像分支，生成第一张工单，起点之后的 55 个上游 commit 都在里面。
+6. 删除 `.github/.upstream/`。自己维护的文件，上游的版本以后从镜像分支查看。
+7. 更新本仓库的 `AGENTS.md`，把同步清单和 `.github/.upstream/` 的说明换成新的规则文件和流程。
+8. 第一张工单处理完以后，删除 `sync-upstream.sh`、`sync-upstream.paths`、外部 clone `~/Code/o-liby-dotfiles` 和 `stash@{0}`。
 
 ## 10. 已定的实施安排
 
