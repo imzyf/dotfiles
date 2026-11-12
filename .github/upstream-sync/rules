@@ -60,6 +60,7 @@ own        private_dot_ssh/private_config
 
 # 本地自有：上游没有、完全归本仓库的文件，按本地路径登记
 local      .chezmoiremove
+local      .chezmoitemplates/agents/local.md
 local      .claude/skills/upstream-sync/**
 local      .github/upstream-sync/**
 local      dot_zsh/lib/**

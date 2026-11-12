@@ -144,7 +144,7 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 `disableDeepLinkRegistration`、`DISABLE_TELEMETRY` 和 `DISABLE_ERROR_REPORTING` 放在 managed settings 里，由 [sudo 脚本](../.chezmoiscripts/run_onchange_after_setup-claude-managed-settings.sh.tmpl)装成 root 所有的 `/Library/Application Support/ClaudeCode/managed-settings.json`。用 `--setting-sources` 跳过用户设置的 session 也会读这个文件。任何 managed settings 文件都会让 Claude Code 把内置的 `cc-plugin-sec-default` 插件放在最外层，所以片段把 `prependPlugins` 设为空列表。
 
-`~/.claude.json` 存放账号状态，[modifier](../modify_private_dot_claude.json) 只管理选定的字段，并按 0600 部署。`~/.claude/CLAUDE.md` 是本仓库自己的全文，不引入上游的共享指令。
+`~/.claude.json` 存放账号状态，[modifier](../modify_private_dot_claude.json) 只管理选定的字段，并按 0600 部署。
 
 ### Pi 配置
 
@@ -198,7 +198,7 @@ guard 的规则、解析器和测试归 agent-guard 包。本仓库拥有 [`dot_
 
 ## 共享 agent 指令
 
-Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitemplates/agents/`](../.chezmoitemplates/agents/) 下按顺序排列的片段，每个运行时的根文件按同样的顺序引入。本仓库没有部署任何根文件：Claude 的 `CLAUDE.md` 是自己写的全文，Codex 和 Pi 的 `AGENTS.md` 只有上游副本。
+Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitemplates/agents/`](../.chezmoitemplates/agents/) 下按顺序排列的片段，每个运行时的根文件按同样的顺序引入。本仓库不引入这些片段：Claude 的 `CLAUDE.md`、Codex 和 Pi 的 `AGENTS.md` 三个根文件都只引入本地的 [`local.md`](../.chezmoitemplates/agents/local.md)，三个运行时共用的全局指令都写在这个文件里。
 
 压缩提示仍然部署。运行时适配器在压缩后把[压缩提示](../.chezmoitemplates/agents/compaction-reminder.md)交给执行者。Codex 把托管的 [`compaction-reminder`](../dot_codex/managed-hooks/executable_compaction-reminder.tmpl) 作为 `compact` 来源的 `SessionStart` hook 运行，[requirements 脚本](../.chezmoiscripts/run_onchange_after_setup-codex-requirements.sh.tmpl)运行后才会生效。Codex 在压缩和下一轮之间退出时，[可能丢掉排队的提示](https://github.com/openai/codex/issues/56316)，托管 hook 在 resume 时补不回这段上下文。[Pi 的上下文扩展](../private_dot_pi/private_agent/extensions/compaction-reminder.ts.tmpl)把提示放在保留的压缩前消息之后、新消息之前。Claude Code 的设置片段注册 `post-compact-reminder.sh`，作为 `compact` 来源的 `SessionStart` hook 运行。
 

@@ -1,6 +1,6 @@
 # 仓库指令
 
-本仓库使用 [chezmoi](https://www.chezmoi.io/) 将 `~/.local/share/chezmoi` 中的配置部署到 `$HOME`。[chezmoi 参考文档](https://www.chezmoi.io/reference/) 说明通用的源文件命名和模板机制；以下规则说明本仓库与上游的关系。
+本仓库使用 [chezmoi](https://www.chezmoi.io/) 将 `~/.local/share/chezmoi` 中的配置部署到 `$HOME`。[chezmoi 参考文档](https://www.chezmoi.io/reference/) 说明通用的源文件命名和模板机制；以下规则说明本仓库与上游的关系和本仓库的工作流程。
 
 ## 上游同步与本地改造
 
@@ -11,6 +11,12 @@
 - `watch`、`skip`：上游的这份文件不进入本仓库。要在同一路径维护本地版本，先把规则改为 `own`。
 - `local`：上游没有这个路径的本地文件，按本地路径登记。`follow X > 副本` 的本地模板是 `X.tmpl` 时，这条规则已经隐含登记了它，不用另写。其他这类文件新增时加一条登记，`check` 列出的 `unregistered` 就是还没登记的文件。上游以后在登记的路径上加文件，准备任务不应用，`check` 报冲突。
 
-改规则单独一个 commit，原因写进 commit message；改完运行 `.github/upstream-sync/bin/upstream-sync check`。上游改动只经由 `upstream-sync` 工单引入，不要从 `upstream` 分支或上游仓库手动复制文件。
+改完规则运行 `.github/upstream-sync/bin/upstream-sync check`。上游改动只经由 `upstream-sync` 工单引入，不要从 `upstream` 分支或上游仓库手动复制文件。
 
 [`.github/CONCEPTS.md`](.github/CONCEPTS.md) 说明本仓库跨文件的设计决定和与上游的差异。上游的 `AGENTS.md` 和 `.github/CONCEPTS.md` 用 `git show upstream:<路径>` 查看；应用其中的做法前，先用本仓库的规则、本地覆盖和实际消费者核对其适用性。
+
+## 工作流程
+
+- 提交前，对范围内每个改动过的非加密托管目标运行 `chezmoi status --exclude=encrypted <目标路径>` 和 `chezmoi diff --recursive --exclude=encrypted <目标路径>`。`diff` 和 `status` 不同，默认不递归，对目录目标什么也不输出。不要运行不带路径的 `chezmoi status` 或 `chezmoi diff`，它们可能生成解密后的目标内容。全仓库范围的状态检查只在用户要求做 drift 审计时运行，审计中无权访问的目标作为缺口报告，不为此扩大权限。`-` 是只在部署出的文件里有的内容，`+` 是只在渲染结果里有的内容。部署出的文件里多出的改动属于本次修改时才 re-add；无关的改动只报告，不修改。两边都改过时，展示限定范围的 diff。
+- 停用或替换一个托管路径时，先核对确切的非加密部署路径，再在同一个改动里删除废弃的源文件和已部署的文件。不要加 `remove_` 条目、兼容旧数据的读取代码或其他迁移标记；之后的残留通过专门的审计处理。这类 commit 的 message 写出受影响的非加密目标路径或字段，说明删除原因，并注明需要保留的本地内容。
+- 加密源文件可以和相关的非加密改动放在同一个 commit 里。commit message 只笼统地描述它，例如 `update encrypted zshenv`，依据元数据和用户对改动的归类来写，不推测明文改了什么。
