@@ -66,7 +66,7 @@ mbx 是本机的 Cargo 构建缓存。`~/.zshenv` 把它的 Cargo shim 放在 `~
 
 在已有机器上改 mbx 的[缓存目录](https://mr-boxington.jdx.dev/configuration)，要显式迁移旧缓存；只改设置会让旧数据留在回收范围之外。怀疑构建输出有问题时，在新的 target 目录里用 `MBX_VERIFY=1` 运行 [mbx 校验](https://mr-boxington.jdx.dev/troubleshooting)，让 Cargo 真的编译要检查的单元。
 
-[`.chezmoiexternal.toml`](../.chezmoiexternal.toml) 把 zsh 插件的压缩包固定在指定 commit。
+[`.chezmoiexternal.toml`](../.chezmoiexternal.toml) 把 zsh 插件、TypeSafe 的 skill 和 rime-ice 的压缩包固定在指定 commit。上游用 Squirrel 运行 rime-ice，本机用微信输入法，所以 Rime 的配置和部署脚本按 `skip` 处理。rime-ice 的条目随整份跟随的 `.chezmoiexternal.toml` 进来，本地 [`.chezmoiignore`](../.chezmoiignore) 引入上游的副本，再忽略 `Library/Rime`，所以 chezmoi 不会下载它。
 
 ## 仓库校验
 
@@ -176,13 +176,13 @@ Pi 的 `npmCommand` 对整个 `@earendil-works/*` scope 使用 npm 的[发布时
 
 上游的 `setup-rex`、Lua 配置和重新加载配置的脚本，本仓库只观察，不部署。所以本机没有 `Cmd+W` 的前台进程确认，新机器上要手动运行 `rex skill setup --session-naming=false` 安装 Rex 的 skill，手动运行 `rexume install` 安装 Rexume。
 
-本仓库的编排 skill 叫 [`orc`](../dot_agents/skills/orc/SKILL.md)，避免和 Rex 自己的 skill 重名。它要求使用 Rexume task，并通过 `rex skill show` 加载 Rex 安装的指南，只写这套环境的约束和对指南的修正。启动和信任的前提条件写在 `SKILL.md` 正文里，因为压缩后 reference 的内容不一定会恢复。上游在 apply 时检查 Rex 版本和 `orc` 记录的指南 hash，本仓库跳过了这个检查。
+编排 skill 是 Rexume 自带的 `rexume` skill：`rexume install` 写入一个 stub，它用 `rexume skill show` 输出已安装版本的指南，所以和[其他工具自带的 skill](#skill-管理)一样不放进源文件。上游把这套环境对被启动 agent 的约束写进[共享 agent 指令](#共享-agent-指令)：`claude` launcher 选择模式的参数、直接接受被启动 agent 的 folder trust 提示、Codex 的 managed permission profile 做不到只读。本仓库没有部署共享指令的根文件，所以这些约束在本机不生效。上游在 apply 时用 `rexume skill status` 报告的 Rex 版本和指南 hash 检查 Rex 的指南，本仓库跳过了这个检查。
 
 Rexume 在 Claude Code 里的 `SessionStart`、`UserPromptSubmit`、`Stop` 和 `StopFailure` hook 写在设置片段里，Codex 的整个 [hooks 文件](../dot_codex/hooks.json)跟随上游，同时包含 Rex 和 Rexume 的条目。命令要保持原样，`rex skill setup` 和 `rexume install` 才能认出它们并保持不变。新机器上要在 Codex 里通过 `/hooks` 信任这些 hook；Rexume 的条目要排在 Rex 的后面，插在已信任的条目前面会让 Codex 再问一次。
 
 apply 会整个替换 `enabledPlugins` 和 `extraKnownMarketplaces`，所以源文件也声明了 `rexume install` 注册的 `rexume@rexume` 插件和 `rexume` 目录 marketplace；两者都在时，安装程序跳过注册，目录里的插件文件仍归它自己。Pi 扩展和 LaunchAgent 归 Rexume 的安装程序，不写进源文件。
 
-Rex 的 Integrations 设置管理它安装的 skill，但其中的开关也会修改 hook，下一次 apply 会把 hook 恢复。**Let agents name sessions** 保持关闭：它的请求会发给 session 里启动的每个 agent，包括其他 agent 在里面启动的辅助 agent，每个 agent 都会给整个共享的 session 改名。`orc` 改为让协调这个 session 工作的 agent 直接命名 session，不等请求。偏好脚本和 Codex 的 Rex hook 条目都写着这个选择，要打开它就要一起改。
+Rex 的 Integrations 设置管理它安装的 skill，但其中的开关也会修改 hook，下一次 apply 会把 hook 恢复。**Let agents name sessions** 保持关闭：它的请求会发给 session 里启动的每个 agent，包括其他 agent 在里面启动的辅助 agent，每个 agent 都会给整个共享的 session 改名。Rexume 的 skill 改为让协调这个 session 工作的 agent 直接命名 session，不等请求。偏好脚本和 Codex 的 Rex hook 条目都写着这个选择，要打开它就要一起改。
 
 hook 报告的是运行它的进程继承的 `REX_*`，而 `rex whoami` 接受任何还存在的 pane，所以这些变量必须来自 agent 自己的 pane。因此 Codex 的 TUI 不用共享的 app-server daemon。从 Rex pane 启动的 app 同样会保留 pane 的 `REX_*`，并传给它启动的终端和 agent，所以 [`~/.local/bin/open`](../dot_local/bin/executable_open) 用从 Dock 启动时的环境启动 app。
 
@@ -204,9 +204,9 @@ Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitem
 
 [`dot_agents/skills/<name>/SKILL.md`](../dot_agents/skills/) 是 chezmoi 管理的 skill 的源文件位置，部署到 `~/.agents/skills`；Claude Code 通过托管的 `~/.claude/skills` symlink 读取它，所以不要直接在 `~/.claude/skills` 下加 skill。用 `chezmoi source-path` 找到已安装 skill 的源文件，改源文件，不改部署后的副本。批量维护时排除不由本仓库管理的已安装 skill，只在用户点名时改它们；`~/.agents/.skill-lock.json` 是运行时的安装状态，不要动。`references`、`scripts` 和 `assets` 放在所属 skill 里面，没有索引、清单或分类目录。
 
-源文件只放本仓库自己写文字的 skill，本仓库的 skill 都跟随上游。上游 skill 文字的副本落后时没有任何提示，所以当本仓库需要给一个 CLI 写自己的规则时，它的 skill 在自己没覆盖的地方指向已安装版本的上游指南：`gh` 和 `oracle` 读取与已安装版本 tag 对应的上游 skill。这种 skill 不记录上游 tag，CLI 变化让它的文字过时时也没有提示。`orc` 扩展的是 Rex 安装的指南。上游的 `glab` skill 和其他只适合上游的 skill，本仓库跳过。
+源文件只放本仓库自己写文字的 skill，本仓库的 skill 都跟随上游。上游 skill 文字的副本落后时没有任何提示，所以当本仓库需要给一个 CLI 写自己的规则时，它的 skill 在自己没覆盖的地方指向已安装版本的上游指南：`gh` 和 `oracle` 读取与已安装版本 tag 对应的上游 skill。这种 skill 不记录上游 tag，CLI 变化让它的文字过时时也没有提示。上游的 `glab` skill 和其他只适合上游的 skill，本仓库跳过。
 
-工具自带、原样使用的 skill 不放进源文件，由管理它版本的地方安装到 `~/.agents/skills`。工具自带 skill 时，安装的就是已安装版本的 skill：[Homebrew 安装脚本](../.chezmoiscripts/run_onchange_before_install-brew-packages.sh.tmpl)运行 `mk skill install`，把 `~/.agents/skills/maskey` 链接到 Maskey.app 里的 skill；`rex skill setup` 安装 Rex 的 skill。[unattended-upgrades helper](../private_Library/private_Application%20Support/com.liby.unattended-upgrades/executable_unattended-upgrades) 用 `gh skill` 安装其他 skill，它读取公开仓库，不需要登录，所以新机器上 job 第一次运行时也会安装它们。部署的 skill 里 `github-pinned` 的 tag 和需要的 tag 不同时，helper 就重新安装：`sessidx` 用和已安装二进制对应的 tag，所以手动升级后 skill 要等 job 下次运行才跟上；`typesafe-ai` 说明的是线上 API，不是本地二进制，用上游最新的版本 tag。链接形式的 skill 归工具自己，helper 不动它。Surge 只在文档里给出 skill 的路径，所以 [`symlink_surge`](../dot_agents/skills/symlink_surge) 把 `~/.agents/skills/surge` 链接到 Surge.app 里的 skill。
+工具自带、原样使用的 skill 不放进源文件，`~/.agents/skills/<name>` 通过工具文档说明的方式，使用跟随工具版本的那一份。[Homebrew 安装脚本](../.chezmoiscripts/run_onchange_before_install-brew-packages.sh.tmpl)运行 `mk skill install` 和 `sessidx skill install`，分别链接到 Maskey.app 里的 skill 和 Homebrew `share` 目录下的 skill，每次升级都会换成新版本自带的 skill。Rex 和 Rexume 的 skill 是手动运行 `rex skill setup` 和 `rexume install` 时写入的 stub，使用时从 `rex` 和 `rexume` 读取指南。这些命令都只在运行时安装一次，手动删掉的 skill 要等对应命令再次运行才会回来。Surge 只在文档里给出 skill 的路径，所以 [`symlink_surge`](../dot_agents/skills/symlink_surge) 把 `~/.agents/skills/surge` 链接到 Surge.app 里的 skill。TypeSafe 的 skill 说明的是线上 API，没有本地工具，所以 [`.chezmoiexternal.toml`](../.chezmoiexternal.toml) 像 zsh 插件一样把它固定在上游的某个 commit。
 
 Claude Code 的 `auto` 模式下，skill 的 `allowed-tools` 让这个 skill 那一轮里它负责的具体命令前缀和工具跳过分类器审查。跨轮次或长期的授权在 `~/.claude/settings.json` 里，开放式命令和解释器命令仍走 sandbox 和分类器。Claude 拒绝了一条匹配的 skill 授权时，保持 skill 的约定，加一条有复现支持、范围最小的运行时例外。
 
@@ -236,7 +236,7 @@ agent 可以读 `~/.ssh` 顶层的客户端配置（`config`、`config.*`）、�
 
 各 namespace 的使用者：
 
-- `claude-gateway`：[Claude launcher](../dot_local/share/claude-launcher/bin/executable_claude) 只在 gateway 模式下用 `mk get` 读取这些条目，并自己设置 Vertex 开关；其他模式下，不管这些变量和开关是谁设的，launcher 都会取消设置，所以在 gateway session 里启动的 `claude` 按保存的模式运行，除非它自己的参数另有指定。launcher 是 `PATH` 上排在 `~/.local/bin` 原生安装前面的可执行文件，不是 shell 函数，所以 Pi 的 bash、`timeout` 这类 wrapper 或脚本的子进程运行 `claude` 时，保存的模式同样生效。
+- `claude-gateway`：[Claude launcher](../dot_local/share/claude-launcher/bin/executable_claude) 只在 gateway 模式下用 `mk get` 读取这些条目，并自己设置 Vertex 开关；其他模式下，不管这些变量和开关是谁设的，launcher 都会取消设置，所以在 gateway session 里启动的 `claude` 按保存的模式运行，除非它自己的参数另有指定。启动 Claude Code 之前，launcher 把自己的 PID 导出为 `REXUME_LAUNCH_PID`，把解析出的 `claude --gateway` 或 `claude --subscription` 命令导出为 `REXUME_LAUNCH`，Rexume 用这条命令按会话原来的模式重新打开它。launcher 自己从不读取这两个变量，所以嵌套启动的 `claude` 仍然自己解析并声明模式。launcher 是 `PATH` 上排在 `~/.local/bin` 原生安装前面的可执行文件，不是 shell 函数，所以 Pi 的 bash、`timeout` 这类 wrapper 或脚本的子进程运行 `claude` 时，保存的模式同样生效。
 - `context7`：所有 Context7 的使用都经过 [Context7 skill](../dot_agents/skills/context7/SKILL.md)，它在 `mk run context7` 里运行 `ctx7` CLI，`CONTEXT7_API_KEY` 只到达 CLI 子进程。这个 namespace 还可以有一个可选的 `CONTEXT7_BASE_URL`，默认没有；它指向一个转发官方 `/api/v2` 查询 API 的可信反向代理，结尾不带斜杠，同时要把这个主机加进 Claude Code sandbox 的 `allowedDomains`。全局的 `--base-url` 对查询模式的请求有效，但上游只支持 MCP HTTP 方式的自定义部署，查询模式的私有部署不受支持。改 Context7 的配置后，通过 skill 运行一次 resolve 和 query 来验证。
 - `glab`：[glab 设置脚本](../.chezmoiscripts/run_onchange_after_setup-glab.sh.tmpl)在 `mk run` 下的命令里，把私有 GitLab 的 OAuth application ID `GITLAB_CLIENT_ID` 写进 glab 的配置，变量名就是 glab 自己读的名字。
 - `pi` 和 `typesafe`：[Pi 模型配置](../private_dot_pi/private_agent/private_models.json.tmpl)用 `mk get` 从 `pi` namespace 读取 `ANTHROPIC_API_KEY` 和 `RC_GATEWAY_API_KEY`，从 `typesafe` namespace 读取 `TYPESAFE_API_KEY`。
