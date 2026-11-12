@@ -30,7 +30,6 @@ follow     dot_local/share/claude-launcher/**
 follow     dot_proto/**
 follow     dot_zprofile
 follow     dot_zsh/**
-follow     modify_dot_claude.json
 follow     modify_private_dot_claude.json
 follow     private_dot_pi/**
 follow     private_Library/**
