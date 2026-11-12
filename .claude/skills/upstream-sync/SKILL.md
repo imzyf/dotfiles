@@ -19,7 +19,7 @@ The workflow implements `.github/upstream-sync/design.md`; requirement numbers s
 ## Where things are
 
 - `upstream`: read-only mirror of liby/dotfiles `main`, fast-forward only. `git show <sha>` there gives the full original commit, including files this repo does not use.
-- `upstream-sync`: the ticket branch, based on `main`. Each pending commit maps one upstream commit to local paths. Its message is the upstream message followed by `Applied`, `Not applied` (each path with its handling), `New upstream files`, `Risk`, and the trailers `Upstream-Commit`, `Upstream-Author`, `Upstream-Decision: pending`. Path notes `added`, `deleted`, and `renamed to/from` mark file-level changes; `Failed to apply` means the commit is empty because a local file did not match upstream.
+- `upstream-sync`: the ticket branch, based on `main`. Each pending commit maps one upstream commit to local paths. Its message is the upstream message followed by `Applied`, `Not applied` (each path with its handling), `New upstream files`, and the trailers `Upstream-Commit`, `Upstream-Author`, `Upstream-Decision: pending`. Path notes `added`, `deleted`, and `renamed to/from` mark file-level changes; `Failed to apply` means the commit is empty because a local file did not match upstream.
 - `.github/upstream-sync/bin/upstream-sync`: `check` validates the rules file in the current checkout and lists rules that match nothing, overridden rules, and unclassified upstream files; `pending` lists upstream commits not yet in `main`; `affected OLD NEW` renders both source versions and lists the deployed files and scripts whose rendered content differs, failing when either version does not render; `prepare` belongs to the preparation task.
 - Briefs live in `.github/docs/briefs/<tool>.md`.
 

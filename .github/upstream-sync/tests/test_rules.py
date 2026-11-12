@@ -16,9 +16,6 @@ follow     dot_zshrc                         > .chezmoitemplates/zsh/upstream.do
 follow     templates/claude                  > local/claude
 skip       **/encrypted_*
 skip       **/*.test.*
-
-risk       machine-state  .chezmoiscripts/**
-risk       daily-tool     .chezmoiscripts/run_*
 """
 
 
@@ -29,7 +26,6 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(parsed.base, "abc123")
         self.assertEqual([r.kind for r in parsed.handling], ["follow", "own", "follow", "follow", "skip", "skip"])
         self.assertEqual(parsed.handling[2].dest, ".chezmoitemplates/zsh/upstream.dot_zshrc")
-        self.assertEqual([r.risk for r in parsed.risk], ["machine-state", "daily-tool"])
 
     def errors(self, text):
         return rules.parse("base abc\n" + text)[1]
@@ -45,9 +41,6 @@ class ParseTest(unittest.TestCase):
 
     def test_arrow_needs_literal_path(self):
         self.assertIn("literal path", self.errors("follow a/** > b\n")[0])
-
-    def test_unknown_risk_category(self):
-        self.assertIn("unknown risk category", self.errors("risk loud a\n")[0])
 
     def test_base_must_appear_once(self):
         self.assertIn("found 0", rules.parse("follow a\n")[1][0])
@@ -92,10 +85,6 @@ class ClassifyTest(unittest.TestCase):
         self.assertIsNone(c.kind)
         self.assertIsNone(c.rule)
 
-    def test_risks_stack(self):
-        self.assertEqual(rules.classify(self.rules, ".chezmoiscripts/run_x.sh").risks, ("daily-tool", "machine-state"))
-        self.assertEqual(rules.classify(self.rules, ".chezmoiscripts/lib.sh").risks, ("machine-state",))
-
 
 class ValidateTest(unittest.TestCase):
     def validate(self, text, files, base_ok=True, local=()):
@@ -111,9 +100,9 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(self.validate("base a\nfollow x > y\n", ["x"], local={"y"}).errors, [])
 
     def test_unmatched_shadowed_and_unclassified(self):
-        text = "base a\nfollow d/**\nskip d/x\nskip d/**\nskip gone/**\nrisk silent nowhere\n"
+        text = "base a\nfollow d/**\nskip d/x\nskip d/**\nskip gone/**\n"
         report = self.validate(text, ["d/x", "d/y", "other"])
-        self.assertEqual([r.pattern for r in report.unmatched], ["gone/**", "nowhere"])
+        self.assertEqual([r.pattern for r in report.unmatched], ["gone/**"])
         self.assertEqual([r.pattern for r in report.shadowed], ["d/**", "d/x"])
         self.assertEqual(report.unclassified, ["other"])
 

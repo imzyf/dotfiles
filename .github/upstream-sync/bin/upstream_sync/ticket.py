@@ -3,16 +3,13 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .gitcmd import git
 
 GROUPS = (
     ("failed", "Failed to apply"),
     ("new", "New upstream files to confirm"),
-    ("silent", "Risk: silent"),
-    ("machine-state", "Risk: machine-state"),
-    ("daily-tool", "Risk: daily-tool"),
     ("other", "Other local changes"),
     ("watch", "Watched files only"),
     ("no-change", "No local change"),
@@ -26,7 +23,6 @@ class Item:
     subject: str
     date: str
     decision: str
-    risks: list[str] = field(default_factory=list)
     failed: bool = False
     new_files: bool = False
     applied: bool = True
@@ -40,9 +36,6 @@ class Item:
             return "failed"
         if self.new_files:
             return "new"
-        for risk in ("silent", "machine-state", "daily-tool"):
-            if risk in self.risks:
-                return risk
         if self.applied:
             return "other"
         return "watch" if self.watched else "no-change"
@@ -59,14 +52,11 @@ def parse_item(message: str, upstream_date: str) -> Item | None:
     if not upstream:
         return None
     decision = re.search(r"^Upstream-Decision: (\S+)$", message, re.MULTILINE)
-    risk = re.search(r"^Risk: (.*)$", message, re.MULTILINE)
-    risks = [] if not risk or risk.group(1) == "none" else [r.strip() for r in risk.group(1).split(",")]
     return Item(
         upstream=upstream,
         subject=message.split("\n", 1)[0],
         date=upstream_date,
         decision=decision.group(1) if decision else "pending",
-        risks=risks,
         failed=re.search(r"^Failed to apply:$", message, re.MULTILINE) is not None,
         new_files=_section_first_item(message, "New upstream files") not in (None, "none"),
         applied=_section_first_item(message, "Applied") != "none",
@@ -113,6 +103,5 @@ def body(entries: list[Item], github_repo: str, mirror: str) -> str:
         lines += ["", f"### {heading} ({len(group)})", ""]
         for e in group:
             links = ", ".join(f"[`{sha[:9]}`]({base}/commit/{sha})" for sha in e.upstream)
-            risk = f" · {', '.join(e.risks)}" if e.risks else ""
-            lines.append(f"- {links} {e.subject} · {e.date}{risk}")
+            lines.append(f"- {links} {e.subject} · {e.date}")
     return "\n".join(lines) + "\n"

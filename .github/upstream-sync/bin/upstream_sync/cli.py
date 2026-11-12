@@ -91,8 +91,7 @@ def cmd_prepare(cfg: sync.Config, args: argparse.Namespace) -> int:
         print(line)
     for p in result.prepared:
         flag = "FAILED" if p.failed else f"{len(p.applied)} applied"
-        risk = f"  [{', '.join(p.risks)}]" if p.risks else ""
-        print(f"{p.commit[:9]}  {flag:<10}  {p.subject}{risk}")
+        print(f"{p.commit[:9]}  {flag:<10}  {p.subject}")
     print(f"prepared {len(result.prepared)} commits on {cfg.ticket} in {cfg.worktree}")
     if result.pr_url:
         print(f"ticket: {result.pr_url}")

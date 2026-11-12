@@ -189,7 +189,6 @@ class Prepared:
     not_applied: list[str] = field(default_factory=list)
     new_files: list[str] = field(default_factory=list)
     failed: list[str] = field(default_factory=list)
-    risks: list[str] = field(default_factory=list)
 
 
 def plan(cfg: Config, rules: rules_mod.Rules, commit: str, tree_commit: str) -> tuple[Prepared, list[tuple[str, tuple[str, str] | None]]]:
@@ -197,7 +196,6 @@ def plan(cfg: Config, rules: rules_mod.Rules, commit: str, tree_commit: str) -> 
     subject = git("log", "-1", "--format=%s", commit, cwd=cfg.repo).strip()
     result = Prepared(commit, subject)
     ops: list[tuple[str, tuple[str, str] | None]] = []
-    risks: set[str] = set()
     follow_lines: list[str] = []
     for change in changes(cfg, commit):
         c = rules_mod.classify(rules, change.path)
@@ -223,11 +221,9 @@ def plan(cfg: Config, rules: rules_mod.Rules, commit: str, tree_commit: str) -> 
             continue
         ops.append((c.local, change.new))
         result.applied.append(shown)
-        risks.update(c.risks)
     if result.failed:
         result.not_applied = follow_lines + result.not_applied
-        result.applied, result.new_files, ops, risks = [], [], [], set()
-    result.risks = sorted(risks)
+        result.applied, result.new_files, ops = [], [], []
     return result, ops
 
 
@@ -245,7 +241,6 @@ def message(cfg: Config, p: Prepared) -> str:
         section("Applied", p.applied),
         section("Not applied", p.not_applied),
         section("New upstream files", p.new_files),
-        f"Risk: {', '.join(p.risks) or 'none'}",
         "",
         f"Upstream-Commit: {p.commit}",
         f"Upstream-Author: {author}",

@@ -85,8 +85,7 @@ class Fixture(unittest.TestCase):
             "follow .chezmoiscripts/**\n"
             "follow dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc\n"
             "own Brewfile\n"
-            "watch docs/**\n"
-            "risk machine-state .chezmoiscripts/**\n",
+            "watch docs/**\n",
         )
         commit(self.repo, "local main")
 
@@ -167,12 +166,10 @@ class PrepareTest(Fixture):
         self.assertIn("Applied:\n  .chezmoiscripts/run_a.sh\n  .chezmoiscripts/run_b.sh (added)\n", first)
         self.assertIn("Not applied:\n  Brewfile (own)\n  docs/notes.md (watch)\n", first)
         self.assertIn("New upstream files:\n  .chezmoiscripts/run_b.sh\n", first)
-        self.assertIn("Risk: machine-state\n", first)
         self.assertTrue(first.endswith(f"Upstream-Commit: {c1}\nUpstream-Author: Upstream Author\nUpstream-Decision: pending"))
 
         second = self.ticket_messages()[1]
         self.assertIn("  dot_zshrc -> .chezmoitemplates/zsh/upstream.dot_zshrc\n", second)
-        self.assertIn("Risk: none\n", second)
         self.assertEqual(read(wt, ".chezmoitemplates/zsh/upstream.dot_zshrc"), "zshrc v2\n")
 
         self.assertIn("Applied:\n  none\n", self.ticket_messages()[2])

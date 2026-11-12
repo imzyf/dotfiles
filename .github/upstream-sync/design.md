@@ -9,7 +9,7 @@
 | 组成部分 | 作用 | 位置 |
 |---|---|---|
 | 上游镜像分支 | 原样保存上游的 commit，供查看和引用 | origin 的 `upstream` 分支 |
-| 处理方式规则 | 确定每个上游文件的处理方式、本地位置和风险类别 | `.github/upstream-sync/rules` |
+| 处理方式规则 | 确定每个上游文件的处理方式和本地位置 | `.github/upstream-sync/rules` |
 | 工单 | 一个 PR，分支上放着待处理的上游改动 | origin 的 `upstream-sync` 分支和对应的 PR |
 | 准备任务 | 更新镜像、准备 commit、生成报告 | 脚本，先手动运行，跑顺以后由 launchd 定时运行 |
 | 处理会话 | 用户坐下来处理工单 | agent 加载 `upstream-sync` skill |
@@ -46,12 +46,6 @@ own        Brewfile
 watch      dot_agents/skills/oracle/**
 skip       **/encrypted_*
 skip       **/*.test.*
-
-# 风险类别  类别           上游路径模式
-risk       silent         dot_config/git/**
-risk       machine-state  .chezmoiscripts/**
-risk       machine-state  Brewfile
-risk       daily-tool     dot_claude/**
 ```
 
 - `base` 只有一行，记录起点：这个 commit 之后的上游 commit 才进入待处理列表。
@@ -59,10 +53,9 @@ risk       daily-tool     dot_claude/**
 - 模式语法沿用现在清单的规则：`*` 只匹配一级路径，`**` 匹配零级或多级目录。
 - 同一个文件匹配多条处理方式规则时，后面的规则生效，和 `.gitignore` 的习惯一样。
 - `> 本地路径` 只用于跟随的文件，表示上游文件复制到这个本地路径，由本地模板继承后再修改，也就是 R4 说的继承后调整。
-- 风险规则可以叠加，一个文件可以同时属于几个风险类别（R24）。三个类别对应 R24 的三条标准：`silent` 出了问题也不报错，`machine-state` 直接改变机器状态，`daily-tool` 影响日常离不开的工具。路径规则只是最低保证：AI 写说明时还要按 R24 的三条标准逐个判断，路径没标出来、但符合标准的改动也要标出来。
 - 默认带两条 `skip`：上游的加密文件本项目解不开（C4），上游的测试不重复运行。
 - 准备任务每次运行先校验规则文件，处理会话改过规则文件以后也要校验，再提交。以下情况是错误，准备任务停下来报错，不猜测用户的意思：
-  - 关键字不是 `base`、`follow`、`own`、`watch`、`skip`、`risk` 之一，或者字段数不对；`>` 用在 `follow` 以外的规则上；风险类别不是 `silent`、`machine-state`、`daily-tool` 之一；路径里有空格。
+  - 关键字不是 `base`、`follow`、`own`、`watch`、`skip` 之一，或者字段数不对；`>` 用在 `follow` 以外的规则上；路径里有空格。
   - `base` 不是正好一行，或者这个 commit 不在镜像分支上。
   - `>` 后面的本地路径不存在。
 - 以下情况不算错误，写进报告提醒用户：
@@ -102,7 +95,6 @@ Not applied:
   dot_config/oracle/config.toml (skip)
 New upstream files:
   none
-Risk: daily-tool
 
 Upstream-Commit: 4a1c2e7f...
 Upstream-Author: Bryan Lee
@@ -119,7 +111,7 @@ Upstream-Decision: pending
 
 ### 4.3 PR 的标题、描述和评论
 
-- 标题和描述由准备任务每次重写：待处理的数量、起始日期，按风险和处理方式分组的清单，每项链接到镜像分支上的原 commit。
+- 标题和描述由准备任务每次重写：待处理的数量、起始日期，按处理方式分组的清单，每项链接到镜像分支上的原 commit。
 - 中文报告的公开部分作为评论追加到 PR 上（R37）。本机影响写在本地的报告文件里，不发到 PR 上（R31）。
 - 处理会话开始时给 PR 加 `in-progress` 标签，结束时去掉。准备任务看到这个标签，只更新镜像，其余都不做，避免和处理会话同时改分支。标签在 GitHub 上，换一台机器也有效。
 - 标签挂了超过一天，准备任务在终端输出里提醒用户，因为处理会话可能中途中断，没来得及去掉标签。
@@ -142,9 +134,9 @@ Upstream-Decision: pending
 4. 把还没准备的上游 commit 逐个准备到 `upstream-sync` 分支上（4.1）。某个 commit 应用失败时，比如它依赖一个被推迟的 commit，就生成一个说明失败原因的空 commit，交给处理会话。
 5. 用 `gh` 新建或更新 PR。
 6. 生成报告：
-   - 脚本为每个 commit 整理出结构化数据：上游 message、diff、每个文件的处理方式和风险类别、对应的上游 PR。
+   - 脚本为每个 commit 整理出结构化数据：上游 message、diff、每个文件的处理方式、对应的上游 PR。
    - 脚本在 worktree 里分别渲染每个 commit 前后受影响的目标，算出每个 commit 对渲染结果的改动。这部分只写进本地报告。
-   - `claude -p` 加载 skill，读结构化数据，写每个 commit 的中文说明和总览。它只读上游的公开内容，所以写出的内容可以公开。
+   - `claude -p` 加载 skill，读结构化数据，写每个 commit 的中文说明和总览，按 R24 的三条标准逐个判断哪些改动要重点标出。它只读上游的公开内容，所以写出的内容可以公开。
    - 跟随或观察学习的文件里出现新工具或新概念时，起草简报，作为一个待处理的 commit 放到分支上（R38）。
    - 这次运行准备了新的 commit 时，脚本把说明和总览作为一条新评论发到 PR 上；没有新 commit 就不发，避免重复的评论。完整报告连同本机影响每次都写到 `~/.local/state/upstream-sync/`。
 
