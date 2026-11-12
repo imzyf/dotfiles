@@ -1,9 +1,0 @@
-{{- /* chezmoi:modify-template */ -}}
-{{- $managed := includeTemplate "codex/global-state.json" . | fromJson -}}
-{{- $current := .chezmoi.stdin | default "{}" | fromJson -}}
-{{- $out := mergeOverwrite (deepCopy $current) $managed -}}
-{{- if deepEqual $current $out -}}
-  {{- .chezmoi.stdin -}}
-{{- else -}}
-  {{- $out | toPrettyJson -}}
-{{- end -}}

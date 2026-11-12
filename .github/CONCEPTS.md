@@ -104,9 +104,9 @@ Desktop 会生成 `node_repl` 的环境字段，之后还可能替换它的运�
 
 内置的 `computer-use` 和 `unified-computer-use` 插件保持启用，`unified-computer-use` 提供 Desktop 的 `cua_repl` 浏览器和电脑操作运行时。内置的 `code-review` 插件保持禁用，因为它在 `gh` 和 `review` skill 之外又加了一条在 GitHub 上评论和合并 PR 的路径。
 
-Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 global state 或 persisted atom 里的旧副本。已注册的偏好在 [`.chezmoitemplates/codex/config.toml`](../.chezmoitemplates/codex/config.toml) 里管理，global state 片段只用于还没有注册设置的 persisted atom。
+Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 global state 或 persisted atom 里的旧副本。已注册的偏好在 [`.chezmoitemplates/codex/config.toml`](../.chezmoitemplates/codex/config.toml) 里管理。
 
-`~/.codex/.codex-global-state.json` 也只管理一部分。它的 [modifier](../dot_codex/modify_dot_codex-global-state.json) 把[片段声明的可移植偏好](../.chezmoitemplates/codex/global-state.json)覆盖上去，其他条目归 Desktop。这些 key 属于当前 Desktop 的实现，不在公开的 `config.toml` schema 里，修改或扩大管理范围前要用已安装的 app 验证。运行中的 Desktop 可能用内存里的值覆盖外部 apply 的结果，所以通过 UI 修改这些偏好，或者在 Desktop 退出时 apply 这个目标。
+本仓库不管理 `~/.codex/.codex-global-state.json`，整份文件归 Desktop。上游用 modifier 把一个片段里的 persisted atom 覆盖到这个文件上。Desktop 26.1106.51428 把其中 6 个移到了按账号区分的 `electron-owner-atoms:<hash>` 下，每次 apply 都会把它们写回旧位置，`chezmoi diff` 一直显示这个文件有差异（[liby/dotfiles#67](https://github.com/liby/dotfiles/issues/67)）。key 名里的 hash 由账号 ID 算出，模板拿不到。剩下的 2 个 atom 不值得为一个 1 MB 的文件维护 modifier。
 
 `approval_policy = "on-request"`、`approvals_reviewer = "auto_review"` 和唯一的自定义 profile `default_permissions = "development"` 要一起保留。[`.chezmoitemplates/codex/requirements.toml`](../.chezmoitemplates/codex/requirements.toml) 约束这组值，因为 Desktop 用保存的 agent 模式而不是 `config.toml` 生成新任务的审批策略和审核者（[#33552](https://github.com/openai/codex/issues/33552)）：不加约束时，保存的 `auto` 模式得到 `on-request` / `user`，`full-access` 得到 `never` / `user`。这个约束有意去掉内置模式，包括 Full Access。修改这个文件后重启 Desktop，目前没有复现显示 Desktop 会热加载修改后的 `requirements.toml`。
 
