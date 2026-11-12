@@ -38,6 +38,7 @@ follow     private_dot_cache/private_codex-tmp/.keep
 
 # 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
+follow     .chezmoitemplates/codex/global-state.json              > .chezmoitemplates/codex/upstream.global-state.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
 follow     dot_claude/CLAUDE.md.tmpl                              > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 follow     dot_codex/AGENTS.md.tmpl                               > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
