@@ -61,7 +61,6 @@ own        private_dot_ssh/private_config
 watch      .chezmoiscripts/run_after_setup-macos-notifications.py
 watch      .chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
 watch      .claude/rules/claude-code-settings.md
-watch      .github/README_CN.md
 watch      .github/workflows/**
 watch      dot_config/private_glab-cli/**
 watch      dot_config/rex/**
@@ -76,6 +75,7 @@ skip       .chezmoiscripts/run_onchange_after_deploy-rime.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_setup-apps.sh
 skip       .chezmoitemplates/input-source-pro/**
+skip       .github/README_CN.md
 skip       .github/renovate.json
 skip       .github/tests/**
 skip       private_Library/Rime/**
