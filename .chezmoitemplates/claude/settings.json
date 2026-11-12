@@ -6,18 +6,7 @@ Merged into live settings by dot_claude/modify_private_settings.json.
 ===============================================================================
 */ -}}
 
-{{- /* Upstream still requires private.npmHost; supply a placeholder without changing shared template data. */ -}}
-{{- $removedNpmHost := "npm-host-removed.invalid" -}}
-{{- $upstreamData := deepCopy . -}}
-{{- $_ := set $upstreamData.private "npmHost" $removedNpmHost -}}
-{{- $settings := includeTemplate "claude/upstream.settings.json" $upstreamData | fromJson -}}
-
-{{- /* Remove the retired private.npmHost entry from sandbox.network.allowedDomains. */ -}}
-{{- $allowedDomains := $settings.sandbox.network.allowedDomains -}}
-{{- if not (has $removedNpmHost $allowedDomains) -}}
-  {{- fail "claude/upstream.settings.json no longer lists private.npmHost in sandbox.network.allowedDomains; update the override in claude/settings.json" -}}
-{{- end -}}
-{{- $_ := set $settings.sandbox.network "allowedDomains" (without $allowedDomains $removedNpmHost) -}}
+{{- $settings := includeTemplate "claude/upstream.settings.json" . | fromJson -}}
 
 {{- /* Clear upstream hooks except rexume's, which `rexume install` also registers, and the
       post-compaction reminder; keep the managed key so applying replaces existing live hooks. */ -}}

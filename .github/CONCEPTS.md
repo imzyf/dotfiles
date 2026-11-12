@@ -120,7 +120,7 @@ Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 g
 
 [openai/codex#40254](https://github.com/openai/codex/issues/40254) 记录了当前 macOS 上的复现：没有显式的 Browser 缓存读规则时，Chrome 无法通过可信 RPC 的路径校验。保留 `~/.codex/plugins/cache/openai-bundled/browser` 作为唯一额外的只读路径，让可信 worker 能加载 Desktop 运行时拥有的 Browser 服务；chezmoi 的 `private_`、`readonly_` 源文件和 `chmod` 都不能建立可信的权限根。只有在删除源文件规则、apply 渲染后的配置、完全重启 Desktop、确认实际权限表里没有这条规则，并且在新任务里第一次初始化 Chrome 就成功（之前没有 Browser 尝试或重试）之后，才删除这个例外。
 
-`features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code 和 Codex 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。共享域名列表包含私有 npm registry，以及由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、Maskey 的 Keychain 服务等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
+`features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code 和 Codex 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。共享域名列表包含由 `npmHost` 渲染出的 `npm.invalid` 和由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、Maskey 的 Keychain 服务等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
 
 代理在命令第一次被拒绝的请求时结束整个命令，并报告 `Network access to "<host>" was blocked: <reason>`；Claude Code 的 sandbox 只在 `<sandbox_violations>` 里列出拒绝，命令继续运行。所以 Claude Code 在命令正常工作之外报告的主机，在 Codex 下也会让这个命令失败。工具自己发出这类请求时，例如遥测、更新检查或平台探测，用工具的开关在 [`dot_zshenv`](../dot_zshenv.tmpl) 里关掉，所有 zsh 都会读这个文件，包括终端和两个 agent 的命令。只有 zsh 启动时设不了开关的请求，才考虑加进共享允许列表；一个主机因为别的请求被允许后，它的开关仍然保持设置。
 
@@ -138,7 +138,7 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 上游把 Claude Code 设置、sandbox 和集成的决定写在 `.claude/rules/claude-code-settings.md`，本仓库只观察这个文件，不部署。
 
-`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游做两处修改。第一处是从 sandbox 允许的域名里去掉私有 npm registry，Codex 仍从共享列表得到它。第二处是只保留 `rexume` 的 hook 和压缩后的提示 hook，去掉上游注册的其他 hook。被去掉的 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册 rexume hook 或提示 hook 时，渲染报错。
+`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游只做一处修改：只保留 `rexume` 的 hook 和压缩后的提示 hook，去掉上游注册的其他 hook。被去掉的 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册 rexume hook 或提示 hook 时，渲染报错。
 
 `disableDeepLinkRegistration`、`DISABLE_TELEMETRY` 和 `DISABLE_ERROR_REPORTING` 放在 managed settings 里，由 [sudo 脚本](../.chezmoiscripts/run_onchange_after_setup-claude-managed-settings.sh.tmpl)装成 root 所有的 `/Library/Application Support/ClaudeCode/managed-settings.json`。用 `--setting-sources` 跳过用户设置的 session 也会读这个文件。任何 managed settings 文件都会让 Claude Code 把内置的 `cc-plugin-sec-default` 插件放在最外层，所以片段把 `prependPlugins` 设为空列表。
 
@@ -212,7 +212,7 @@ Claude Code 的 `auto` 模式下，skill 的 `allowed-tools` 让这个 skill 那
 
 ## 身份和加密数据
 
-[`.chezmoi.toml.tmpl`](../.chezmoi.toml.tmpl) 由本仓库维护，`init` 时提示输入账号相关的值。`tailnetDomain` 是常量 `invalid`，因为本机没有 Tailscale，而上游的 sandbox 允许列表要渲染 `*.<tailnetDomain>`；以后有 tailnet 时，换回上游的提示。
+[`.chezmoi.toml.tmpl`](../.chezmoi.toml.tmpl) 由本仓库维护，`init` 时提示输入账号相关的值。`tailnetDomain` 是常量 `invalid`，因为本机没有 Tailscale，而上游的 sandbox 允许列表要渲染 `*.<tailnetDomain>`；以后有 tailnet 时，换回上游的提示。`npmHost` 同理是常量 `npm.invalid`，因为不再使用私有 npm registry，而共享允许列表原样渲染这个主机名；以后需要时，换回上游的提示。
 
 加密文件用 GPG，私钥在 YubiKey 上，`.chezmoi.toml.tmpl` 只写本机的收件人。上游的加密文件本仓库解不开，所以都是 `skip`。
 

@@ -5,7 +5,10 @@ encryption = "gpg"
   gitlabEmail = {{ promptStringOnce . "private.gitlabEmail" "Private GitLab email" | quote }}
   gitlabHost = {{ promptStringOnce . "private.gitlabHost" "Private GitLab host" | trimPrefix "https://" | trimSuffix "/" | quote }}
   gitlabName = {{ promptStringOnce . "private.gitlabName" "Private GitLab name" | quote }}
-  npmHost = {{ promptStringOnce . "private.npmHost" "Private npm registry host" | trimPrefix "https://" | trimSuffix "/" | quote }}
+  # No private npm registry here. The sandbox allowlist renders this host as is;
+  # `.invalid` is a reserved TLD that never resolves. Replace with upstream's
+  # prompt when a registry is needed.
+  npmHost = "npm.invalid"
   # No Tailscale here. The sandbox allowlist renders `*.invalid`, a reserved
   # TLD that never resolves; replace with upstream's prompt when a tailnet exists.
   tailnetDomain = "invalid"
