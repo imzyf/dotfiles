@@ -29,6 +29,7 @@ follow     dot_local/share/claude-launcher/**
 follow     dot_proto/**
 follow     dot_zprofile
 follow     dot_zsh/**
+follow     dot_zshenv
 follow     modify_private_dot_claude.json
 follow     private_dot_pi/**
 follow     private_Library/**
@@ -40,7 +41,6 @@ follow     .chezmoiexternal.toml                                  > .chezmoitemp
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
 follow     dot_config/git/config.tmpl                             > .chezmoitemplates/git/upstream.config.tmpl
-follow     dot_zshenv                                             > .chezmoitemplates/zsh/upstream.dot_zshenv
 follow     dot_zshrc                                              > .chezmoitemplates/zsh/upstream.dot_zshrc
 
 # 自己维护：上游也有这些文件，本地版本差异太大，不值得继承。
