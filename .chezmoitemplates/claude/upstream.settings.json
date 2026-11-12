@@ -1,7 +1,7 @@
 {
   "cleanupPeriodDays": 99999,
   "env": {
-    "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-fable-5-1",
+    "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-fable-5-2",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-5-5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5-5",
@@ -13,6 +13,7 @@
     "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "125000",
     "CLAUDE_CODE_FORK_SUBAGENT": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
+    "CLAUDE_CODE_SHELL": "/opt/homebrew/bin/bash",
     "DISABLE_EXTRA_USAGE_COMMAND": "1",
     "DISABLE_FEEDBACK_COMMAND": "1",
     "NODE_USE_ENV_PROXY": "1"
@@ -28,13 +29,15 @@
   "crossSessionInbound": "accept",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
+  "syncClaudeAiSkills": false,
+  "syncClaudeAiPlugins": false,
   "skillOverrides": {
     "auto-mode-setup": "off"
   },
   "autoMode": {
     "environment": [
       "$defaults",
-      "**Secrets management**: Maskey (entries in the user's iCloud Keychain, used through `mk`) is the personal credential store; legitimate use is `mk run <namespace>|<namespace>/<NAME>... -- <command>` to give one command the selected entries, and `mk list` enumerates entry names without values; `mk get` serves helpers a program's configuration runs, not an agent's own commands; never print or echo values",
+      "**Secrets management**: Maskey stores credentials in the user's iCloud Keychain. `mk run` supplies selected credentials to one command, masking exact values in stdout/stderr; `mk list` lists names without values; `producer | mk set --stdin <namespace>/<NAME>` stores piped input, overwriting an existing value without prompting. `mk get` outputs raw values for configured consumers, never for the agent's own commands; never print or echo values",
       "**Scope**: the user's own non-public scope is this machine and the accounts and services whose content reaches only the user, the user's own tools, and the services the user chose for the task; a service that stores content at the user's direction is its custodian, not a reader; a user-installed tool that works inside the user's account, and the agent runtime or model route the user has set up on this machine for the task or as a standing choice, are the user's own; an application that sends the content elsewhere without the user choosing it is an outside reader"
     ]
   },
@@ -116,7 +119,8 @@
         "~/Code/.mbx",
         "~/Code/.pnpm",
         "~/Code/worktrees",
-        "~/Library/Caches"
+        "~/Library/Caches",
+        "~/go/pkg"
       ],
       "denyRead": [
         "~/.gnupg/private-keys-v1.d",

@@ -58,6 +58,13 @@ defaults write com.apple.finder NewWindowTargetPath -string "file://$HOME/Downlo
 # 隐藏桌面上的内置硬盘图标。
 defaults write com.apple.finder ShowHardDrivesOnDesktop -bool false
 
+# 插电时不 idle sleep，否则这台 Mac 上的 Rex 终端和 agent 会掉线；用电池和合盖时照常睡眠。
+# 只在 AC 的 sleep 不为 0 时运行 sudo，重复运行不会再要求密码。
+ac_sleep=$(pmset -g custom | awk '/^[A-Za-z].*:$/ { ac = ($0 == "AC Power:") } ac && $1 == "sleep" { print $2 }')
+if [[ $ac_sleep != 0 ]]; then
+  sudo pmset -c sleep 0
+fi
+
 # 结束 ControlCenter、Dock 和 Finder 进程，使其重新启动时加载偏好设置。
 killall ControlCenter Dock Finder
 # 将用户设置应用到当前会话，包括更新后的按键重复设置。
