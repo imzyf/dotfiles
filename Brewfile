@@ -1,6 +1,11 @@
+tap "atlassian/acli"
 tap "entwining/tap"
+tap "getsentry/tools"
+tap "shaharia-lab/tap"
 tap "steipete/tap"
 
+# Software to interact with Atlassian Cloud from the terminal
+brew "atlassian/acli/acli", trusted: true
 # Static checker for GitHub Actions workflow files
 brew "actionlint"
 # macOS pre-tool guard for coding agents
@@ -47,6 +52,8 @@ brew "glab"
 brew "gnupg"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
+# Feature-rich interactive Jira CLI
+brew "jira-cli"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Fast, async, resource-friendly link checker
@@ -65,8 +72,12 @@ brew "proto"
 brew "entwining/tap/rexume", trusted: true
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
+# Sentry command-line tool for error monitoring and debugging
+brew "getsentry/tools/sentry", trusted: true
 # Index local coding agent session logs for lookup and counts
 brew "entwining/tap/sessidx", trusted: true
+# Slack CLI - Interact with Slack from command line
+brew "shaharia-lab/tap/slackcli", trusted: true
 # Cross-shell prompt for astronauts
 brew "starship"
 # Extremely fast Python package installer and resolver, written in Rust
@@ -89,6 +100,8 @@ cask "codex"
 cask "clash-verge-rev"
 # Universal database tool and SQL client
 cask "dbeaver-community"
+# Collaborative team software
+cask "figma"
 # Inconsolata LGC Nerd Font
 cask "font-inconsolata-lgc-nerd-font"
 # GIT client
@@ -105,6 +118,10 @@ cask "itsycal"
 cask "keycastr"
 # Credentials in iCloud Keychain, passed to commands as masked variables
 cask "entwining/tap/maskey", trusted: true
+# App to write, plan, collaborate, and get organised
+cask "notion"
+# Command-line interface for Notion
+cask "notion-cli"
 # Knowledge base that works on top of a local folder of plain text Markdown files
 cask "obsidian"
 # Open source, cross-platform, and extensible code editor
