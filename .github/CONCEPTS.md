@@ -96,6 +96,8 @@ agent 和 chezmoi 脚本需要的环境变量、必须排在 Homebrew 前面的�
 
 ### Codex 配置
 
+Codex Desktop 现在显示为 ChatGPT（`/Applications/ChatGPT.app`），bundle ID 仍是 `com.openai.codex`，配置和状态仍在 `~/.codex/` 下。
+
 [`.chezmoitemplates/codex/config.toml`](../.chezmoitemplates/codex/config.toml) 声明 [Codex 用户配置](https://developers.openai.com/codex/config-reference/)里由源文件拥有的部分。[modifier](../dot_codex/modify_private_config.toml) 整个替换 `plugins`、`permissions.development` 和源文件声明的每个 `mcp_servers` 表，这些表里只保留目标已有的 `node_repl.env` 和 `node_repl.env_vars`。其他声明的配置做深度覆盖。替换 server 表可以去掉过时的传输字段，这些字段会让 Codex 拒绝整份配置。从源文件删掉整个 server 时，仍要显式清理目标。设置了 `default_permissions` 时，每次 apply 还会删除 `sandbox_mode` 和 `sandbox_workspace_write`，因为这两个旧选项可能覆盖 profile。
 
 `model`、`model_reasoning_effort` 和各 app 的授权不写进源文件（`apps.*` 表只声明每个 app 的 `enabled`），这样在 Desktop、TUI 或直接改文件做的修改在 apply 后仍然保留。
@@ -106,7 +108,7 @@ Desktop 会生成 `node_repl` 的环境字段，之后还可能替换它的运�
 
 Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 global state 或 persisted atom 里的旧副本。已注册的偏好在 [`.chezmoitemplates/codex/config.toml`](../.chezmoitemplates/codex/config.toml) 里管理。
 
-本仓库不管理 `~/.codex/.codex-global-state.json`，整份文件归 Desktop。上游用 modifier 把一个片段里的 persisted atom 覆盖到这个文件上。Desktop 26.1106.51428 把其中 6 个移到了按账号区分的 `electron-owner-atoms:<hash>` 下，每次 apply 都会把它们写回旧位置，`chezmoi diff` 一直显示这个文件有差异（[liby/dotfiles#67](https://github.com/liby/dotfiles/issues/67)）。key 名里的 hash 由账号 ID 算出，模板拿不到。剩下的 2 个 atom 不值得为一个 1 MB 的文件维护 modifier。
+本仓库不管理 `~/.codex/.codex-global-state.json`，整份文件归 Desktop。上游用 modifier 把一个片段里的 persisted atom 覆盖到这个文件上。Desktop 26.1106.51428 会把一部分 persisted atom 移到按账号区分的 `electron-owner-atoms:<hash>` 下，key 名里的 hash 由账号 ID 算出，模板写不到那里。片段声明了被移走的 atom 时，每次 apply 都会把它们写回旧位置，`chezmoi diff` 一直显示这个文件有差异，Desktop 迁移时还会用写回的值覆盖保存的选择（[liby/dotfiles#67](https://github.com/liby/dotfiles/issues/67)）。上游在 ccbfff9 删掉了 6 个这样的 atom，但在本机，片段里的 `home-composer-mode-v1` 和 `last-explicit-review-diff-filter` 也会被移走。剩下的 `electron-avatar-overlay-open` 和 `electron:onboarding-projectless-completed` 只在新机器上省一次操作，不值得为一个 1 MB 的文件维护 modifier。
 
 `approval_policy = "on-request"`、`approvals_reviewer = "auto_review"` 和唯一的自定义 profile `default_permissions = "development"` 要一起保留。[`.chezmoitemplates/codex/requirements.toml`](../.chezmoitemplates/codex/requirements.toml) 约束这组值，因为 Desktop 用保存的 agent 模式而不是 `config.toml` 生成新任务的审批策略和审核者（[#33552](https://github.com/openai/codex/issues/33552)）：不加约束时，保存的 `auto` 模式得到 `on-request` / `user`，`full-access` 得到 `never` / `user`。这个约束有意去掉内置模式，包括 Full Access。修改这个文件后重启 Desktop，目前没有复现显示 Desktop 会热加载修改后的 `requirements.toml`。
 
