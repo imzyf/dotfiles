@@ -1,4 +1,4 @@
-"""解析、匹配和校验上游同步的规则文件。格式见 .github/docs/upstream-sync-design.md 3.1。"""
+"""解析、匹配和校验上游同步的规则文件。格式见 .github/upstream-sync/design.md 3.1。"""
 
 from __future__ import annotations
 

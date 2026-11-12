@@ -1,4 +1,4 @@
-# 上游同步的处理方式规则。格式和含义见 .github/docs/upstream-sync-design.md 第 3 节。
+# 上游同步的处理方式规则。格式和含义见 .github/upstream-sync/design.md 第 3 节。
 # 同一个文件匹配多条处理方式规则时，后面的规则生效。
 
 # 起点：这个上游 commit 之后的 commit 才进入待处理列表

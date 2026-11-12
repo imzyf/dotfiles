@@ -1,6 +1,6 @@
 """准备任务的机械步骤：更新镜像分支、算出待处理列表、把上游 commit 准备到工单分支上。
 
-设计见 .github/docs/upstream-sync-design.md 第 2、4、5 节。
+设计见 .github/upstream-sync/design.md 第 2、4、5 节。
 """
 
 from __future__ import annotations

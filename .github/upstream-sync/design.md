@@ -193,6 +193,7 @@ Upstream-Decision: pending
 |---|---|
 | 规则文件 | `.github/upstream-sync/rules` |
 | 脚本和测试 | `.github/upstream-sync/bin/`、`.github/upstream-sync/tests/` |
+| 需求和设计文档 | `.github/upstream-sync/requirements.md`、`.github/upstream-sync/design.md` |
 | skill | `.claude/skills/upstream-sync/SKILL.md` |
 | launchd 配置 | `private_Library/LaunchAgents/` 下的 plist，由 chezmoi 部署 |
 | 本地报告和准备任务的锁文件 | `~/.local/state/upstream-sync/` |

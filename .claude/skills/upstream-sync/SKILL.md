@@ -7,7 +7,7 @@ description: Process this repository's upstream sync ticket, the `upstream-sync`
 
 When the prompt asks for the upstream sync report (a non-interactive run started by the preparation task), follow [the report instructions](references/report.md) and skip everything below.
 
-The workflow implements `.github/docs/upstream-sync-design.md`; requirement numbers such as R17 come from `.github/docs/upstream-sync-requirements.md`. Read the matching design section when a case below does not cover the situation.
+The workflow implements `.github/upstream-sync/design.md`; requirement numbers such as R17 come from `.github/upstream-sync/requirements.md`. Read the matching design section when a case below does not cover the situation.
 
 ## Safety rules
 

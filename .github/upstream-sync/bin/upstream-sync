@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""上游同步的准备任务。用法见 upstream-sync --help，设计见 .github/docs/upstream-sync-design.md。"""
+"""上游同步的准备任务。用法见 upstream-sync --help，设计见 .github/upstream-sync/design.md。"""
 
 import os
 import sys
