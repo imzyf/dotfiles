@@ -4,7 +4,7 @@
 
 本仓库以 [liby/dotfiles](https://github.com/liby/dotfiles) 为基础。[`upstream-sync/rules`](upstream-sync/rules) 按上游路径给每个文件定一种处理方式：`follow` 的文件整份接受上游改动，`own` 的文件由本仓库维护，`watch` 的文件不进入本仓库、上游改动只用来学习，`skip` 的文件本仓库不需要。上游改动由 [`upstream-sync`](upstream-sync/) 整理成工单，逐个 commit 决定后才合并进 `main`，所以跟随的文件停在最后一次处理到的上游 commit。本仓库不运行 Renovate，`.github/dev-tools` 里的版本和 `.chezmoiexternal.toml` 里固定的 commit 也随工单从上游进来。
 
-跟随的文件需要本地改动时用覆盖层：上游文件复制成 `.chezmoitemplates/` 下的 `upstream.*` 副本，本地模板用 `includeTemplate` 引入副本，只叠加差异。叠加的改动依赖副本里的某段内容，例如一行 `zoxide init` 或结尾的一组 include；上游改掉这段内容时，本地模板用 `fail` 让渲染报错，不让改动静默失效。覆盖层有 `dot_zshrc.tmpl`、`dot_zshenv.tmpl`、`dot_config/git/config.tmpl`、`.chezmoitemplates/git/github.config`、`.chezmoitemplates/claude/settings.json` 和 `.chezmoitemplates/codex/global-state.json`。`dot_claude/CLAUDE.md.tmpl` 也映射了上游副本，但本地文件是自己写的全文，不引入副本。Codex 和 Pi 的 `AGENTS.md` 只有上游副本，没有本地文件，所以不部署。
+跟随的文件需要本地改动时用覆盖层：上游文件复制成 `.chezmoitemplates/` 下的 `upstream.*` 副本，本地模板用 `includeTemplate` 引入副本，只叠加差异。叠加的改动依赖副本里的某段内容，例如一行 `zoxide init` 或结尾的一组 include；上游改掉这段内容时，本地模板用 `fail` 让渲染报错，不让改动静默失效。哪些上游文件有 `upstream.*` 副本，以 [rules](upstream-sync/rules) 里带 `>` 的规则为准；本地文件不一定引入副本。
 
 ## 初始化
 
@@ -70,7 +70,7 @@ mbx 是本机的 Cargo 构建缓存。`~/.zshenv` 把它的 Cargo shim 放在 `~
 
 ## 仓库校验
 
-本仓库不运行 CI，也不带测试：上游的 `.github/tests`、`renovate.json` 和放在各文件旁边的 `*.test.*` 都是 `skip`，`.github/workflows` 只观察，不部署。本地改动在提交前用限定目标的 `chezmoi diff` 检查渲染结果。上游改动在工单里由 `upstream-sync affected` 渲染新旧两个版本，列出部署结果有变化的文件和脚本，任一版本渲染失败就报错。
+本仓库不运行 CI，也不带测试，上游的测试和 workflow 都不进入本仓库。本地改动在提交前用限定目标的 `chezmoi diff` 检查渲染结果。上游改动在工单里由 `upstream-sync affected` 渲染新旧两个版本，列出部署结果有变化的文件和脚本，任一版本渲染失败就报错。
 
 ## 配置归属
 
@@ -86,13 +86,13 @@ JSON 和 TOML modifier 在解析后的值已经一致时原样输出输入，所
 
 chezmoi 源文件管理可移植、长期的偏好，包括已经形成的操作习惯，前提是它们应在多台机器间保持一致。和默认值相同的便利设置不写出来，除非显式值用来守住仓库边界，或者抵消观察到的回写漂移。生成的运行时状态、机器特定的路径和在别处同步的设置，仍由原来的系统管理。
 
-[macOS 设置脚本](../.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh)由本仓库维护，管理外观、语言和区域、计量单位、键盘重复和文字替换、Dock 和触发角、Finder 等 Apple 偏好，每个 key 的含义写在旁边的注释里。首选语言用整个数组写入，手动添加的语言在重跑后不会保留；语言、区域和外观在下次登录时生效，不在当前会话生效。第三方 app 偏好、登录项和 Input Source Pro 的设置导入在上游由各自的脚本管理，本仓库跳过了这些脚本；上游管理通知设置的脚本，本仓库只观察，不部署。
+[macOS 设置脚本](../.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh)由本仓库维护，管理 Apple 自带的偏好，每个 key 的含义写在旁边的注释里。首选语言用整个数组写入，手动添加的语言在重跑后不会保留；语言、区域和外观在下次登录时生效，不在当前会话生效。上游另有脚本管理第三方 app 偏好、登录项和通知等设置，本仓库都不部署。
 
 ### Shell 启动
 
 agent 和 chezmoi 脚本需要的环境变量、必须排在 Homebrew 前面的工具链目录，放在 [`~/.zshenv`](../dot_zshenv.tmpl)，这样不依赖交互式启动或 agent 的 shell 快照。这个划分要符合 [zsh 启动文件的约定](https://zsh.sourceforge.io/Doc/Release/Files.html#Startup_002fShutdown-Files)。Homebrew 和 OrbStack 的环境放在 [`~/.zprofile`](../dot_zprofile)，它在 macOS 的 `path_helper` 之后恢复工具链的优先级。[`~/.zshrc`](../dot_zshrc.tmpl) 放交互式配置：补全、历史、alias、插件、proto 激活和提示符。Pi 的 `bash -c` 和 launchd helper 不读这些 zsh 文件，它们需要继承或显式设置的 PATH。
 
-两个文件都是覆盖层。`~/.zshenv` 在上游内容后面设置 `XDG_CONFIG_HOME`、`XDG_DATA_HOME`、`XDG_STATE_HOME` 和 `XDG_CACHE_HOME`。`~/.zshrc` 让 zoxide 用 `cd` 代替上游默认的 `z`，在上游内容之后定义本地 alias，覆盖同名的上游 alias：`cc` 改为先选 provider 再启动 Claude，`ccg` 和 `ccs` 分别临时用 gateway 和订阅模式启动，`c` 改为 `composer`，并删除上游的 `ccm`。最后它 source `~/.zsh/lib/*.zsh`，这些本地函数、alias 和补全只在本仓库里。
+两个文件都是覆盖层。`~/.zshenv` 在上游内容后面设置 `XDG_CONFIG_HOME`、`XDG_DATA_HOME`、`XDG_STATE_HOME` 和 `XDG_CACHE_HOME`。`~/.zshrc` 让 zoxide 用 `cd` 代替上游默认的 `z`，在上游内容之后定义本地 alias，覆盖或删除同名的上游 alias。最后它 source `~/.zsh/lib/*.zsh`，这些本地函数、alias 和补全只在本仓库里。
 
 ### Codex 配置
 
@@ -138,11 +138,11 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 上游把 Claude Code 设置、sandbox 和集成的决定写在 `.claude/rules/claude-code-settings.md`，本仓库只观察这个文件，不部署。
 
-`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游做两处修改。第一处是从 sandbox 允许的域名里去掉私有 npm registry，Codex 仍从共享列表得到它。第二处是只保留 `rexume report claude` 这组 hook，去掉上游的其他 hook：agent-guard 检查、Bash 输出的密钥扫描、compact 前后的提示、编辑 chezmoi 目标文件时的警告和 Rex 的 `SessionStart`。这些 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册 rexume hook 时，渲染报错。
+`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游做两处修改。第一处是从 sandbox 允许的域名里去掉私有 npm registry，Codex 仍从共享列表得到它。第二处是只保留 `rexume` 的 hook，去掉上游注册的其他 hook。这些 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册 rexume hook 时，渲染报错。
 
 `disableDeepLinkRegistration`、`DISABLE_TELEMETRY` 和 `DISABLE_ERROR_REPORTING` 放在 managed settings 里，由 [sudo 脚本](../.chezmoiscripts/run_onchange_after_setup-claude-managed-settings.sh.tmpl)装成 root 所有的 `/Library/Application Support/ClaudeCode/managed-settings.json`。用 `--setting-sources` 跳过用户设置的 session 也会读这个文件。任何 managed settings 文件都会让 Claude Code 把内置的 `cc-plugin-sec-default` 插件放在最外层，所以片段把 `prependPlugins` 设为空列表。
 
-`~/.claude.json` 存放账号状态，[modifier](../modify_private_dot_claude.json) 只管理选定的字段，并按 0600 部署。`~/.claude/CLAUDE.md` 是本仓库自己的全文，写的是回复语言和英语辅导，不引入上游的共享指令。
+`~/.claude.json` 存放账号状态，[modifier](../modify_private_dot_claude.json) 只管理选定的字段，并按 0600 部署。`~/.claude/CLAUDE.md` 是本仓库自己的全文，不引入上游的共享指令。
 
 ### Pi 配置
 
@@ -172,7 +172,7 @@ Pi 的 `npmCommand` 对整个 `@earendil-works/*` scope 使用 npm 的[发布时
 
 ## Rex 集成
 
-[偏好脚本](../.chezmoiscripts/run_onchange_after_setup-rex.sh)由本仓库维护，只写本机选定的 Rex 设置：外观和主题、终端字号和行间距、非活动 pane 的样式、关闭 agent 命名 session，以及按优先级分组 Activity。按优先级分组是实验功能，需要开启开发者模式。app 启动时读取这些设置，所以改完要重新打开 app，Rex Server 和它运行的程序保持不动。app 自己记录的状态、主题文件和 session 状态不写进源文件。
+[偏好脚本](../.chezmoiscripts/run_onchange_after_setup-rex.sh)由本仓库维护，只写本机选定的 Rex 设置。其中 `Workspace.experiments.*` 是实验功能，需要开启开发者模式。app 启动时读取这些设置，所以改完要重新打开 app，Rex Server 和它运行的程序保持不动。app 自己记录的状态、主题文件和 session 状态不写进源文件。
 
 上游的 `setup-rex`、Lua 配置和重新加载配置的脚本，本仓库只观察，不部署。所以本机没有 `Cmd+W` 的前台进程确认，新机器上要手动运行 `rex skill setup --session-naming=false` 安装 Rex 的 skill，手动运行 `rexume install` 安装 Rexume。
 
@@ -212,9 +212,9 @@ Claude Code 的 `auto` 模式下，skill 的 `allowed-tools` 让这个 skill 那
 
 ## 身份和加密数据
 
-[`.chezmoi.toml.tmpl`](../.chezmoi.toml.tmpl) 由本仓库维护，`init` 时提示输入账号相关的值：OpenAI 兼容 API 的 base URL、私有 GitLab 的 name、email 和 host、私有 npm registry 的 host。`tailnetDomain` 是常量 `invalid`，因为本机没有 Tailscale，而上游的 sandbox 允许列表要渲染 `*.<tailnetDomain>`；以后有 tailnet 时，换回上游的提示。
+[`.chezmoi.toml.tmpl`](../.chezmoi.toml.tmpl) 由本仓库维护，`init` 时提示输入账号相关的值。`tailnetDomain` 是常量 `invalid`，因为本机没有 Tailscale，而上游的 sandbox 允许列表要渲染 `*.<tailnetDomain>`；以后有 tailnet 时，换回上游的提示。
 
-加密文件用 GPG，私钥在 YubiKey 上，`.chezmoi.toml.tmpl` 只写本机的收件人。上游的加密文件本仓库解不开，所以都是 `skip`；本仓库自己的加密文件只有 SSH 的私有 host 配置。
+加密文件用 GPG，私钥在 YubiKey 上，`.chezmoi.toml.tmpl` 只写本机的收件人。上游的加密文件本仓库解不开，所以都是 `skip`。
 
 agent 可以读 `~/.ssh` 顶层的客户端配置（`config`、`config.*`）、公钥、`allowed_signers` 和 `known_hosts`，这个目录下的其他文件都不能读。Claude 的 sandbox 按目录执行这份清单，所以部署在那里的私钥不需要命名约定，也不需要逐个规则。Codex 的 sandbox 只重新放行 ssh 和 Git 签名验证需要的具体文件，所以在那个 sandbox 里公钥也读不到。
 
@@ -222,7 +222,7 @@ agent 可以读 `~/.ssh` 顶层的客户端配置（`config`、`config.*`）、�
 
 两个代码托管平台都验证 YubiKey 签的 commit，但格式不同。GitHub 验证卡上签名密钥的 OpenPGP 签名。GitLab 用注册在 GitLab 账号上的认证密钥验证卡上认证密钥的 SSH 签名，所以工作邮箱不会成为个人 OpenPGP 密钥的 user ID，这把密钥公开时不带任何雇主信息，以后也不用从密钥上撤销。本地 Git 用加密的 `~/.ssh/allowed_signers` 验证这些签名，GitLab 不读这个文件。[`run_onchange_after_setup-gitconfig.sh.tmpl`](../.chezmoiscripts/run_onchange_after_setup-gitconfig.sh.tmpl) 从 `gpg --card-status` 读取密钥 ID，把带这个 ID 的 [`github.config`](../.chezmoitemplates/git/github.config) 和带导出的认证密钥（Git 的 `key::` 形式）的 [`gitlab.config`](../.chezmoitemplates/git/gitlab.config) 装到 `~/.config/git/`，所以签名不读 `~/.ssh` 下的任何文件。脚本每次重跑都自己推导密钥，因为 GPG 脚本在 Homebrew keg 变化时重跑，不在换卡时重跑。换上存有不同密钥的 YubiKey 时，两个脚本都不会自己重跑，所以换卡后要重新调度两个脚本：`setup-gpg-agent.sh` 导入新卡的公钥，`setup-gitconfig.sh` 重写签名密钥。
 
-`~/.config/git/config` 是覆盖层，去掉上游结尾的 include，换成本仓库的规则。全局 `[user]` 是个人身份，另外加了 `co`、`ps`、`psf`、`psf-skip` 几个 alias。remote 指向 GitHub（SSH 或 HTTPS）的仓库引入 `github.config`，remote 指向私有 GitLab host 的仓库引入 `gitlab.config`，`~/Code/` 下的仓库引入 `performance.config`。上游则是所有仓库都引入 `github.config`，`~/Code/GitLab/` 下的仓库引入 `gitlab.config`。`github.config` 也是覆盖层，把上游的 `[user]` 换成本仓库的 GitHub 身份，签名设置照用上游。
+`~/.config/git/config` 是覆盖层，去掉上游结尾的 include，换成本仓库的规则。全局 `[user]` 是个人身份，另外加了几个本地 alias。remote 指向 GitHub（SSH 或 HTTPS）的仓库引入 `github.config`，remote 指向私有 GitLab host 的仓库引入 `gitlab.config`，`~/Code/` 下的仓库引入 `performance.config`。上游则是所有仓库都引入 `github.config`，`~/Code/GitLab/` 下的仓库引入 `gitlab.config`。`github.config` 也是覆盖层，把上游的 `[user]` 换成本仓库的 GitHub 身份，签名设置照用上游。
 
 [`git-ssh-gpg-agent`](../dot_config/git/executable_git-ssh-gpg-agent) 的存在原因是：gpg-agent 在 `~/.gnupg/S.gpg-agent.ssh` 提供卡上的 SSH 密钥，而 shell 的 `SSH_AUTH_SOCK` 指向 macOS 的 ssh-agent。这个 wrapper 把 `SSH_AUTH_SOCK` 指向 gpg-agent 的 socket，再为 `core.sshCommand --transport` 运行 `ssh`，或作为 `gpg.ssh.program` 运行 `ssh-keygen`，所以 SSH 签名从任何 shell 都能用到 YubiKey，包括不继承 agent 环境的 sandbox 里的 agent shell。Git 走 SSH 也一样，只有 Claude Code 的 macOS sandbox 例外，它不放行任何 SSH 连接：它把 `GIT_SSH_COMMAND` 设成一个无法向代理认证的代理命令，而 `GIT_SSH_COMMAND` 优先于 `core.sshCommand`。所以 Git 配置把两个平台的 `git@` remote 在 fetch 和 push 时都改写成 HTTPS，通过 `gh` 和 `glab` 认证，对应平台的 CLI 没登录时，push 和 fetch 非公开仓库都会失败。这些 CLI 的 token 在 sandbox 里本来就能写两个平台，所以让 push 继续走 SSH 并不能保护什么。
 
@@ -230,18 +230,7 @@ agent 可以读 `~/.ssh` 顶层的客户端配置（`config`、`config.*`）、�
 
 ### 凭据
 
-凭据存放在 [Maskey](https://github.com/Entwining/maskey) 里，Maskey 把它们存进 iCloud Keychain，登录同一个 Apple 账号的每台 Mac 都能拿到，本仓库里没有副本。条目的形式是 `<namespace>/<NAME>`，NAME 就是使用者收到的环境变量名。本仓库的文件使用这些条目，其他条目不是本仓库的要求：
-
-```text
-claude-gateway/ANTHROPIC_AUTH_TOKEN
-claude-gateway/ANTHROPIC_VERTEX_BASE_URL
-claude-gateway/ANTHROPIC_VERTEX_PROJECT_ID
-context7/CONTEXT7_API_KEY
-glab/GITLAB_CLIENT_ID
-pi/ANTHROPIC_API_KEY
-pi/RC_GATEWAY_API_KEY
-typesafe/TYPESAFE_API_KEY
-```
+凭据存放在 [Maskey](https://github.com/Entwining/maskey) 里，Maskey 把它们存进 iCloud Keychain，登录同一个 Apple 账号的每台 Mac 都能拿到，本仓库里没有副本。条目的形式是 `<namespace>/<NAME>`，NAME 就是使用者收到的环境变量名。本仓库的文件用 `mk run` 和 `mk get` 引用条目，用 `rg 'mk (run|get)'` 能找到所有使用者；其他条目不是本仓库的要求。
 
 `mk run` 把选中的条目交给它启动的命令，并在命令输出里遮住每个选中条目的确切值，所以非机密的常量放在使用者里，存一个 `1` 会把输出里所有的 1 都遮住。`mk get` 把一个条目的值返回给读取它的调用者，前提是用户在 Maskey 里给这个条目授予了程序访问权限。之后任何能运行 `mk` 的程序都能读这个条目，所以只给下面用 `mk get` 读取的条目授权。
 
@@ -251,5 +240,3 @@ typesafe/TYPESAFE_API_KEY
 - `context7`：所有 Context7 的使用都经过 [Context7 skill](../dot_agents/skills/context7/SKILL.md)，它在 `mk run context7` 里运行 `ctx7` CLI，`CONTEXT7_API_KEY` 只到达 CLI 子进程。这个 namespace 还可以有一个可选的 `CONTEXT7_BASE_URL`，默认没有；它指向一个转发官方 `/api/v2` 查询 API 的可信反向代理，结尾不带斜杠，同时要把这个主机加进 Claude Code sandbox 的 `allowedDomains`。全局的 `--base-url` 对查询模式的请求有效，但上游只支持 MCP HTTP 方式的自定义部署，查询模式的私有部署不受支持。改 Context7 的配置后，通过 skill 运行一次 resolve 和 query 来验证。
 - `glab`：[glab 设置脚本](../.chezmoiscripts/run_onchange_after_setup-glab.sh.tmpl)在 `mk run` 下的命令里，把私有 GitLab 的 OAuth application ID `GITLAB_CLIENT_ID` 写进 glab 的配置，变量名就是 glab 自己读的名字。
 - `pi` 和 `typesafe`：[Pi 模型配置](../private_dot_pi/private_agent/private_models.json.tmpl)用 `mk get` 从 `pi` namespace 读取 `ANTHROPIC_API_KEY` 和 `RC_GATEWAY_API_KEY`，从 `typesafe` namespace 读取 `TYPESAFE_API_KEY`。
-
-上游有一个测试检查这份条目清单和各使用者是否对得上，本仓库跳过了测试，这份清单要手动和使用者保持一致。
