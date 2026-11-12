@@ -4,7 +4,7 @@
 
 本仓库以 [liby/dotfiles](https://github.com/liby/dotfiles) 为基础。[`upstream-sync/rules`](upstream-sync/rules) 按上游路径给每个文件定一种处理方式：`follow` 的文件整份接受上游改动，`own` 的文件由本仓库维护，`watch` 的文件不进入本仓库、上游改动只用来学习，`skip` 的文件本仓库不需要。上游改动由 [`upstream-sync`](upstream-sync/) 整理成工单，逐个 commit 决定后才合并进 `main`，所以跟随的文件停在最后一次处理到的上游 commit。本仓库不运行 Renovate，`.github/dev-tools` 里的版本和 `.chezmoiexternal.toml` 里固定的 commit 也随工单从上游进来。
 
-跟随的文件需要本地改动时用覆盖层：上游文件复制成 `.chezmoitemplates/` 下的 `upstream.*` 副本，本地模板用 `includeTemplate` 引入副本，只叠加差异。叠加的改动依赖副本里的某段内容，例如一行 `zoxide init` 或结尾的一组 include；上游改掉这段内容时，本地模板用 `fail` 让渲染报错，不让改动静默失效。覆盖层有 `dot_zshrc.tmpl`、`dot_zshenv.tmpl`、`dot_config/git/config.tmpl`、`.chezmoitemplates/git/github.config` 和 `.chezmoitemplates/claude/settings.json`。`dot_claude/CLAUDE.md.tmpl` 也映射了上游副本，但本地文件是自己写的全文，不引入副本。Codex 和 Pi 的 `AGENTS.md` 只有上游副本，没有本地文件，所以不部署。
+跟随的文件需要本地改动时用覆盖层：上游文件复制成 `.chezmoitemplates/` 下的 `upstream.*` 副本，本地模板用 `includeTemplate` 引入副本，只叠加差异。叠加的改动依赖副本里的某段内容，例如一行 `zoxide init` 或结尾的一组 include；上游改掉这段内容时，本地模板用 `fail` 让渲染报错，不让改动静默失效。覆盖层有 `dot_zshrc.tmpl`、`dot_zshenv.tmpl`、`dot_config/git/config.tmpl`、`.chezmoitemplates/git/github.config`、`.chezmoitemplates/claude/settings.json` 和 `.chezmoitemplates/codex/global-state.json`。`dot_claude/CLAUDE.md.tmpl` 也映射了上游副本，但本地文件是自己写的全文，不引入副本。Codex 和 Pi 的 `AGENTS.md` 只有上游副本，没有本地文件，所以不部署。
 
 ## 初始化
 
