@@ -54,7 +54,7 @@ Brewfile 安装脚本用 [`brew bundle --no-upgrade`](https://docs.brew.sh/Manpa
 
 helper 把 Homebrew 升级和 Pi、gh extension、Rust 的更新、定期清理包缓存以及升级后的维护放在一起。它和 Brewfile 安装脚本都会清除 Codex cask 可执行文件的 quarantine 属性，因为只批准 CLI 本身覆盖不到它的辅助程序和替换后的文件。helper 还会重启缺失或过期的 GnuPG daemon；只升级了库时 GnuPG 报告的版本不变，要等下一次 `chezmoi apply`。这些职责需要 Homebrew 包升级之外的一个 job，helper 自己负责命令顺序和 PATH。
 
-有自己更新器的 app 不归这个 job 升级：[`dot_homebrew/brew.env`](../dot_homebrew/brew.env) 设置 Homebrew 的 [`HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS`](https://docs.brew.sh/Manpage#environment)，用 cask 自己的 `auto_updates` 声明，不另外维护一份列表。不带 `auto_updates` 的 cask，例如 `codex`，仍由 job 升级。后台 job 不加 `--greedy`，以保持这条边界。Homebrew 只在 `XDG_CONFIG_HOME` 未设置时读 `~/.homebrew/brew.env`，本仓库的 `~/.zshenv` 设置了 `XDG_CONFIG_HOME`，所以只有不读 zsh 文件的后台 job 用到这个文件，在终端里运行的 `brew upgrade` 会升级自带更新器的 cask。
+有自己更新器的 app 不归这个 job 升级：[`dot_homebrew/brew.env`](../dot_homebrew/brew.env) 设置 Homebrew 的 [`HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS`](https://docs.brew.sh/Manpage#environment)，用 cask 自己的 `auto_updates` 声明，不另外维护一份列表。不带 `auto_updates` 的 cask，例如 `codex`，仍由 job 升级。后台 job 不加 `--greedy`，以保持这条边界。终端和后台 job 读的是同一个 `~/.homebrew/brew.env`，所以在终端里运行的 `brew upgrade` 也跳过这些 cask。
 
 npm 全局工具的精确版本在 [`.github/dev-tools/package.json`](dev-tools/package.json)，Pyright 在 [`.github/dev-tools/requirements.txt`](dev-tools/requirements.txt)，mbx 固定在[它的 release 安装脚本](dev-tools/install-mbx.sh)里，脚本用 release 的 `SHA256SUMS` 校验官方 release 包，再装到 `~/.local/bin`。一个共享的 `run_onchange` 安装脚本先安装 proto 声明的工具，再逐个协调这些声明，不删除机器上无关的工具；不要拆分这个安装脚本。`typescript`、`typescript-language-server` 和 Pyright 支撑 Claude Code 的 LSP 插件；workspace 自己的 `typescript` 提供不了 tsserver 时，`typescript-language-server` 回退到全局的 `typescript`。
 
@@ -90,9 +90,9 @@ chezmoi 源文件管理可移植、长期的偏好，包括已经形成的操作
 
 ### Shell 启动
 
-agent 和 chezmoi 脚本需要的环境变量、必须排在 Homebrew 前面的工具链目录，放在 [`~/.zshenv`](../dot_zshenv.tmpl)，这样不依赖交互式启动或 agent 的 shell 快照。这个划分要符合 [zsh 启动文件的约定](https://zsh.sourceforge.io/Doc/Release/Files.html#Startup_002fShutdown-Files)。Homebrew 和 OrbStack 的环境放在 [`~/.zprofile`](../dot_zprofile)，它在 macOS 的 `path_helper` 之后恢复工具链的优先级。[`~/.zshrc`](../dot_zshrc.tmpl) 放交互式配置：补全、历史、alias、插件、proto 激活和提示符。Pi 的 `bash -c` 和 launchd helper 不读这些 zsh 文件，它们需要继承或显式设置的 PATH。
+agent 和 chezmoi 脚本需要的环境变量、必须排在 Homebrew 前面的工具链目录，放在 [`~/.zshenv`](../dot_zshenv)，这样不依赖交互式启动或 agent 的 shell 快照。这个划分要符合 [zsh 启动文件的约定](https://zsh.sourceforge.io/Doc/Release/Files.html#Startup_002fShutdown-Files)。Homebrew 和 OrbStack 的环境放在 [`~/.zprofile`](../dot_zprofile)，它在 macOS 的 `path_helper` 之后恢复工具链的优先级。[`~/.zshrc`](../dot_zshrc.tmpl) 放交互式配置：补全、历史、alias、插件、proto 激活和提示符。Pi 的 `bash -c` 和 launchd helper 不读这些 zsh 文件，它们需要继承或显式设置的 PATH。
 
-两个文件都是覆盖层。`~/.zshenv` 在上游内容后面设置 `XDG_CONFIG_HOME`、`XDG_DATA_HOME`、`XDG_STATE_HOME` 和 `XDG_CACHE_HOME`。`~/.zshrc` 让 zoxide 用 `cd` 代替上游默认的 `z`，在上游内容之后定义本地 alias，覆盖或删除同名的上游 alias。最后它 source `~/.zsh/lib/*.zsh`，这些本地函数、alias 和补全只在本仓库里。
+`~/.zshenv` 原样跟随上游，不设置 XDG 目录变量。Homebrew 在设置了 `XDG_CONFIG_HOME` 时从 `~/.config/homebrew` 读 `brew.env` 和 `trust.json`，没设置时从 `~/.homebrew` 读；launchd job 不读 zsh 文件，所以在 `~/.zshenv` 设置它，会让终端和后台 job 各用一份配置和信任名单。按 XDG 规范处理的工具在变量没设置时本来就用 `~/.config`、`~/.local/share`、`~/.local/state` 和 `~/.cache`。`~/.zshrc` 是覆盖层，它让 zoxide 用 `cd` 代替上游默认的 `z`，在上游内容之后定义本地 alias，覆盖或删除同名的上游 alias。最后它 source `~/.zsh/lib/*.zsh`，这些本地函数、alias 和补全只在本仓库里。
 
 ### Codex 配置
 
@@ -122,7 +122,7 @@ Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 g
 
 `features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code 和 Codex 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。共享域名列表包含由 `npmHost` 渲染出的 `npm.invalid` 和由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、Maskey 的 Keychain 服务等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
 
-代理在命令第一次被拒绝的请求时结束整个命令，并报告 `Network access to "<host>" was blocked: <reason>`；Claude Code 的 sandbox 只在 `<sandbox_violations>` 里列出拒绝，命令继续运行。所以 Claude Code 在命令正常工作之外报告的主机，在 Codex 下也会让这个命令失败。工具自己发出这类请求时，例如遥测、更新检查或平台探测，用工具的开关在 [`dot_zshenv`](../dot_zshenv.tmpl) 里关掉，所有 zsh 都会读这个文件，包括终端和两个 agent 的命令。只有 zsh 启动时设不了开关的请求，才考虑加进共享允许列表；一个主机因为别的请求被允许后，它的开关仍然保持设置。
+代理在命令第一次被拒绝的请求时结束整个命令，并报告 `Network access to "<host>" was blocked: <reason>`；Claude Code 的 sandbox 只在 `<sandbox_violations>` 里列出拒绝，命令继续运行。所以 Claude Code 在命令正常工作之外报告的主机，在 Codex 下也会让这个命令失败。工具自己发出这类请求时，例如遥测、更新检查或平台探测，用工具的开关在 [`dot_zshenv`](../dot_zshenv) 里关掉，所有 zsh 都会读这个文件，包括终端和两个 agent 的命令。只有 zsh 启动时设不了开关的请求，才考虑加进共享允许列表；一个主机因为别的请求被允许后，它的开关仍然保持设置。
 
 `cli_auth_credentials_store` 和 `mcp_oauth_credentials_store` 都明确设为 `keyring`，`auto` 可能退回到明文文件。在另一台机器上启用前，先用不泄露凭据的状态检查确认目标存储里已有登录。agent 不迁移、不改写、不删除真实的凭据存储。
 
