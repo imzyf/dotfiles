@@ -190,7 +190,7 @@ hook 报告的是运行它的进程继承的 `REX_*`，而 `rex whoami` 接受�
 
 ## Agent guard
 
-[`Brewfile`](../Brewfile) 从 `entwining/tap` 安装 [agent-guard](https://github.com/Entwining/agent-guard)，提供 `/opt/homebrew/bin/agent-guard`。[Codex requirements](../.chezmoitemplates/codex/requirements.toml) 把 hook 放在 `managed_dir` 下，[`guard-bash`](../dot_codex/managed-hooks/executable_guard-bash) 检查 Homebrew 的二进制存在后，用 `--runtime codex` exec 它。[Pi 扩展包](https://github.com/Entwining/pi-extensions#extensions)里的 guard 适配器把 Pi 的工具调用映射成 guard 事件，调用同一个可执行文件。Claude Code 的设置片段为 `Bash` 和 `Read|Edit|Write|Grep` 注册了它。`Read`、`Edit`、`Write` 在 `permissions.allow` 里，不经过 auto 模式的分类器，sandbox 也只管 Bash，所以用文件工具读凭据只由 guard 拦下。
+[`Brewfile`](../Brewfile) 从 `entwining/tap` 安装 [agent-guard](https://github.com/Entwining/agent-guard)，提供 `/opt/homebrew/bin/agent-guard`。[Codex requirements](../.chezmoitemplates/codex/requirements.toml) 把 hook 放在 `managed_dir` 下，[`guard-bash`](../dot_codex/managed-hooks/executable_guard-bash) 检查 Homebrew 的二进制存在后，用 `--runtime codex` exec 它。[Pi 扩展包](https://github.com/Entwining/pi-extensions#extensions)里的 guard 适配器把 Pi 的工具调用映射成 guard 事件，调用同一个可执行文件。Claude Code 的设置片段为 `Bash` 和 `Read|Edit|Write|Grep` 注册了它。
 
 guard 把自己的失败，包括超过内部时限，报告为 exit 2，各运行时都把它当成阻止。guard 启动不了或 hook 超时，由运行时决定：Pi 扩展对干净通过以外的任何结果都阻止。Codex 在这些情况下会执行调用，而且没有对应的设置，所以 `guard-bash` 自己阻止缺失的二进制，它的 hook 超时必须大于 guard 的时限。
 
