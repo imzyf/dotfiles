@@ -19,28 +19,38 @@ Merged into live settings by dot_claude/modify_private_settings.json.
 {{- end -}}
 {{- $_ := set $settings.sandbox.network "allowedDomains" (without $allowedDomains $removedNpmHost) -}}
 
-{{- /* Clear upstream hooks except rexume's, which `rexume install` also registers; keep the
-      managed key so applying replaces existing live hooks. */ -}}
+{{- /* Clear upstream hooks except rexume's, which `rexume install` also registers, and the
+      post-compaction reminder; keep the managed key so applying replaces existing live hooks. */ -}}
+{{- $compactionReminder := "~/.claude/hooks/post-compact-reminder.sh" -}}
+{{- $keptRexume := false -}}
+{{- $keptCompactionReminder := false -}}
 {{- $hooks := dict -}}
 {{- range $event, $groups := $settings.hooks -}}
   {{- $keptGroups := list -}}
   {{- range $groups -}}
-    {{- $rexume := list -}}
+    {{- $kept := list -}}
     {{- range .hooks -}}
       {{- if hasPrefix "rexume " .command -}}
-        {{- $rexume = append $rexume . -}}
+        {{- $kept = append $kept . -}}
+        {{- $keptRexume = true -}}
+      {{- else if eq .command $compactionReminder -}}
+        {{- $kept = append $kept . -}}
+        {{- $keptCompactionReminder = true -}}
       {{- end -}}
     {{- end -}}
-    {{- if $rexume -}}
-      {{- $keptGroups = append $keptGroups (set (deepCopy .) "hooks" $rexume) -}}
+    {{- if $kept -}}
+      {{- $keptGroups = append $keptGroups (set (deepCopy .) "hooks" $kept) -}}
     {{- end -}}
   {{- end -}}
   {{- if $keptGroups -}}
     {{- $_ := set $hooks $event $keptGroups -}}
   {{- end -}}
 {{- end -}}
-{{- if not $hooks -}}
+{{- if not $keptRexume -}}
   {{- fail "claude/upstream.settings.json no longer registers rexume hooks; update the override in claude/settings.json" -}}
+{{- end -}}
+{{- if not $keptCompactionReminder -}}
+  {{- fail "claude/upstream.settings.json no longer registers post-compact-reminder.sh; update the override in claude/settings.json" -}}
 {{- end -}}
 {{- $_ := set $settings "hooks" $hooks -}}
 {{ toPrettyJson $settings }}
