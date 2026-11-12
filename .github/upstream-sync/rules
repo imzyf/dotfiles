@@ -6,7 +6,6 @@ base       2e8b1f355
 
 # 跟随：本地文件和上游保持一致
 follow     .chezmoiexternal.toml
-follow     .chezmoiignore
 follow     .chezmoiscripts/**
 follow     .chezmoitemplates/**
 follow     .github/dev-tools/**
@@ -37,6 +36,7 @@ follow     private_Library/**
 follow     private_dot_cache/private_codex-tmp/.keep
 
 # 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
+follow     .chezmoiignore                                         > .chezmoitemplates/chezmoi/upstream.chezmoiignore
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
 follow     .chezmoitemplates/codex/global-state.json              > .chezmoitemplates/codex/upstream.global-state.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
@@ -72,11 +72,13 @@ watch      private_dot_oracle/**
 # 不需要
 skip       .chezmoiscripts/run_after_check-skill-versions.sh.tmpl
 skip       .chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
+skip       .chezmoiscripts/run_onchange_after_deploy-rime.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_setup-apps.sh
 skip       .chezmoitemplates/input-source-pro/**
 skip       .github/renovate.json
 skip       .github/tests/**
+skip       private_Library/Rime/**
 skip       dot_agents/skills/commit/**
 skip       dot_agents/skills/glab/**
 skip       dot_agents/skills/new-branch/**
