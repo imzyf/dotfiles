@@ -14,7 +14,6 @@ follow     dot_agents/skills/deslop/**
 follow     dot_agents/skills/draft/**
 follow     dot_agents/skills/gh/**
 follow     dot_agents/skills/oracle/**
-follow     dot_agents/skills/orc/**
 follow     dot_agents/skills/symlink_surge
 follow     dot_agents/skills/write-skill/**
 follow     dot_cargo/**
