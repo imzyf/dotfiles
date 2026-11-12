@@ -30,6 +30,7 @@ follow     dot_local/share/claude-launcher/**
 follow     dot_proto/**
 follow     dot_zprofile
 follow     dot_zsh/**
+follow     modify_dot_claude.json
 follow     modify_private_dot_claude.json
 follow     private_dot_pi/**
 follow     private_Library/**
@@ -48,6 +49,7 @@ follow     private_dot_pi/private_agent/private_AGENTS.md.tmpl    > .chezmoitemp
 # 自己维护
 own        .chezmoi.toml.tmpl
 own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh
+own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
 own        .chezmoiscripts/run_onchange_after_setup-rex.sh
 own        .github/README.md
 own        AGENTS.md
