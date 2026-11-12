@@ -140,7 +140,7 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 上游把 Claude Code 设置、sandbox 和集成的决定写在 `.claude/rules/claude-code-settings.md`，本仓库只观察这个文件，不部署。
 
-`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游只做一处修改：只保留 `rexume` 的 hook 和压缩前后的两个 hook（`pre-compact-instructions.sh` 和 `post-compact-reminder.sh`），去掉上游注册的其他 hook。被去掉的 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册其中任何一个保留的 hook 时，渲染报错。
+`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，本地改动叠加在这里，目前没有本地改动。
 
 `disableDeepLinkRegistration`、`DISABLE_TELEMETRY` 和 `DISABLE_ERROR_REPORTING` 放在 managed settings 里，由 [sudo 脚本](../.chezmoiscripts/run_onchange_after_setup-claude-managed-settings.sh.tmpl)装成 root 所有的 `/Library/Application Support/ClaudeCode/managed-settings.json`。用 `--setting-sources` 跳过用户设置的 session 也会读这个文件。任何 managed settings 文件都会让 Claude Code 把内置的 `cc-plugin-sec-default` 插件放在最外层，所以片段把 `prependPlugins` 设为空列表。
 
@@ -180,7 +180,7 @@ Pi 的 `npmCommand` 对整个 `@earendil-works/*` scope 使用 npm 的[发布时
 
 编排 skill 是 Rexume 自带的 `rexume` skill：`rexume install` 写入一个 stub，它用 `rexume skill show` 输出已安装版本的指南，所以和[其他工具自带的 skill](#skill-管理)一样不放进源文件。上游把这套环境对被启动 agent 的约束写进[共享 agent 指令](#共享-agent-指令)：`claude` launcher 选择模式的参数、直接接受被启动 agent 的 folder trust 提示、Codex 的 managed permission profile 做不到只读。本仓库没有部署共享指令的根文件，所以这些约束在本机不生效。上游在 apply 时用 `rexume skill status` 报告的 Rex 版本和指南 hash 检查 Rex 的指南，本仓库跳过了这个检查。
 
-Rexume 在 Claude Code 里的 `SessionStart`、`UserPromptSubmit`、`Stop` 和 `StopFailure` hook 写在设置片段里，Codex 的整个 [hooks 文件](../dot_codex/hooks.json)跟随上游，同时包含 Rex 和 Rexume 的条目。命令要保持原样，`rex skill setup` 和 `rexume install` 才能认出它们并保持不变。新机器上要在 Codex 里通过 `/hooks` 信任这些 hook；Rexume 的条目要排在 Rex 的后面，插在已信任的条目前面会让 Codex 再问一次。
+Claude Code 的设置片段注册 Rex 的 `SessionStart` hook 和 Rexume 的 `SessionStart`、`UserPromptSubmit`、`Stop`、`StopFailure` hook，Codex 的整个 [hooks 文件](../dot_codex/hooks.json)跟随上游，同样包含 Rex 和 Rexume 的条目。命令要保持原样，`rex skill setup` 和 `rexume install` 才能认出它们并保持不变。新机器上要在 Codex 里通过 `/hooks` 信任这些 hook；Rexume 的条目要排在 Rex 的后面，插在已信任的条目前面会让 Codex 再问一次。
 
 apply 会整个替换 `enabledPlugins` 和 `extraKnownMarketplaces`，所以源文件也声明了 `rexume install` 注册的 `rexume@rexume` 插件和 `rexume` 目录 marketplace；两者都在时，安装程序跳过注册，目录里的插件文件仍归它自己。Pi 扩展和 LaunchAgent 归 Rexume 的安装程序，不写进源文件。
 
@@ -190,7 +190,7 @@ hook 报告的是运行它的进程继承的 `REX_*`，而 `rex whoami` 接受�
 
 ## Agent guard
 
-[`Brewfile`](../Brewfile) 从 `entwining/tap` 安装 [agent-guard](https://github.com/Entwining/agent-guard)，提供 `/opt/homebrew/bin/agent-guard`。[Codex requirements](../.chezmoitemplates/codex/requirements.toml) 把 hook 放在 `managed_dir` 下，[`guard-bash`](../dot_codex/managed-hooks/executable_guard-bash) 检查 Homebrew 的二进制存在后，用 `--runtime codex` exec 它。[Pi 扩展包](https://github.com/Entwining/pi-extensions#extensions)里的 guard 适配器把 Pi 的工具调用映射成 guard 事件，调用同一个可执行文件。上游的 Claude Code 设置也为 Bash 和文件工具注册了它，本仓库的设置片段去掉了这些 hook，所以 Claude Code 不经过 agent-guard。
+[`Brewfile`](../Brewfile) 从 `entwining/tap` 安装 [agent-guard](https://github.com/Entwining/agent-guard)，提供 `/opt/homebrew/bin/agent-guard`。[Codex requirements](../.chezmoitemplates/codex/requirements.toml) 把 hook 放在 `managed_dir` 下，[`guard-bash`](../dot_codex/managed-hooks/executable_guard-bash) 检查 Homebrew 的二进制存在后，用 `--runtime codex` exec 它。[Pi 扩展包](https://github.com/Entwining/pi-extensions#extensions)里的 guard 适配器把 Pi 的工具调用映射成 guard 事件，调用同一个可执行文件。Claude Code 的设置片段为 `Bash` 和 `Read|Edit|Write|Grep` 注册了它。`Read`、`Edit`、`Write` 在 `permissions.allow` 里，不经过 auto 模式的分类器，sandbox 也只管 Bash，所以用文件工具读凭据只由 guard 拦下。
 
 guard 把自己的失败，包括超过内部时限，报告为 exit 2，各运行时都把它当成阻止。guard 启动不了或 hook 超时，由运行时决定：Pi 扩展对干净通过以外的任何结果都阻止。Codex 在这些情况下会执行调用，而且没有对应的设置，所以 `guard-bash` 自己阻止缺失的二进制，它的 hook 超时必须大于 guard 的时限。
 
@@ -200,7 +200,7 @@ guard 的规则、解析器和测试归 agent-guard 包。本仓库拥有 [`dot_
 
 Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitemplates/agents/`](../.chezmoitemplates/agents/) 下按顺序排列的片段，每个运行时的根文件按同样的顺序引入。本仓库没有部署任何根文件：Claude 的 `CLAUDE.md` 是自己写的全文，Codex 和 Pi 的 `AGENTS.md` 只有上游副本。
 
-压缩提示仍然部署。运行时适配器在压缩后把[压缩提示](../.chezmoitemplates/agents/compaction-reminder.md)交给执行者。Codex 把托管的 [`compaction-reminder`](../dot_codex/managed-hooks/executable_compaction-reminder.tmpl) 作为 `compact` 来源的 `SessionStart` hook 运行，[requirements 脚本](../.chezmoiscripts/run_onchange_after_setup-codex-requirements.sh.tmpl)运行后才会生效。Codex 在压缩和下一轮之间退出时，[可能丢掉排队的提示](https://github.com/openai/codex/issues/56316)，托管 hook 在 resume 时补不回这段上下文。[Pi 的上下文扩展](../private_dot_pi/private_agent/extensions/compaction-reminder.ts.tmpl)把提示放在保留的压缩前消息之后、新消息之前。Claude Code 的设置片段保留上游注册的 `post-compact-reminder.sh`，作为 `compact` 来源的 `SessionStart` hook 运行。
+压缩提示仍然部署。运行时适配器在压缩后把[压缩提示](../.chezmoitemplates/agents/compaction-reminder.md)交给执行者。Codex 把托管的 [`compaction-reminder`](../dot_codex/managed-hooks/executable_compaction-reminder.tmpl) 作为 `compact` 来源的 `SessionStart` hook 运行，[requirements 脚本](../.chezmoiscripts/run_onchange_after_setup-codex-requirements.sh.tmpl)运行后才会生效。Codex 在压缩和下一轮之间退出时，[可能丢掉排队的提示](https://github.com/openai/codex/issues/56316)，托管 hook 在 resume 时补不回这段上下文。[Pi 的上下文扩展](../private_dot_pi/private_agent/extensions/compaction-reminder.ts.tmpl)把提示放在保留的压缩前消息之后、新消息之前。Claude Code 的设置片段注册 `post-compact-reminder.sh`，作为 `compact` 来源的 `SessionStart` hook 运行。
 
 ## Skill 管理
 
