@@ -7,7 +7,7 @@ source "$CHEZMOI_SOURCE_DIR/.chezmoiscripts/.lib/step.zsh"
 # The app reads these at launch; apply leaves relaunching it to the user.
 domain=com.superlogical.rex
 defaults write $domain Workspace.appearance -string system
-defaults write $domain Workspace.experiments.groupsActivityByPriority -bool true
+defaults write $domain Workspace.experiments.usesNewQuickSwitcher -bool true
 defaults write $domain Workspace.darkThemeID -string merino-dark
 defaults write $domain Workspace.lightThemeID -string merino-light
 defaults write $domain Workspace.inactivePaneFadeMode -string both
