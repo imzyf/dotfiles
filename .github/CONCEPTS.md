@@ -138,7 +138,7 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 上游把 Claude Code 设置、sandbox 和集成的决定写在 `.claude/rules/claude-code-settings.md`，本仓库只观察这个文件，不部署。
 
-`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游只做一处修改：只保留 `rexume` 的 hook 和压缩后的提示 hook，去掉上游注册的其他 hook。被去掉的 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册 rexume hook 或提示 hook 时，渲染报错。
+`~/.claude/settings.json` 由 [modifier](../dot_claude/modify_private_settings.json) 合并[设置片段](../.chezmoitemplates/claude/settings.json)，片段是覆盖层，对上游只做一处修改：只保留 `rexume` 的 hook 和压缩前后的两个 hook（`pre-compact-instructions.sh` 和 `post-compact-reminder.sh`），去掉上游注册的其他 hook。被去掉的 hook 脚本仍随 `dot_claude/**` 部署，只是没有注册。片段保留 `hooks` 这个 key，这样 apply 会替换机器上已有的 hook；上游不再注册其中任何一个保留的 hook 时，渲染报错。
 
 `disableDeepLinkRegistration`、`DISABLE_TELEMETRY` 和 `DISABLE_ERROR_REPORTING` 放在 managed settings 里，由 [sudo 脚本](../.chezmoiscripts/run_onchange_after_setup-claude-managed-settings.sh.tmpl)装成 root 所有的 `/Library/Application Support/ClaudeCode/managed-settings.json`。用 `--setting-sources` 跳过用户设置的 session 也会读这个文件。任何 managed settings 文件都会让 Claude Code 把内置的 `cc-plugin-sec-default` 插件放在最外层，所以片段把 `prependPlugins` 设为空列表。
 
