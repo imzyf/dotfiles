@@ -70,7 +70,7 @@ mbx 是本机的 Cargo 构建缓存。`~/.zshenv` 把它的 Cargo shim 放在 `~
 
 ## 仓库校验
 
-本仓库不运行 CI，也不带测试：上游的 `.github/workflows`、`.github/tests`、`renovate.json` 和放在各文件旁边的 `*.test.*` 都是 `skip`。本地改动在提交前用限定目标的 `chezmoi diff` 检查渲染结果。上游改动在工单里由 `upstream-sync affected` 渲染新旧两个版本，列出部署结果有变化的文件和脚本，任一版本渲染失败就报错。
+本仓库不运行 CI，也不带测试：上游的 `.github/tests`、`renovate.json` 和放在各文件旁边的 `*.test.*` 都是 `skip`，`.github/workflows` 只观察，不部署。本地改动在提交前用限定目标的 `chezmoi diff` 检查渲染结果。上游改动在工单里由 `upstream-sync affected` 渲染新旧两个版本，列出部署结果有变化的文件和脚本，任一版本渲染失败就报错。
 
 ## 配置归属
 
@@ -86,7 +86,7 @@ JSON 和 TOML modifier 在解析后的值已经一致时原样输出输入，所
 
 chezmoi 源文件管理可移植、长期的偏好，包括已经形成的操作习惯，前提是它们应在多台机器间保持一致。和默认值相同的便利设置不写出来，除非显式值用来守住仓库边界，或者抵消观察到的回写漂移。生成的运行时状态、机器特定的路径和在别处同步的设置，仍由原来的系统管理。
 
-[macOS 设置脚本](../.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh)由本仓库维护，管理外观、语言和区域、计量单位、键盘重复和文字替换、Dock 和触发角、Finder 等 Apple 偏好，每个 key 的含义写在旁边的注释里。首选语言用整个数组写入，手动添加的语言在重跑后不会保留；语言、区域和外观在下次登录时生效，不在当前会话生效。第三方 app 偏好、登录项、Input Source Pro 的设置导入和通知设置在上游由各自的脚本管理，本仓库跳过了这些脚本。
+[macOS 设置脚本](../.chezmoiscripts/run_onchange_after_setup-macos-defaults.sh)由本仓库维护，管理外观、语言和区域、计量单位、键盘重复和文字替换、Dock 和触发角、Finder 等 Apple 偏好，每个 key 的含义写在旁边的注释里。首选语言用整个数组写入，手动添加的语言在重跑后不会保留；语言、区域和外观在下次登录时生效，不在当前会话生效。第三方 app 偏好、登录项和 Input Source Pro 的设置导入在上游由各自的脚本管理，本仓库跳过了这些脚本；上游管理通知设置的脚本，本仓库只观察，不部署。
 
 ### Shell 启动
 
@@ -130,7 +130,7 @@ Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 g
 
 ### GitLab CLI 配置
 
-glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 指定，不用 macOS 默认的 `~/Library/Application Support`，因为 Claude Code 的 sandbox 能写 `~/.config`，不能写 `~/Library`。上游用 modifier 管理 `config.yml` 的顶层偏好，本仓库跳过了它，这个文件完全由 glab 自己写。[glab 设置脚本](../.chezmoiscripts/run_onchange_after_setup-glab.sh.tmpl)用 `glab config set` 从 Maskey 复制私有 GitLab 的 OAuth application ID，只在 glab 从没登录过那个 host 时运行网页登录。ID 改变后，要重新调度这个脚本才会写进 glab。
+glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 指定，不用 macOS 默认的 `~/Library/Application Support`，因为 Claude Code 的 sandbox 能写 `~/.config`，不能写 `~/Library`。上游用 modifier 管理 `config.yml` 的顶层偏好，本仓库只观察它，不部署，这个文件完全由 glab 自己写。[glab 设置脚本](../.chezmoiscripts/run_onchange_after_setup-glab.sh.tmpl)用 `glab config set` 从 Maskey 复制私有 GitLab 的 OAuth application ID，只在 glab 从没登录过那个 host 时运行网页登录。ID 改变后，要重新调度这个脚本才会写进 glab。
 
 网页登录把 token 明文存进 `config.yml`，不用 glab 默认的 Keychain。glab 每次刷新都要保存新 token，保存不了就拒绝刷新，而 Codex 在 Keychain 可写的环境里运行不了 glab：它的 sandbox 拒绝 Keychain 写入需要的共享内存写，profile 拒绝 `~/.ssh` 时，提权也不能让命令离开这个 sandbox。所以用 Keychain 要放弃 `~/.ssh` 的保护，而 Keychain 本来也挡不住 agent，agent 在 sandbox 里通过 glab 就能用 token；明文放弃的只是文件副本（例如备份）的保护。每次刷新都会让旧 token 失效，所以副本只在下次刷新前有用，除非偷到副本的人先刷新并保住 session，这时 glab 的下次刷新会报 `invalid_grant`。重新登录用设置脚本里的登录命令；`glab auth status` 提示的 `glab auth login` 会把 token 放回 Keychain。
 

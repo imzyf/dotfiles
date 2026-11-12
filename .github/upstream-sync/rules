@@ -56,23 +56,25 @@ own        Brewfile
 own        private_dot_ssh/private_config
 
 # 观察学习
+watch      .chezmoiscripts/run_after_setup-macos-notifications.py
 watch      .chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
 watch      .claude/rules/claude-code-settings.md
 watch      .github/README_CN.md
+watch      .github/workflows/**
+watch      dot_config/private_glab-cli/**
 watch      dot_config/rex/**
 watch      dot_local/bin/executable_setup-rex
+watch      dot_local/bin/executable_snow
 watch      private_dot_oracle/**
 
 # 不需要
 skip       .chezmoiscripts/run_after_check-skill-versions.sh.tmpl
-skip       .chezmoiscripts/run_after_setup-macos-notifications.py
 skip       .chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
 skip       .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_setup-apps.sh
 skip       .chezmoitemplates/input-source-pro/**
 skip       .github/renovate.json
 skip       .github/tests/**
-skip       .github/workflows/**
 skip       dot_agents/skills/commit/**
 skip       dot_agents/skills/glab/**
 skip       dot_agents/skills/new-branch/**
@@ -80,8 +82,6 @@ skip       dot_agents/skills/review/**
 skip       dot_agents/skills/set-goal/**
 skip       dot_agents/skills/snow/**
 skip       dot_agents/skills/symlink_surge
-skip       dot_config/private_glab-cli/**
-skip       dot_local/bin/executable_snow
 skip       **/encrypted_*
 skip       **/*.test.*
 
