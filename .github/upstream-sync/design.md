@@ -177,7 +177,7 @@ Upstream-Decision: pending
    - 不做整体 apply，因为整体 apply 会覆盖和这次同步无关的机器上的改动，比如手动改过、还没收进仓库的配置。所有命令都带 `--exclude=encrypted`：apply 加密文件需要解密，只能由用户来做；上游的加密文件本来就归入不需要（C4），排除它们不会漏掉同步的内容。
 3. 对上一步的范围运行 `chezmoi apply --exclude=encrypted`。
 4. 验证（R27）：重新生成 chezmoi 配置并渲染，和合并前对比，确认本地差异仍然生效；列出要手动做的事，比如重新运行 `chezmoi init`、重启服务、删除上游已经删掉的文件在机器上的部署结果。
-5. push `main`。把分支上剩下的待处理 commit rebase 到新的 `main` 上，用 `--force-with-lease` push，远端分支在别处被改过时不会覆盖。去掉 PR 的 `in-progress` 标签。剩下的为零时，GitHub 会因为分支已经全部进入 `main` 把 PR 标成已合并；下次准备任务发现新的上游 commit 时再开新 PR。
+5. push `main`。把工单分支重置到新的 `main`，去掉 PR 的 `in-progress` 标签，再运行准备任务，按当前规则重新准备剩下的待处理 commit。本次 session 可能改过规则，原来准备好的 commit 按旧规则生成，不能直接 rebase。准备任务用 `--force-with-lease` push，远端分支在别处被改过时不会覆盖。剩下的为零时，GitHub 会因为分支已经全部进入 `main` 把 PR 标成已合并；下次准备任务发现新的上游 commit 时再开新 PR。
 
 这样每次会话处理的改动当次就生效（R21），没处理的留在工单里。每个 merge commit 对应一次会话，能看出哪些改动是同一次同步进来的。
 
