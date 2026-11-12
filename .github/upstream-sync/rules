@@ -30,9 +30,10 @@ follow     dot_local/share/claude-launcher/**
 follow     dot_proto/**
 follow     dot_zprofile
 follow     dot_zsh/**
-follow     modify_dot_claude.json
+follow     modify_private_dot_claude.json
 follow     private_dot_pi/**
 follow     private_Library/**
+follow     private_dot_cache/private_codex-tmp/.keep
 
 # 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
@@ -46,7 +47,8 @@ follow     private_dot_pi/private_agent/private_AGENTS.md.tmpl    > .chezmoitemp
 
 # 自己维护
 own        .chezmoi.toml.tmpl
-own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
+own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh
+own        .chezmoiscripts/run_onchange_after_setup-rex.sh
 own        .github/README.md
 own        AGENTS.md
 own        Brewfile
@@ -54,7 +56,6 @@ own        private_dot_ssh/private_config
 
 # 观察学习
 watch      .chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
-watch      .chezmoiscripts/run_onchange_after_setup-rex.sh
 watch      .claude/rules/claude-code-settings.md
 watch      .github/CONCEPTS.md
 watch      .github/README_CN.md
@@ -72,18 +73,15 @@ skip       .chezmoitemplates/input-source-pro/**
 skip       .github/renovate.json
 skip       .github/tests/**
 skip       .github/workflows/**
-skip       .secrets/**
 skip       dot_agents/skills/commit/**
 skip       dot_agents/skills/glab/**
-skip       dot_agents/skills/jev/**
 skip       dot_agents/skills/new-branch/**
 skip       dot_agents/skills/review/**
-skip       dot_agents/skills/sessidx/**
 skip       dot_agents/skills/set-goal/**
 skip       dot_agents/skills/snow/**
+skip       dot_agents/skills/symlink_surge
 skip       dot_config/private_glab-cli/**
 skip       dot_local/bin/executable_snow
-skip       private_dot_snowflake/**
 skip       **/encrypted_*
 skip       **/*.test.*
 
@@ -97,7 +95,7 @@ risk       machine-state  dot_homebrew/**
 risk       machine-state  private_Library/**
 risk       daily-tool     dot_claude/**
 risk       daily-tool     .chezmoitemplates/claude/**
-risk       daily-tool     modify_dot_claude.json
+risk       daily-tool     modify_private_dot_claude.json
 risk       daily-tool     dot_codex/**
 risk       daily-tool     .chezmoitemplates/codex/**
 risk       daily-tool     dot_local/share/claude-launcher/**

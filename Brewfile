@@ -17,8 +17,6 @@ brew "curl"
 brew "php"
 # Dependency Manager for PHP
 brew "composer"
-# Secure your credentials in environment variables
-brew "envchain"
 # Perl lib for reading and writing EXIF metadata
 brew "exiftool"
 # Modern, maintained replacement for ls
@@ -103,6 +101,8 @@ cask "itsycal"
 cask "jetbrains-toolbox"
 # Open-source keystroke visualiser
 cask "keycastr"
+# Credentials in iCloud Keychain, passed to commands as masked variables
+cask "entwining/tap/maskey", trusted: true
 # Knowledge base that works on top of a local folder of plain text Markdown files
 cask "obsidian"
 # Open source, cross-platform, and extensible code editor
