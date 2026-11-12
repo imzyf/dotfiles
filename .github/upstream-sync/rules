@@ -37,7 +37,6 @@ follow     private_dot_cache/private_codex-tmp/.keep
 # 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
 follow     .chezmoiexternal.toml                                  > .chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
-follow     .chezmoitemplates/codex/global-state.json              > .chezmoitemplates/codex/upstream.global-state.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
 follow     dot_claude/CLAUDE.md.tmpl                              > .chezmoitemplates/claude/upstream.CLAUDE.md.tmpl
 follow     dot_codex/AGENTS.md.tmpl                               > .chezmoitemplates/codex/upstream.AGENTS.md.tmpl
@@ -74,6 +73,7 @@ skip       .chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
 skip       .chezmoiscripts/run_onchange_after_deploy-rime.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_setup-apps.sh
+skip       .chezmoitemplates/codex/global-state.json
 skip       .chezmoitemplates/input-source-pro/**
 skip       .github/README_CN.md
 skip       .github/renovate.json
@@ -85,6 +85,7 @@ skip       dot_agents/skills/new-branch/**
 skip       dot_agents/skills/review/**
 skip       dot_agents/skills/set-goal/**
 skip       dot_agents/skills/snow/**
+skip       dot_codex/modify_dot_codex-global-state.json
 skip       **/encrypted_*
 skip       **/*.test.*
 
