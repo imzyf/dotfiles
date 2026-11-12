@@ -97,8 +97,6 @@ cask "iina"
 cask "imageoptim"
 # Menu bar calendar
 cask "itsycal"
-# JetBrains tools manager
-cask "jetbrains-toolbox"
 # Open-source keystroke visualiser
 cask "keycastr"
 # Credentials in iCloud Keychain, passed to commands as masked variables
