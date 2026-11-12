@@ -66,10 +66,22 @@ local      dot_zsh/lib/**
 local      private_dot_ssh/encrypted_config.vps.asc
 
 # 观察学习
+watch      .chezmoiscripts/run_after_check-skill-versions.sh.tmpl
 watch      .chezmoiscripts/run_after_setup-macos-notifications.py
+watch      .chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
+watch      .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
 watch      .chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
+watch      .chezmoiscripts/run_onchange_after_setup-apps.sh
+watch      .chezmoitemplates/input-source-pro/**
 watch      .claude/rules/claude-code-settings.md
+watch      .github/renovate.json
 watch      .github/workflows/**
+watch      dot_agents/skills/commit/**
+watch      dot_agents/skills/glab/**
+watch      dot_agents/skills/new-branch/**
+watch      dot_agents/skills/review/**
+watch      dot_agents/skills/set-goal/**
+watch      dot_agents/skills/snow/**
 watch      dot_config/private_glab-cli/**
 watch      dot_config/rex/**
 watch      dot_local/bin/executable_setup-rex
@@ -77,23 +89,11 @@ watch      dot_local/bin/executable_snow
 watch      private_dot_oracle/**
 
 # 不需要
-skip       .chezmoiscripts/run_after_check-skill-versions.sh.tmpl
-skip       .chezmoiscripts/run_once_before_setup-case-sensitive-volume.py
 skip       .chezmoiscripts/run_onchange_after_deploy-rime.sh.tmpl
-skip       .chezmoiscripts/run_onchange_after_import-input-source-pro.sh.tmpl
-skip       .chezmoiscripts/run_onchange_after_setup-apps.sh
 skip       .chezmoitemplates/codex/global-state.json
-skip       .chezmoitemplates/input-source-pro/**
 skip       .github/README_CN.md
-skip       .github/renovate.json
 skip       .github/tests/**
 skip       private_Library/Rime/**
-skip       dot_agents/skills/commit/**
-skip       dot_agents/skills/glab/**
-skip       dot_agents/skills/new-branch/**
-skip       dot_agents/skills/review/**
-skip       dot_agents/skills/set-goal/**
-skip       dot_agents/skills/snow/**
 skip       dot_codex/modify_dot_codex-global-state.json
 skip       **/encrypted_*
 skip       **/*.test.*
