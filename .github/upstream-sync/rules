@@ -49,6 +49,7 @@ follow     private_dot_pi/private_agent/private_AGENTS.md.tmpl    > .chezmoitemp
 own        .chezmoi.toml.tmpl
 own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh
 own        .chezmoiscripts/run_onchange_after_setup-rex.sh
+own        .github/CONCEPTS.md
 own        .github/README.md
 own        AGENTS.md
 own        Brewfile
@@ -57,7 +58,6 @@ own        private_dot_ssh/private_config
 # 观察学习
 watch      .chezmoiscripts/run_onchange_after_reload-rex-config.sh.tmpl
 watch      .claude/rules/claude-code-settings.md
-watch      .github/CONCEPTS.md
 watch      .github/README_CN.md
 watch      dot_config/rex/**
 watch      dot_local/bin/executable_setup-rex
