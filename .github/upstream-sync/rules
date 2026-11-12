@@ -16,6 +16,7 @@ follow     dot_agents/skills/draft/**
 follow     dot_agents/skills/gh/**
 follow     dot_agents/skills/oracle/**
 follow     dot_agents/skills/orc/**
+follow     dot_agents/skills/symlink_surge
 follow     dot_agents/skills/write-skill/**
 follow     dot_cargo/**
 follow     dot_claude/**
@@ -81,7 +82,6 @@ skip       dot_agents/skills/new-branch/**
 skip       dot_agents/skills/review/**
 skip       dot_agents/skills/set-goal/**
 skip       dot_agents/skills/snow/**
-skip       dot_agents/skills/symlink_surge
 skip       **/encrypted_*
 skip       **/*.test.*
 
