@@ -2,7 +2,7 @@
 
 ## 与上游的关系
 
-本仓库以 [liby/dotfiles](https://github.com/liby/dotfiles) 为基础。[`upstream-sync/rules`](upstream-sync/rules) 按上游路径给每个文件定一种处理方式：`follow` 的文件整份接受上游改动，`own` 的文件由本仓库维护，`watch` 的文件不进入本仓库、上游改动只用来学习，`skip` 的文件本仓库不需要。上游改动由 [`upstream-sync`](upstream-sync/) 整理成工单，逐个 commit 决定后才合并进 `main`，所以跟随的文件停在最后一次处理到的上游 commit。本仓库不运行 Renovate，`.github/dev-tools` 里的版本和 `.chezmoiexternal.toml` 里固定的 commit 也随工单从上游进来。
+本仓库以 [liby/dotfiles](https://github.com/liby/dotfiles) 为基础。[`upstream-sync/rules`](upstream-sync/rules) 按上游路径给每个文件定一种处理方式：`follow` 的文件整份接受上游改动，`own` 的文件由本仓库维护，`watch` 的文件不进入本仓库、上游改动只用来学习，`skip` 的文件本仓库不需要。上游没有这个路径的本地文件用 `local` 按本地路径登记；引入 `upstream.*` 副本再修改的本地模板只比上游文件多一个 `.tmpl` 后缀时，由 `follow` 的 `>` 映射隐含登记。上游以后用到这些路径时，改动不会写进来。上游改动由 [`upstream-sync`](upstream-sync/) 整理成工单，逐个 commit 决定后才合并进 `main`，所以跟随的文件停在最后一次处理到的上游 commit。本仓库不运行 Renovate，`.github/dev-tools` 里的版本和 `.chezmoiexternal.toml` 里固定的 commit 也随工单从上游进来。
 
 跟随的文件需要本地改动时用覆盖层：上游文件复制成 `.chezmoitemplates/` 下的 `upstream.*` 副本，本地模板用 `includeTemplate` 引入副本，只叠加差异。叠加的改动依赖副本里的某段内容，例如一行 `zoxide init` 或结尾的一组 include；上游改掉这段内容时，本地模板用 `fail` 让渲染报错，不让改动静默失效。哪些上游文件有 `upstream.*` 副本，以 [rules](upstream-sync/rules) 里带 `>` 的规则为准；本地文件不一定引入副本。
 

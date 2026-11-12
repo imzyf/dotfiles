@@ -137,6 +137,7 @@ def load_rules(cfg: Config, tree: str) -> tuple[rules_mod.Rules, rules_mod.Repor
             "merge-base", "--is-ancestor", base, f"refs/heads/{cfg.mirror}", cwd=cfg.repo
         ),
         local_exists=lambda p: os.path.lexists(os.path.join(tree, p)),
+        local_files=git("ls-files", "--cached", "--others", "--exclude-standard", cwd=tree).splitlines(),
     )
 
 

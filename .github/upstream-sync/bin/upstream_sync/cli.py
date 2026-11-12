@@ -12,7 +12,7 @@ from . import sync
 from .affected import AffectedError, affected
 from .github import GitHub, GitHubError
 from .gitcmd import GitError, git
-from .rules import Report
+from .rules import REGISTERED, Report
 
 DEFAULT_WORKTREE = os.path.expanduser("~/Code/worktrees/chezmoi-upstream-sync")
 
@@ -37,11 +37,16 @@ def print_report(report: Report) -> None:
     for error in report.errors:
         print(f"error: {error}")
     for rule in report.unmatched:
-        print(f"warning: line {rule.line}: '{rule.kind} {rule.pattern}' matches no upstream file")
+        where = "local" if rule.kind in REGISTERED else "upstream"
+        print(f"warning: line {rule.line}: '{rule.kind} {rule.pattern}' matches no {where} file")
     for rule in report.shadowed:
-        print(f"warning: line {rule.line}: '{rule.kind} {rule.pattern}' is overridden by later rules for every file it matches")
+        print(f"warning: line {rule.line}: '{rule.kind} {rule.pattern}' is overridden by later rules or local rules for every file it matches")
+    for path, rule in report.conflicts:
+        print(f"warning: upstream file {path} lands on a path registered by line {rule.line} '{rule.kind} {rule.pattern}'")
     for path in report.unclassified:
         print(f"unclassified: {path}")
+    for path in report.unregistered:
+        print(f"unregistered: {path}")
 
 
 def cmd_check(cfg: sync.Config, args: argparse.Namespace) -> int:

@@ -34,7 +34,8 @@ follow     private_dot_pi/**
 follow     private_Library/**
 follow     private_dot_cache/private_codex-tmp/.keep
 
-# 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
+# 继承后调整：上游文件按 > 复制到 upstream.* 副本，由本地模板引入副本再修改。
+# 这一段要放在「跟随」段后面，覆盖那里的通配规则。
 follow     .chezmoiexternal.toml                                  > .chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
@@ -42,7 +43,8 @@ follow     dot_config/git/config.tmpl                             > .chezmoitemp
 follow     dot_zshenv                                             > .chezmoitemplates/zsh/upstream.dot_zshenv
 follow     dot_zshrc                                              > .chezmoitemplates/zsh/upstream.dot_zshrc
 
-# 自己维护
+# 自己维护：上游也有这些文件，本地版本差异太大，不值得继承。
+# 上游改动不应用，只在工单里完整显示，需要的部分手动移植。
 own        .chezmoi.toml.tmpl
 own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh
 own        .chezmoiscripts/run_onchange_after_setup-rex.sh
@@ -55,6 +57,13 @@ own        dot_claude/CLAUDE.md.tmpl
 own        dot_codex/AGENTS.md.tmpl
 own        private_dot_pi/private_agent/private_AGENTS.md.tmpl
 own        private_dot_ssh/private_config
+
+# 本地自有：上游没有、完全归本仓库的文件，按本地路径登记
+local      .chezmoiremove
+local      .claude/skills/upstream-sync/**
+local      .github/upstream-sync/**
+local      dot_zsh/lib/**
+local      private_dot_ssh/encrypted_config.vps.asc
 
 # 观察学习
 watch      .chezmoiscripts/run_after_setup-macos-notifications.py

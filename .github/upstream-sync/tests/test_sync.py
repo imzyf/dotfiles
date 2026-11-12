@@ -193,6 +193,19 @@ class PrepareTest(Fixture):
         self.assertIn("Not applied:\n  bin/run_a.sh (unclassified, added, renamed from .chezmoiscripts/run_a.sh)\n", message)
         self.assertFalse(os.path.exists(os.path.join(self.cfg.worktree, ".chezmoiscripts/run_a.sh")))
 
+    def test_upstream_file_on_local_path_is_not_applied(self):
+        write(self.repo, ".chezmoiscripts/lib/mine.sh", "mine\n")
+        with open(os.path.join(self.repo, sync.RULES_PATH), "a") as handle:
+            handle.write("local .chezmoiscripts/lib/**\n")
+        commit(self.repo, "register local files")
+        self.upstream_commit("feat: add lib", {".chezmoiscripts/lib/mine.sh": "theirs\n"})
+        self.prepare()
+        _rules, report = sync.load_rules(self.cfg, self.repo)
+        self.assertEqual([p for p, _r in report.conflicts], [".chezmoiscripts/lib/mine.sh"])
+        message = self.ticket_messages()[0]
+        self.assertIn("Not applied:\n  .chezmoiscripts/lib/mine.sh (local, added)\n", message)
+        self.assertEqual(read(self.cfg.worktree, ".chezmoiscripts/lib/mine.sh"), "mine\n")
+
     def test_keeps_file_mode(self):
         self.upstream_commit("feat: exec", {"docs/notes.md": "x\n"})
         self.prepare()
