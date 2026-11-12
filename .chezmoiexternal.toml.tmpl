@@ -1,0 +1,5 @@
+{{- /* This machine uses WeType instead of Squirrel, so drop upstream's rime-ice external. */ -}}
+{{- $externals := fromToml (includeTemplate "chezmoi/upstream.chezmoiexternal.toml" .) -}}
+{{- if not (hasKey $externals "Library/Rime") }}{{ fail "chezmoi/upstream.chezmoiexternal.toml no longer has the Library/Rime external; update the override in .chezmoiexternal.toml.tmpl" }}{{ end -}}
+{{- $_ := unset $externals "Library/Rime" -}}
+{{ toToml $externals }}

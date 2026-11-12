@@ -1,5 +1,6 @@
-{{ includeTemplate "chezmoi/upstream.chezmoiignore" . }}
-# This machine uses WeType instead of Squirrel, so skip the rime-ice external that
-# .chezmoiexternal.toml follows from upstream.
-Library/Rime
-Library/Rime/**
+**/*.test.*
+**/.DS_Store
+**/__pycache__/**
+
+AGENTS.md
+Brewfile

@@ -66,7 +66,7 @@ mbx 是本机的 Cargo 构建缓存。`~/.zshenv` 把它的 Cargo shim 放在 `~
 
 在已有机器上改 mbx 的[缓存目录](https://mr-boxington.jdx.dev/configuration)，要显式迁移旧缓存；只改设置会让旧数据留在回收范围之外。怀疑构建输出有问题时，在新的 target 目录里用 `MBX_VERIFY=1` 运行 [mbx 校验](https://mr-boxington.jdx.dev/troubleshooting)，让 Cargo 真的编译要检查的单元。
 
-[`.chezmoiexternal.toml`](../.chezmoiexternal.toml) 把 zsh 插件、TypeSafe 的 skill 和 rime-ice 的压缩包固定在指定 commit。上游用 Squirrel 运行 rime-ice，本机用微信输入法，所以 Rime 的配置和部署脚本按 `skip` 处理。rime-ice 的条目随整份跟随的 `.chezmoiexternal.toml` 进来，本地 [`.chezmoiignore`](../.chezmoiignore) 引入上游的副本，再忽略 `Library/Rime`，所以 chezmoi 不会下载它。
+上游的 `.chezmoiexternal.toml` 把 zsh 插件、TypeSafe 的 skill 和 rime-ice 的压缩包固定在指定 commit。上游用 Squirrel 运行 rime-ice，本机用微信输入法，所以 Rime 的配置和部署脚本按 `skip` 处理。`.chezmoiexternal.toml` 映射到 [`upstream.chezmoiexternal.toml`](../.chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml) 副本，本地 [`.chezmoiexternal.toml.tmpl`](../.chezmoiexternal.toml.tmpl) 解析副本，删掉 `Library/Rime` 条目后输出其余的 external，副本里没有这个条目时用 `fail` 报错。
 
 ## 仓库校验
 
@@ -206,7 +206,7 @@ Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitem
 
 源文件只放本仓库自己写文字的 skill，本仓库的 skill 都跟随上游。上游 skill 文字的副本落后时没有任何提示，所以当本仓库需要给一个 CLI 写自己的规则时，它的 skill 在自己没覆盖的地方指向已安装版本的上游指南：`gh` 和 `oracle` 读取与已安装版本 tag 对应的上游 skill。这种 skill 不记录上游 tag，CLI 变化让它的文字过时时也没有提示。上游的 `glab` skill 和其他只适合上游的 skill，本仓库跳过。
 
-工具自带、原样使用的 skill 不放进源文件，`~/.agents/skills/<name>` 通过工具文档说明的方式，使用跟随工具版本的那一份。[Homebrew 安装脚本](../.chezmoiscripts/run_onchange_before_install-brew-packages.sh.tmpl)运行 `mk skill install` 和 `sessidx skill install`，分别链接到 Maskey.app 里的 skill 和 Homebrew `share` 目录下的 skill，每次升级都会换成新版本自带的 skill。Rex 和 Rexume 的 skill 是手动运行 `rex skill setup` 和 `rexume install` 时写入的 stub，使用时从 `rex` 和 `rexume` 读取指南。这些命令都只在运行时安装一次，手动删掉的 skill 要等对应命令再次运行才会回来。Surge 只在文档里给出 skill 的路径，所以 [`symlink_surge`](../dot_agents/skills/symlink_surge) 把 `~/.agents/skills/surge` 链接到 Surge.app 里的 skill。TypeSafe 的 skill 说明的是线上 API，没有本地工具，所以 [`.chezmoiexternal.toml`](../.chezmoiexternal.toml) 像 zsh 插件一样把它固定在上游的某个 commit。
+工具自带、原样使用的 skill 不放进源文件，`~/.agents/skills/<name>` 通过工具文档说明的方式，使用跟随工具版本的那一份。[Homebrew 安装脚本](../.chezmoiscripts/run_onchange_before_install-brew-packages.sh.tmpl)运行 `mk skill install` 和 `sessidx skill install`，分别链接到 Maskey.app 里的 skill 和 Homebrew `share` 目录下的 skill，每次升级都会换成新版本自带的 skill。Rex 和 Rexume 的 skill 是手动运行 `rex skill setup` 和 `rexume install` 时写入的 stub，使用时从 `rex` 和 `rexume` 读取指南。这些命令都只在运行时安装一次，手动删掉的 skill 要等对应命令再次运行才会回来。Surge 只在文档里给出 skill 的路径，所以 [`symlink_surge`](../dot_agents/skills/symlink_surge) 把 `~/.agents/skills/surge` 链接到 Surge.app 里的 skill。TypeSafe 的 skill 说明的是线上 API，没有本地工具，所以 [`.chezmoiexternal.toml`](../.chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml) 像 zsh 插件一样把它固定在上游的某个 commit。
 
 Claude Code 的 `auto` 模式下，skill 的 `allowed-tools` 让这个 skill 那一轮里它负责的具体命令前缀和工具跳过分类器审查。跨轮次或长期的授权在 `~/.claude/settings.json` 里，开放式命令和解释器命令仍走 sandbox 和分类器。Claude 拒绝了一条匹配的 skill 授权时，保持 skill 的约定，加一条有复现支持、范围最小的运行时例外。
 

@@ -5,7 +5,7 @@
 base       2e8b1f355
 
 # 跟随：本地文件和上游保持一致
-follow     .chezmoiexternal.toml
+follow     .chezmoiignore
 follow     .chezmoiscripts/**
 follow     .chezmoitemplates/**
 follow     .github/dev-tools/**
@@ -35,7 +35,7 @@ follow     private_Library/**
 follow     private_dot_cache/private_codex-tmp/.keep
 
 # 继承后调整：上游文件复制到本地路径，由本地模板继承后再修改
-follow     .chezmoiignore                                         > .chezmoitemplates/chezmoi/upstream.chezmoiignore
+follow     .chezmoiexternal.toml                                  > .chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
 follow     .chezmoitemplates/codex/global-state.json              > .chezmoitemplates/codex/upstream.global-state.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config

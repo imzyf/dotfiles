@@ -1,6 +1,0 @@
-**/*.test.*
-**/.DS_Store
-**/__pycache__/**
-
-AGENTS.md
-Brewfile
