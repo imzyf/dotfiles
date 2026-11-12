@@ -1,10 +1,14 @@
 tap "entwining/tap"
 tap "steipete/tap"
 
+# Static checker for GitHub Actions workflow files
+brew "actionlint"
 # macOS pre-tool guard for coding agents
 brew "entwining/tap/agent-guard", trusted: true
 # Linter and formatter to improve copywriting, correct spaces, words between CJK
 brew "autocorrect"
+# Bourne-Again SHell, a UNIX command interpreter
+brew "bash"
 # Manage your dotfiles across multiple diverse machines, securely
 brew "chezmoi"
 # GNU File, Shell, and Text utilities
