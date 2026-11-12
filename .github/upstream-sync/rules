@@ -49,7 +49,6 @@ follow     private_dot_pi/private_agent/private_AGENTS.md.tmpl    > .chezmoitemp
 # 自己维护
 own        .chezmoi.toml.tmpl
 own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh
-own        .chezmoiscripts/run_onchange_after_setup-macos-defaults.sh.tmpl
 own        .chezmoiscripts/run_onchange_after_setup-rex.sh
 own        .github/README.md
 own        AGENTS.md
