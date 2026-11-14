@@ -9,6 +9,7 @@ follow     .chezmoiignore
 follow     .chezmoiscripts/**
 follow     .chezmoitemplates/**
 follow     .github/dev-tools/**
+follow     dot_agents/skills/commit/**
 follow     dot_agents/skills/context7/**
 follow     dot_agents/skills/deslop/**
 follow     dot_agents/skills/draft/**
@@ -77,7 +78,6 @@ watch      .chezmoitemplates/input-source-pro/**
 watch      .claude/rules/claude-code-settings.md
 watch      .github/renovate.json
 watch      .github/workflows/**
-watch      dot_agents/skills/commit/**
 watch      dot_agents/skills/glab/**
 watch      dot_agents/skills/new-branch/**
 watch      dot_agents/skills/review/**
