@@ -12,6 +12,7 @@ defaults write $domain Workspace.darkThemeID -string merino-dark
 defaults write $domain Workspace.lightThemeID -string merino-light
 defaults write $domain Workspace.inactivePaneFadeMode -string both
 defaults write $domain Workspace.interfaceStyle -string useTheme
+defaults write $domain Workspace.paneHeaderVisibility -string always
 defaults write $domain Workspace.tabIconTintMode -string off
 defaults write $domain Workspace.terminalFontPointSize -float 16.5
 defaults write $domain Workspace.terminalPaddingY -float 10
