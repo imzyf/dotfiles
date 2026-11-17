@@ -75,7 +75,9 @@ def cmd_pending(cfg: sync.Config, args: argparse.Namespace) -> int:
 
 
 def cmd_affected(cfg: sync.Config, args: argparse.Namespace) -> int:
-    targets, config_changed = affected(cfg.repo, args.old, args.new)
+    # 在当前 checkout 里解析 ref：在 worktree 里写 HEAD，指的是 worktree 的 HEAD。
+    checkout = git("rev-parse", "--show-toplevel", cwd=os.getcwd()).strip()
+    targets, config_changed = affected(checkout, args.old, args.new)
     home = os.path.expanduser("~")
     for t in targets:
         kind = "script" if t.is_script else "file"

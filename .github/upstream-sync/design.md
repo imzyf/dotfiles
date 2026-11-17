@@ -147,10 +147,10 @@ Upstream-Decision: pending
 ### 5.2 步骤
 
 1. 取得锁文件，已经有一次准备任务在运行就退出（4.3）。
-2. 更新镜像分支（第 2 节）。PR 挂着 `in-progress` 标签时到此结束。
-3. 算出待处理列表（4.2）。
-4. 把还没准备的上游 commit 逐个准备到 `upstream-sync` 分支上（4.1）。某个 commit 应用失败时，比如它依赖一个被推迟的 commit，就生成一个说明失败原因的空 commit，交给处理会话。
-5. 用 `gh` 新建或更新 PR。
+2. 更新镜像分支（第 2 节）并 push。PR 挂着 `in-progress` 标签时到此结束。
+3. 工单分支不包含 `main` 时，先把它重置到 `main`。处理会话合并以后，或者在 `main` 上直接提交了规则改动以后，原来准备好的 commit 是按旧规则生成的，不能直接 rebase，所以剩下的待处理 commit 全部按当前规则重新准备。
+4. 算出待处理列表（4.2），把还没准备的上游 commit 逐个准备到 `upstream-sync` 分支上（4.1）。某个 commit 应用失败时，比如它依赖一个被推迟的 commit，就生成一个说明失败原因的空 commit，交给处理会话。
+5. 用 `--force-with-lease` push 工单分支，远端分支在别处被改过时不会覆盖。没有待处理的 commit 时，只有远端已经有工单分支才 push，让它跟上 `main`。然后用 `gh` 新建或更新 PR；没有待处理的 commit 时不新建 PR。
 6. 生成报告：
    - 脚本为每个 commit 整理出结构化数据：上游 message、diff、每个文件的处理方式、对应的上游 PR。
    - 脚本在 worktree 里分别渲染每个 commit 前后受影响的目标，算出每个 commit 对渲染结果的改动。这部分只写进本地报告。
@@ -187,7 +187,7 @@ Upstream-Decision: pending
    - 不做整体 apply，因为整体 apply 会覆盖和这次同步无关的机器上的改动，比如手动改过、还没收进仓库的配置。所有命令都带 `--exclude=encrypted`：apply 加密文件需要解密，只能由用户来做；上游的加密文件本来就归入不需要（C4），排除它们不会漏掉同步的内容。
 3. 对上一步的范围运行 `chezmoi apply --exclude=encrypted`。
 4. 验证（R27）：重新生成 chezmoi 配置并渲染，和合并前对比，确认本地差异仍然生效；列出要手动做的事，比如重新运行 `chezmoi init`、重启服务、删除上游已经删掉的文件在机器上的部署结果。
-5. push `main`。把工单分支重置到新的 `main`，去掉 PR 的 `in-progress` 标签，再运行准备任务，按当前规则重新准备剩下的待处理 commit。本次 session 可能改过规则，原来准备好的 commit 按旧规则生成，不能直接 rebase。准备任务用 `--force-with-lease` push，远端分支在别处被改过时不会覆盖。剩下的为零时，GitHub 会因为分支已经全部进入 `main` 把 PR 标成已合并；下次准备任务发现新的上游 commit 时再开新 PR。
+5. 去掉 PR 的 `in-progress` 标签，把 worktree 切回工单分支，运行准备任务：它把工单分支重置到合并后的 `main`，按当前规则重新准备剩下的待处理 commit，再 push 工单分支（5.2）。然后 push `main`。顺序不能反过来：剩下的为零时，工单分支等于合并后的 `main`，先 push 它，GitHub 在 `main` 收到这个 commit 时把 PR 标成已合并；先 push `main` 的话，PR 的 head 和 base 相同，GitHub 只会关闭 PR。下次准备任务发现新的上游 commit 时再开新 PR。
 
 这样每次会话处理的改动当次就生效（R21），没处理的留在工单里。每个 merge commit 对应一次会话，能看出哪些改动是同一次同步进来的。
 

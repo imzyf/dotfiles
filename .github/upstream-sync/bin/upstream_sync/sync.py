@@ -326,14 +326,25 @@ def _parse_time(value: str) -> datetime.datetime:
     return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
+def reset_ticket(cfg: Config) -> str | None:
+    """工单分支不包含 main 时重置到 main，之后按当前规则重新准备全部待处理 commit（设计 5.2）。
+
+    处理会话合并以后，或者在 main 上直接改了规则以后，旧的准备结果按旧规则生成，不能 rebase。
+    """
+    if succeeds("merge-base", "--is-ancestor", cfg.main, cfg.ticket, cwd=cfg.repo):
+        return None
+    git("reset", "--quiet", "--hard", cfg.main, cwd=cfg.worktree)
+    return f"reset {cfg.ticket} to {cfg.main}"
+
+
 def run_task(cfg: Config, gh, now: datetime.datetime, update_mirror_first: bool = True) -> TaskResult:
     """准备任务的完整步骤（设计 5.2）。gh 为 None 时只在本地运行，不 push，也不读写 PR。"""
     result = TaskResult()
     with lock(cfg.state_dir):
         if update_mirror_first:
             result.messages.append(update_mirror(cfg, now.date().isoformat()))
-            if gh:
-                push_mirror(cfg)
+        if gh:
+            push_mirror(cfg)  # 也带上之前用 mirror 子命令或 --local 只在本地更新的镜像
         pr = gh.find_pr(cfg.ticket) if gh else None
         if pr and IN_PROGRESS in pr.labels:
             result.pr_url = pr.url
@@ -345,16 +356,21 @@ def run_task(cfg: Config, gh, now: datetime.datetime, update_mirror_first: bool 
                     "If no session is running, finish or abandon it and remove the label."
                 )
             return result
+        ensure_worktree(cfg)
+        reset = reset_ticket(cfg)
+        if reset:
+            result.messages.append(reset)
         result.prepared, result.report = prepare(cfg)
         if gh:
             entries = ticket_mod.items(cfg.repo, cfg.main, cfg.ticket)
-            if entries:
+            # 没有剩下的 commit 时也 push，远端的工单分支才会跟上 main，不留下过时的准备结果。
+            if entries or rev(f"refs/remotes/{cfg.remote}/{cfg.ticket}", cfg.repo):
                 push_ticket(cfg)
-                title = ticket_mod.title(entries)
-                body = ticket_mod.body(entries, cfg.github_repo, cfg.mirror)
-                if pr:
-                    gh.edit_pr(pr.number, title, body)
-                    result.pr_url = pr.url
-                else:
-                    result.pr_url = gh.create_pr(cfg.main, cfg.ticket, title, body)
+            title = ticket_mod.title(entries)
+            body = ticket_mod.body(entries, cfg.github_repo, cfg.mirror)
+            if pr:
+                gh.edit_pr(pr.number, title, body)
+                result.pr_url = pr.url
+            elif entries:
+                result.pr_url = gh.create_pr(cfg.main, cfg.ticket, title, body)
     return result

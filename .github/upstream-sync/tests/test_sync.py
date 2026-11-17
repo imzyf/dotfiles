@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "bin"))
 
 from upstream_sync import sync  # noqa: E402
 from upstream_sync.github import IN_PROGRESS, PullRequest  # noqa: E402
-from upstream_sync.gitcmd import git, rev  # noqa: E402
+from upstream_sync.gitcmd import git, rev, succeeds  # noqa: E402
 
 # 不读用户自己的 Git 配置，比如签名和 hook。
 ISOLATED_ENV = {
@@ -350,6 +350,38 @@ class TaskTest(Fixture):
         sync.run_task(self.cfg, None, NOW)
         self.assertIsNone(self.remote_ref("upstream"))
         self.assertIsNone(self.remote_ref(self.cfg.ticket))
+
+    def record_in_main(self, upstream, content):
+        """模拟处理会话把 upstream 合进 main 并 push。"""
+        write(self.repo, ".chezmoitemplates/zsh/upstream.dot_zshrc", content)
+        git("add", "-A", cwd=self.repo)
+        git("commit", "--quiet", "-m", f"one\n\nUpstream-Commit: {upstream}\nUpstream-Decision: accepted", cwd=self.repo)
+        git("push", "--quiet", "origin", "main", cwd=self.repo)
+
+    def test_rule_change_on_main_reprepares_pending_commits(self):
+        self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
+        sync.run_task(self.cfg, self.gh, NOW)
+        rules = read(self.repo, sync.RULES_PATH).replace("follow dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc", "own dot_zshrc")
+        write(self.repo, sync.RULES_PATH, rules)
+        commit(self.repo, "own zshrc")
+        sync.run_task(self.cfg, self.gh, NOW)
+        self.assertTrue(succeeds("merge-base", "--is-ancestor", "main", self.cfg.ticket, cwd=self.repo))
+        [message] = self.ticket_messages()
+        self.assertIn("dot_zshrc (own)", message)
+
+    def test_no_remaining_commits_moves_remote_ticket_to_main(self):
+        one = self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
+        sync.run_task(self.cfg, self.gh, NOW)
+        self.record_in_main(one, "zshrc v2\n")
+        sync.run_task(self.cfg, self.gh, NOW, update_mirror_first=False)
+        self.assertEqual(self.remote_ref(self.cfg.ticket), rev("main", self.repo))
+        kind, number, title, _body = self.gh.calls[-1]
+        self.assertEqual((kind, number, title), ("edit", 1, "Upstream sync: nothing pending"))
+
+    def test_pushes_mirror_updated_without_push(self):
+        sync.update_mirror(self.cfg, "2026-11-11")
+        sync.run_task(self.cfg, self.gh, NOW, update_mirror_first=False)
+        self.assertEqual(self.remote_ref("upstream"), rev("upstream", self.repo))
 
     def test_no_pending_commits_creates_no_pr(self):
         sync.run_task(self.cfg, self.gh, NOW)

@@ -1,11 +1,16 @@
+import argparse
+import contextlib
+import io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "bin"))
 
+from upstream_sync import cli  # noqa: E402
 from upstream_sync.affected import AffectedError, affected  # noqa: E402
 from upstream_sync.gitcmd import git  # noqa: E402
 from test_sync import ISOLATED_ENV, commit, write  # noqa: E402
@@ -78,6 +83,36 @@ class AffectedTest(unittest.TestCase):
         with self.assertRaisesRegex(AffectedError, "chezmoi archive failed"):
             affected(self.repo, self.old, new, self.args)
 
+
+class CommandTest(unittest.TestCase):
+    def test_refs_resolve_in_the_current_checkout(self):
+        saved = {k: os.environ.get(k) for k in ISOLATED_ENV}
+        os.environ.update(ISOLATED_ENV)
+        cwd = os.getcwd()
+        with tempfile.TemporaryDirectory() as tmp:
+            try:
+                repo = os.path.join(tmp, "repo")
+                worktree = os.path.join(tmp, "worktree")
+                os.makedirs(repo)
+                git("init", "--quiet", "-b", "main", cwd=repo)
+                write(repo, "dot_plain", "plain\n")
+                commit(repo, "main")
+                git("worktree", "add", "--quiet", "-b", "ticket", worktree, cwd=repo)
+                write(worktree, "dot_plain", "plain v2\n")
+                ticket_head = commit(worktree, "ticket")
+                os.chdir(worktree)
+                cfg = mock.Mock(repo=repo)
+                with mock.patch.object(cli, "affected", return_value=([], False)) as called, contextlib.redirect_stdout(io.StringIO()):
+                    cli.cmd_affected(cfg, argparse.Namespace(old="main", new="HEAD"))
+                checkout, old, new = called.call_args.args
+                self.assertEqual(git("rev-parse", new, cwd=checkout).strip(), ticket_head)
+            finally:
+                os.chdir(cwd)
+                for key, value in saved.items():
+                    if value is None:
+                        os.environ.pop(key, None)
+                    else:
+                        os.environ[key] = value
 
 if __name__ == "__main__":
     unittest.main()
