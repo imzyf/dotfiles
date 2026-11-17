@@ -90,7 +90,7 @@ chezmoi 源文件管理可移植、长期的偏好，包括已经形成的操作
 
 ### Shell 启动
 
-agent 和 chezmoi 脚本需要的环境变量、必须排在 Homebrew 前面的工具链目录，放在 [`~/.zshenv`](../dot_zshenv)，这样不依赖交互式启动或 agent 的 shell 快照。这个划分要符合 [zsh 启动文件的约定](https://zsh.sourceforge.io/Doc/Release/Files.html#Startup_002fShutdown-Files)。Homebrew 和 OrbStack 的环境放在 [`~/.zprofile`](../dot_zprofile)，它在 macOS 的 `path_helper` 之后恢复工具链的优先级。[`~/.zshrc`](../dot_zshrc.tmpl) 放交互式配置：补全、历史、alias、插件、proto 激活和提示符。Pi 的 `bash -c` 和 launchd helper 不读这些 zsh 文件，它们需要继承或显式设置的 PATH。
+agent 和 chezmoi 脚本需要的环境变量、必须排在 Homebrew 前面的工具链目录，放在 [`~/.zshenv`](../dot_zshenv)，这样不依赖交互式启动或 agent 的 shell 快照。这个划分要符合 [zsh 启动文件的约定](https://zsh.sourceforge.io/Doc/Release/Files.html#Startup_002fShutdown-Files)。Homebrew 和 OrbStack 的环境放在 [`~/.zprofile`](../dot_zprofile)，它在 macOS 的 `path_helper` 之后恢复工具链的优先级。[`~/.zshrc`](../dot_zshrc.tmpl) 放交互式配置：补全、历史、alias、插件和提示符。Pi 的 `bash -c` 和 launchd helper 不读这些 zsh 文件，它们需要继承或显式设置的 PATH。所以 proto 的工具通过 `~/.zshenv` 工具链目录里的 proto shim 解析，不用 `proto activate`：它只在 zsh 的提示符和切换目录的 hook 里更新 `PATH`，agent 继承激活后的 `PATH` 以后，在之后的每个目录里都沿用启动目录那个项目的工具版本。
 
 `~/.zshenv` 原样跟随上游，不设置 XDG 目录变量。Homebrew 在设置了 `XDG_CONFIG_HOME` 时从 `~/.config/homebrew` 读 `brew.env` 和 `trust.json`，没设置时从 `~/.homebrew` 读；launchd job 不读 zsh 文件，所以在 `~/.zshenv` 设置它，会让终端和后台 job 各用一份配置和信任名单。按 XDG 规范处理的工具在变量没设置时本来就用 `~/.config`、`~/.local/share`、`~/.local/state` 和 `~/.cache`。`~/.zshrc` 是覆盖层，它让 zoxide 用 `cd` 代替上游默认的 `z`，在上游内容之后定义本地 alias，覆盖或删除同名的上游 alias。最后它 source `~/.zsh/lib/*.zsh`，这些本地函数、alias 和补全只在本仓库里。
 

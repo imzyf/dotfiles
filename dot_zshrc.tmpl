@@ -8,8 +8,6 @@ Upstream copy: .chezmoitemplates/zsh/upstream.dot_zshrc
 {{- /* Initialize zoxide with cd instead of upstream's default z; require exactly one upstream init before replacing it. */ -}}
 {{- $zoxide := `eval "$(zoxide init zsh)"` -}}
 {{- if ne (len (splitList $zoxide $upstream)) 2 }}{{ fail "zsh/upstream.dot_zshrc no longer contains exactly one plain zoxide init; update the override in dot_zshrc.tmpl" }}{{ end -}}
-{{- /* The launcher PATH hook below exists only to run after upstream's proto activation. */ -}}
-{{- if ne (len (splitList `eval "$(proto activate zsh)"` $upstream)) 2 }}{{ fail "zsh/upstream.dot_zshrc no longer contains exactly one proto activation; update the launcher PATH hook in dot_zshrc.tmpl" }}{{ end -}}
 {{ replace $zoxide `eval "$(zoxide init zsh --cmd cd)"` $upstream }}
 # Define local aliases after upstream so they take precedence.
 # Claude launchers
@@ -21,15 +19,6 @@ alias ccg='claude --gateway'
 alias ccs='claude --subscription'
 # Remove upstream's ccm alias.
 unalias ccm
-# proto's activation rewrites PATH on every prompt and directory change, putting each pinned tool's
-# globals directories first. uv's is ~/.local/bin, where the native Claude Code shadows the
-# launcher, so move the launcher back in front after proto_activate, which proto registers first.
-# Remove once proto activation no longer puts ~/.local/bin ahead of the launcher in a uv project.
-_claude_launcher_path_front() {
-  path=("$HOME/.local/share/claude-launcher/bin" $path)
-}
-precmd_functions+=(_claude_launcher_path_front)
-chpwd_functions+=(_claude_launcher_path_front)
 # Run the latest skills CLI through npx.
 alias skills='npx skills@latest'
 
