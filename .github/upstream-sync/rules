@@ -65,6 +65,7 @@ own        private_dot_ssh/private_config
 local      .chezmoiremove
 local      .chezmoitemplates/agents/local.md
 local      .claude/skills/upstream-sync/**
+local      .github/docs/**
 local      .github/upstream-sync/**
 local      dot_agents/skills/liby-review/**
 local      dot_zsh/lib/**
