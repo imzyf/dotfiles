@@ -122,7 +122,7 @@ Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 g
 
 [openai/codex#40254](https://github.com/openai/codex/issues/40254) 记录了当前 macOS 上的复现：没有显式的 Browser 缓存读规则时，Chrome 无法通过可信 RPC 的路径校验。保留 `~/.codex/plugins/cache/openai-bundled/browser` 作为唯一额外的只读路径，让可信 worker 能加载 Desktop 运行时拥有的 Browser 服务；chezmoi 的 `private_`、`readonly_` 源文件和 `chmod` 都不能建立可信的权限根。只有在删除源文件规则、apply 渲染后的配置、完全重启 Desktop、确认实际权限表里没有这条规则，并且在新任务里第一次初始化 Chrome 就成功（之前没有 Browser 尝试或重试）之后，才删除这个例外。
 
-`features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code 和 Codex 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。共享域名列表包含由 `npmHost` 渲染出的 `npm.invalid` 和由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、Maskey 的 Keychain 服务等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
+`features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code、Codex 和 [Pi 的命令 sandbox](#pi-配置) 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。Claude Code 和 Codex 还允许 [`sandbox/allowed-host-service-sockets.json`](../.chezmoitemplates/sandbox/allowed-host-service-sockets.json) 里的 socket，通过这些服务可以在 sandbox 外启动任务，所以 Pi 不允许。Claude Code 和 Pi 还从同一个目录渲染写入路径、读取规则和 Mach lookup，Claude Code 另外加上 agent 状态的写入路径。共享域名列表包含由 `npmHost` 渲染出的 `npm.invalid` 和由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、Maskey 的 Keychain 服务等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
 
 代理在命令第一次被拒绝的请求时结束整个命令，并报告 `Network access to "<host>" was blocked: <reason>`；Claude Code 的 sandbox 只在 `<sandbox_violations>` 里列出拒绝，命令继续运行。所以 Claude Code 在命令正常工作之外报告的主机，在 Codex 下也会让这个命令失败。工具自己发出这类请求时，例如遥测、更新检查或平台探测，用工具的开关在 [`dot_zshenv`](../dot_zshenv) 里关掉，所有 zsh 都会读这个文件，包括终端和两个 agent 的命令。只有 zsh 启动时设不了开关的请求，才考虑加进共享允许列表；一个主机因为别的请求被允许后，它的开关仍然保持设置。
 
@@ -162,7 +162,9 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 `maxTokens` 取工作窗口、厂商文档写明的输出上限和路由实际执行的上限三者中最小的一个。目录里宣称的上限本身不足以证明路由会执行它。厂商没有写输出上限时，用工作窗口。用 `pi --list-models rc-gateway` 检查渲染出的窗口和输出上限，推理映射另外验证。
 
-[Pi 扩展包](https://github.com/Entwining/pi-extensions)负责编辑器、footer、guard 适配器和推理问题的绕过，包括它们的测试和发布。压缩提示扩展留在本仓库，因为它渲染共享的提示文本。[`run_onchange_after_install-pi-extensions.sh`](../.chezmoiscripts/run_onchange_after_install-pi-extensions.sh) 在 CLI 安装之后安装这个 Git 包，包的注册交给 Pi，保留其他已安装的包和它们的资源过滤。
+[Pi 扩展包](https://github.com/Entwining/pi-extensions)负责编辑器、footer、guard 适配器、命令 sandbox 和推理问题的绕过，包括它们的测试和发布。压缩提示扩展留在本仓库，因为它渲染共享的提示文本。[`run_onchange_after_install-pi-extensions.sh`](../.chezmoiscripts/run_onchange_after_install-pi-extensions.sh) 在 CLI 安装之后安装这个 Git 包，包的注册交给 Pi，保留其他已安装的包和它们的资源过滤。
+
+命令 sandbox 让 `bash` 工具和 `!` 命令在 [sandbox 策略](../private_dot_pi/private_agent/extensions/sandbox.json.tmpl)下运行，策略文件不存在时拒绝运行这些命令。策略不允许的工作，例如 apply chezmoi、Homebrew、launchd 服务或操作 Rex，用 `--no-sandbox` 启动 Pi 来做。从另一个 agent 的 sandbox shell 里启动的 Pi 会拒绝运行命令，因为 Seatbelt 不能嵌套。
 
 Pi 的 `npmCommand` 对整个 `@earendil-works/*` scope 使用 npm 的[发布时间豁免](https://docs.npmjs.com/cli/v11/using-npm/config/#min-release-age-exclude)，因为 Pi 固定同一次发布里的兄弟包。豁免保持在 scope 级别，这些依赖可以一起更新，第三方包仍受本机的等待期约束。扩展包用同样的等待期和豁免检查自己的开发依赖，因为安装 Git 包时也会解析它们。
 
@@ -190,7 +192,7 @@ hook 报告的是运行它的进程继承的 `REX_*`，而 `rex whoami` 接受�
 
 ## Agent guard
 
-[`Brewfile`](../Brewfile) 从 `entwining/tap` 安装 [agent-guard](https://github.com/Entwining/agent-guard)，提供 `/opt/homebrew/bin/agent-guard`。[Codex requirements](../.chezmoitemplates/codex/requirements.toml) 把 hook 放在 `managed_dir` 下，[`guard-bash`](../dot_codex/managed-hooks/executable_guard-bash) 检查 Homebrew 的二进制存在后，用 `--runtime codex` exec 它。[Pi 扩展包](https://github.com/Entwining/pi-extensions#extensions)里的 guard 适配器把 Pi 的工具调用映射成 guard 事件，调用同一个可执行文件。Claude Code 的设置片段为 `Bash` 和 `Read|Edit|Write|Grep` 注册了它。
+[`Brewfile`](../Brewfile) 从 `entwining/tap` 安装 [agent-guard](https://github.com/Entwining/agent-guard)，提供 `/opt/homebrew/bin/agent-guard`。[Codex requirements](../.chezmoitemplates/codex/requirements.toml) 把 hook 放在 `managed_dir` 下，[`guard-bash`](../dot_codex/managed-hooks/executable_guard-bash) 检查 Homebrew 的二进制存在后，用 `--runtime codex` exec 它。[Pi 扩展包](https://github.com/Entwining/pi-extensions#extensions)里的 guard 适配器把 Pi 的工具调用映射成 guard 事件，调用同一个可执行文件。Claude Code 的设置片段用一条 `Bash|Read|Edit|Write|Grep` 注册了它，这些工具共用同一个超时和失败策略。
 
 guard 把自己的失败，包括超过内部时限，报告为 exit 2，各运行时都把它当成阻止。guard 启动不了或 hook 超时，由运行时决定：Pi 扩展对干净通过以外的任何结果都阻止。Codex 在这些情况下会执行调用，而且没有对应的设置，所以 `guard-bash` 自己阻止缺失的二进制，它的 hook 超时必须大于 guard 的时限。
 
@@ -198,7 +200,7 @@ guard 的规则、解析器和测试归 agent-guard 包。本仓库拥有 [`dot_
 
 ## 共享 agent 指令
 
-Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitemplates/agents/`](../.chezmoitemplates/agents/) 下按顺序排列的片段，每个运行时的根文件按同样的顺序引入。本仓库不引入这些片段：Claude 的 `CLAUDE.md`、Codex 和 Pi 的 `AGENTS.md` 三个根文件都只引入本地的 [`local.md`](../.chezmoitemplates/agents/local.md)，三个运行时共用的全局指令都写在这个文件里。
+Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitemplates/agents/`](../.chezmoitemplates/agents/) 下按顺序排列的片段，每个运行时的根文件按同样的顺序引入。本仓库不引入这些片段：Claude 的 `CLAUDE.md`、Codex 和 Pi 的 `AGENTS.md` 三个根文件都只引入本地的 [`local.md`](../.chezmoitemplates/agents/local.md)，三个运行时共用的全局指令都写在这个文件里。GnuPG 签名或解密失败后的恢复步骤只在出错时需要，所以跟随上游放在部署到 `~/.agents/gnupg.md` 的单独文件里，`local.md` 只要求失败时先读它。
 
 压缩提示仍然部署。运行时适配器在压缩后把[压缩提示](../.chezmoitemplates/agents/compaction-reminder.md)交给执行者。Codex 把托管的 [`compaction-reminder`](../dot_codex/managed-hooks/executable_compaction-reminder.tmpl) 作为 `compact` 来源的 `SessionStart` hook 运行，[requirements 脚本](../.chezmoiscripts/run_onchange_after_setup-codex-requirements.sh.tmpl)运行后才会生效。Codex 在压缩和下一轮之间退出时，[可能丢掉排队的提示](https://github.com/openai/codex/issues/56316)，托管 hook 在 resume 时补不回这段上下文。[Pi 的上下文扩展](../private_dot_pi/private_agent/extensions/compaction-reminder.ts.tmpl)把提示放在保留的压缩前消息之后、新消息之前。Claude Code 的设置片段注册 `post-compact-reminder.sh`，作为 `compact` 来源的 `SessionStart` hook 运行。
 
