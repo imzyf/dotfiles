@@ -9,6 +9,7 @@ follow     .chezmoiignore
 follow     .chezmoiscripts/**
 follow     .chezmoitemplates/**
 follow     .github/dev-tools/**
+follow     dot_agents/gnupg.md
 follow     dot_agents/skills/commit/**
 follow     dot_agents/skills/context7/**
 follow     dot_agents/skills/deslop/**

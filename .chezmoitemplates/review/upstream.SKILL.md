@@ -47,7 +47,8 @@ When a premise can be settled by a cheap run, such as an existing test, a script
 ## Verify before reporting
 
 - Verify each candidate against the code, the source-owned contract, tests, or runtime evidence. A handwritten type or fixture does not prove what a provider, a migration, or persisted data actually holds. Check the real boundary when a test replaces the mechanism the claim depends on. Validate dependency changes against the lockfile-resolved version.
-- Validation can write files (relocking, creating environments), so never run it in a tree that others are reading. When you need a tree of a revision the checkout does not cleanly hold, extract one into temporary space without checkout hooks, such as `git archive <head> | tar -x -C <dir>`, and for a working-tree review reproduce the in-scope working-tree changes there.
+- Run checks with established read-only behavior in the checkout. Run validation that can write in a disposable copy of the reviewed revision that no other task is using. Before invoking a package runner or a project executable, establish where it can write, including dependency setup and caches reached through symlinks. If a writable path resolves into the reviewed checkout or shared dependency state, use an independent copy or direct the writes into the disposable tree before running. Report the specific validation that remains open if you cannot establish that boundary.
+- When you need a tree of a revision the checkout does not cleanly hold, extract one into temporary space without checkout hooks, such as `git archive <head> | tar -x -C <dir>`, and for a working-tree review reproduce the in-scope working-tree changes there.
 - Trace downstream gates, fallbacks, and retries before judging impact.
 - Ask for runtime evidence only for facts the repository cannot establish, such as deployed state, migration state, or timing. Keep an open manual check only when a reachable path and source-specific evidence call a local assumption into doubt, one named external fact could make the finding blocking, and the attempted probes cannot settle it; name those probes and give no clean verdict.
 - A challenged finding is verified again as a new claim. Remove a disproved one from the output and from finding counts.
@@ -73,6 +74,7 @@ A clean verdict is a complete review once every changed path and applicable repo
 Dispatch other agents or models on your own only for distinct risk areas of a large or high-risk change. When the invoker asks for reviewers, they review the scope it assigns, or the whole change.
 
 - Give each a self-contained brief: base and head, the path of one canonical diff file restricted to reviewable paths, the changed paths in its scope, the current requirements and accepted behavior trade-offs with their scope and reopen conditions, the repository rules from the reviewed revision, and the absolute path of this `SKILL.md` with an instruction to read it first, because some models do not load a skill the brief does not name.
+- When the brief permits validation, use the validation write-boundary paragraph from **Verify before reporting** as written. Apply any tighter limits set by the request or repository rules.
 - Keep prior finding narratives, reviewer reasoning, and dispositions out of an independent reviewer's brief, and reconcile its candidates against them after verification. Accepted requirements and behavior trade-offs are specification input, not prior reviewer opinion. In later rounds, give reviewers the fix delta unless the invoker assigns more.
 - Dispatch the wave together instead of staging it by expected yield.
 - Treat their reports as leads: verify each finding in the code before accepting it, and repeat a reviewer's search only when the verdict rests on its completeness, such as a claim that nothing else reads a field. Agreement raises priority, not confidence or severity. Preserve material disagreements, and close each assigned risk area or report it open.
@@ -83,7 +85,7 @@ When asked to review from a named person's perspective, predict that person's li
 
 - Answer first whether the requirement or approach is sound when the user asked that.
 - Lead each finding with its trigger or violated rule and the consequence in plain terms, using the code's own names rather than labels you coined, so a reader can follow it without the diff open; then give blocking or non-blocking, `path:line`, the decisive evidence, and the required outcome. Add provenance when the diff's contribution is not obvious.
-- Give each reviewed MR or PR its URL wherever the report names it; chat does not link a short reference such as `!456`, even with a project path before it.
+- In review reports and follow-up replies, write each reviewed MR or PR as a Markdown link to its own page wherever you name it, since chat leaves even project-qualified short references as plain text.
 - Write `No blocking findings.` only when no open manual check remains.
 - For requested comments or replies, write from the verified finding; keep the evidence and the blocking decision in the review record, separate from the comment body, and in the body name a file by a link the reader can open where one exists, not by its `path:line`.
 - When condensing or restyling, keep every distinct finding with its decision, conditions, and citation.

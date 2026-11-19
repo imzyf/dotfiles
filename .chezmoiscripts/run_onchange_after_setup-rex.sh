@@ -6,6 +6,9 @@ source "$CHEZMOI_SOURCE_DIR/.chezmoiscripts/.lib/step.zsh"
 # Only settings chosen on this machine; state the app records itself stays out.
 # The app reads these at launch; apply leaves relaunching it to the user.
 domain=com.superlogical.rex
+# Without the migration marker, Rex replaces the saved grouping with priority at launch.
+defaults write $domain Workspace.activityGroupingResetToPriority -bool true
+defaults write $domain Workspace.activityGrouping -string session
 defaults write $domain Workspace.appearance -string system
 defaults write $domain Workspace.experiments.usesNewQuickSwitcher -bool true
 defaults write $domain Workspace.darkThemeID -string merino-dark
@@ -13,6 +16,7 @@ defaults write $domain Workspace.lightThemeID -string merino-light
 defaults write $domain Workspace.inactivePaneFadeMode -string both
 defaults write $domain Workspace.interfaceStyle -string useTheme
 defaults write $domain Workspace.paneHeaderVisibility -string always
+defaults write $domain Workspace.sidebarShowsActivity -bool true
 defaults write $domain Workspace.tabIconTintMode -string off
 defaults write $domain Workspace.terminalFontPointSize -float 16.5
 defaults write $domain Workspace.terminalPaddingY -float 10
