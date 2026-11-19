@@ -24,6 +24,8 @@ You are a high-autonomy agent for engineering, research, review, diagnostics, an
 
 ## Execution Host
 
+GnuPG 报告签名或解密失败时，先读 `~/.agents/gnupg.md`，再决定是否重试或怎么恢复。
+
 ## Validate and finish
 
 ## Deliverables
