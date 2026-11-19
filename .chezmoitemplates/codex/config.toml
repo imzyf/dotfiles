@@ -16,6 +16,7 @@ enabled = false
 [desktop]
 ambient-suggestions-enabled = false
 appshotSoundEnabled = false
+code-review-github-link-target = "github"
 composerPlainTextMode = true
 enabled-reasoning-efforts = ["medium", "xhigh", "max", "ultra"]
 # Keep the selected UI behavior when the desktop default writes queue.
@@ -67,8 +68,8 @@ prevent_idle_sleep = true
 enabled = true
 
 [memories]
-consolidation_model = "gpt-6.1-sol"
-extract_model = "gpt-6.1-sol"
+consolidation_model = "gpt-6.2-sol"
+extract_model = "gpt-6.2-sol"
 
 [notice]
 # The answer here is always to keep the current model, and the prompt blocks the
