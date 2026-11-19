@@ -16,6 +16,7 @@ enabled = false
 [desktop]
 ambient-suggestions-enabled = false
 appshotSoundEnabled = false
+code-review-github-link-target = "github"
 composerPlainTextMode = true
 enabled-reasoning-efforts = ["medium", "xhigh", "max", "ultra"]
 # Keep the selected UI behavior when the desktop default writes queue.
@@ -67,8 +68,8 @@ prevent_idle_sleep = true
 enabled = true
 
 [memories]
-consolidation_model = "gpt-6.1-sol"
-extract_model = "gpt-6.1-sol"
+consolidation_model = "gpt-6.2-sol"
+extract_model = "gpt-6.2-sol"
 
 [notice]
 # The answer here is always to keep the current model, and the prompt blocks the
@@ -104,7 +105,7 @@ allow_local_binding = true
 
 # Socket rules require absolute paths; `~` prevents the proxy from starting.
 [permissions.development.network.unix_sockets]
-{{ range includeTemplate "sandbox/allowed-unix-sockets.json" . | fromJson -}}
+{{ range concat (includeTemplate "sandbox/allowed-unix-sockets.json" . | fromJson) (includeTemplate "sandbox/allowed-host-service-sockets.json" . | fromJson) -}}
 {{ joinPath $.chezmoi.homeDir (trimPrefix "~/" .) | quote }} = "allow"
 {{ end }}
 "{{ .chezmoi.homeDir }}/.cache/codex-tmp" = "allow"
