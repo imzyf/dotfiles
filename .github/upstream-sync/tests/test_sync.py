@@ -1,4 +1,3 @@
-import datetime
 import os
 import stat
 import sys
@@ -8,7 +7,6 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "bin"))
 
 from upstream_sync import sync  # noqa: E402
-from upstream_sync.github import IN_PROGRESS, PullRequest  # noqa: E402
 from upstream_sync.gitcmd import git, rev, succeeds  # noqa: E402
 
 # 不读用户自己的 Git 配置，比如签名和 hook。
@@ -272,28 +270,7 @@ class PrepareTest(Fixture):
         self.assertIn("Upstream-Author: Someone Else", self.ticket_messages()[0])
 
 
-NOW = datetime.datetime(2026, 11, 11, 12, 0, tzinfo=datetime.timezone.utc)
-
-
-class FakeGitHub:
-    def __init__(self):
-        self.pr = None
-        self.label_time = None
-        self.calls = []
-
-    def find_pr(self, head):
-        return self.pr
-
-    def label_added_at(self, number, label):
-        return self.label_time
-
-    def create_pr(self, base, head, title, body):
-        self.calls.append(("create", base, head, title, body))
-        self.pr = PullRequest(1, "https://github.com/me/dotfiles/pull/1")
-        return self.pr.url
-
-    def edit_pr(self, number, title, body):
-        self.calls.append(("edit", number, title, body))
+TODAY = "2026-11-11"
 
 
 class TaskTest(Fixture):
@@ -303,90 +280,45 @@ class TaskTest(Fixture):
         git("init", "--quiet", "--bare", self.origin, cwd=self.tmp.name)
         git("remote", "add", "origin", self.origin, cwd=self.repo)
         git("push", "--quiet", "origin", "main", cwd=self.repo)
-        self.gh = FakeGitHub()
 
-    def remote_ref(self, branch):
-        return rev(f"refs/heads/{branch}", self.origin)
-
-    def test_first_run_pushes_and_creates_pr(self):
-        self.upstream_commit("fix: zshrc", {"dot_zshrc": "zshrc v2\n"})
-        result = sync.run_task(self.cfg, self.gh, NOW)
-        self.assertEqual(result.pr_url, "https://github.com/me/dotfiles/pull/1")
-        self.assertEqual(self.remote_ref("upstream"), rev("upstream", self.repo))
-        self.assertEqual(self.remote_ref(self.cfg.ticket), rev(self.cfg.ticket, self.repo))
-        kind, base, head, title, body = self.gh.calls[0]
-        self.assertEqual((kind, base, head), ("create", "main", "upstream-sync"))
-        self.assertTrue(title.startswith("Upstream sync: 1 pending since "))
-        self.assertIn("fix: zshrc", body)
-
-    def test_later_run_edits_pr(self):
+    def test_does_not_push(self):
         self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
-        sync.run_task(self.cfg, self.gh, NOW)
+        sync.run_task(self.cfg, TODAY)
+        self.assertIsNone(rev("refs/heads/upstream", self.origin))
+        self.assertIsNone(rev(f"refs/heads/{self.cfg.ticket}", self.origin))
+
+    def test_session_in_progress_stops_preparation(self):
+        self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
+        sync.run_task(self.cfg, TODAY)
+        git("switch", "--quiet", "--detach", cwd=self.cfg.worktree)
         self.upstream_commit("two", {"dot_zshrc": "zshrc v3\n"})
-        sync.run_task(self.cfg, self.gh, NOW)
-        kind, number, title, body = self.gh.calls[1]
-        self.assertEqual((kind, number), ("edit", 1))
-        self.assertIn("2 pending", title)
-        self.assertEqual(self.remote_ref(self.cfg.ticket), rev(self.cfg.ticket, self.repo))
-
-    def test_in_progress_label_only_updates_mirror(self):
-        self.gh.pr = PullRequest(1, "url", [IN_PROGRESS])
-        self.gh.label_time = "2026-11-11T08:00:00Z"
-        new = self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
-        result = sync.run_task(self.cfg, self.gh, NOW)
-        self.assertEqual(self.remote_ref("upstream"), new)
-        self.assertIsNone(rev(f"refs/heads/{self.cfg.ticket}", self.repo))
-        self.assertEqual(result.prepared, [])
-        self.assertFalse(any("warning" in m for m in result.messages))
-
-    def test_stale_label_warns(self):
-        self.gh.pr = PullRequest(1, "url", [IN_PROGRESS])
-        self.gh.label_time = "2026-11-09T08:00:00Z"
-        result = sync.run_task(self.cfg, self.gh, NOW)
-        self.assertTrue(any("more than a day ago" in m for m in result.messages))
-
-    def test_local_run_does_not_push(self):
-        self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
-        sync.run_task(self.cfg, None, NOW)
-        self.assertIsNone(self.remote_ref("upstream"))
-        self.assertIsNone(self.remote_ref(self.cfg.ticket))
+        with self.assertRaisesRegex(sync.SyncError, "detached HEAD"):
+            sync.run_task(self.cfg, TODAY)
+        self.assertEqual(len(self.ticket_messages()), 1)
 
     def record_in_main(self, upstream, content):
-        """模拟处理会话把 upstream 合进 main 并 push。"""
+        """模拟处理会话把 upstream 合进 main。"""
         write(self.repo, ".chezmoitemplates/zsh/upstream.dot_zshrc", content)
         git("add", "-A", cwd=self.repo)
         git("commit", "--quiet", "-m", f"one\n\nUpstream-Commit: {upstream}\nUpstream-Decision: accepted", cwd=self.repo)
-        git("push", "--quiet", "origin", "main", cwd=self.repo)
 
     def test_rule_change_on_main_reprepares_pending_commits(self):
         self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
-        sync.run_task(self.cfg, self.gh, NOW)
+        sync.run_task(self.cfg, TODAY)
         rules = read(self.repo, sync.RULES_PATH).replace("follow dot_zshrc > .chezmoitemplates/zsh/upstream.dot_zshrc", "own dot_zshrc")
         write(self.repo, sync.RULES_PATH, rules)
         commit(self.repo, "own zshrc")
-        sync.run_task(self.cfg, self.gh, NOW)
+        sync.run_task(self.cfg, TODAY)
         self.assertTrue(succeeds("merge-base", "--is-ancestor", "main", self.cfg.ticket, cwd=self.repo))
         [message] = self.ticket_messages()
         self.assertIn("dot_zshrc (own)", message)
 
-    def test_no_remaining_commits_moves_remote_ticket_to_main(self):
+    def test_no_remaining_commits_resets_ticket_to_main(self):
         one = self.upstream_commit("one", {"dot_zshrc": "zshrc v2\n"})
-        sync.run_task(self.cfg, self.gh, NOW)
+        sync.run_task(self.cfg, TODAY)
         self.record_in_main(one, "zshrc v2\n")
-        sync.run_task(self.cfg, self.gh, NOW, update_mirror_first=False)
-        self.assertEqual(self.remote_ref(self.cfg.ticket), rev("main", self.repo))
-        kind, number, title, _body = self.gh.calls[-1]
-        self.assertEqual((kind, number, title), ("edit", 1, "Upstream sync: nothing pending"))
-
-    def test_pushes_mirror_updated_without_push(self):
-        sync.update_mirror(self.cfg, "2026-11-11")
-        sync.run_task(self.cfg, self.gh, NOW, update_mirror_first=False)
-        self.assertEqual(self.remote_ref("upstream"), rev("upstream", self.repo))
-
-    def test_no_pending_commits_creates_no_pr(self):
-        sync.run_task(self.cfg, self.gh, NOW)
-        self.assertEqual(self.gh.calls, [])
-        self.assertIsNone(self.remote_ref(self.cfg.ticket))
+        sync.run_task(self.cfg, TODAY, update_mirror_first=False)
+        self.assertEqual(rev(self.cfg.ticket, self.repo), rev("main", self.repo))
 
 
 class LockTest(unittest.TestCase):

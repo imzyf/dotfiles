@@ -2,7 +2,7 @@
 
 ## 1. 总体结构
 
-整个流程都在本机运行，不使用 GitHub Actions。GitHub 只用来存放上游镜像分支和工单。
+整个流程都在本机运行，不使用 GitHub Actions。GitHub 只用来存放上游镜像分支和 `main`。
 
 上游的新 commit 先进入镜像分支；准备任务按规则把它们准备成工单里的 commit，并生成报告；用户在处理会话里逐个决定；处理过的部分合进 `main`，再由 chezmoi 应用到机器上。
 
@@ -10,7 +10,7 @@
 |---|---|---|
 | 上游镜像分支 | 原样保存上游的 commit，供查看和引用 | origin 的 `upstream` 分支 |
 | 处理方式规则 | 确定每个上游文件的处理方式和本地位置 | `.github/upstream-sync/rules` |
-| 工单 | 一个 PR，分支上放着待处理的上游改动 | origin 的 `upstream-sync` 分支和对应的 PR |
+| 工单 | 一个本地分支，放着准备好、待处理的上游改动 | worktree 里的 `upstream-sync` 分支 |
 | 准备任务 | 更新镜像、准备 commit、生成报告 | 脚本，先手动运行，跑顺以后由 launchd 定时运行 |
 | 处理会话 | 用户坐下来处理工单 | agent 加载 `upstream-sync` skill |
 
@@ -21,8 +21,7 @@
 ## 2. 上游镜像分支
 
 - 准备任务用 URL 直接 fetch `https://github.com/liby/dotfiles` 的 `main`，不配置 remote（C5）。
-- fetch 到的结果快进到本地的 `upstream` 分支，再 push 到 origin。换一台机器时，`git fetch origin` 就会拿到它（R32）。完整的上游 commit 和 diff 都在这个分支上查看（R10）。
-- push 用的是用户现有的 Git 凭据，也就是钥匙串里保存的 HTTPS 凭据。启用 launchd 时，要确认后台运行也能 push 成功。
+- fetch 到的结果快进到本地的 `upstream` 分支。处理会话收尾时，它和 `main` 一起 push 到 origin，`main` 上的 trailer 引用的上游 commit 在 origin 上总能找到。换一台机器时，`git fetch origin` 就会拿到它（R32）。完整的上游 commit 和 diff 都在这个分支上查看（R10）。
 - 镜像分支原样带着上游 `.github/workflows/` 里的 workflow。GitHub 收到 push 时会运行被 push 的分支自己带的 workflow。上游的 workflow 目前都只在 push 到 `main` 时触发，但上游随时可能修改（C10）。本仓库没有自己的 workflow，所以在仓库设置里关闭 GitHub Actions。
 - 如果上游改写了历史，快进会失败（C10）。这时准备任务停下来，把旧的 `upstream` 留成 tag `upstream-archive/<日期>`，然后在报告里提醒用户，不自动覆盖。
 - 保存镜像的主要原因是 R36：本地 commit 用上游 commit 的 hash 引用原改动，上游即使改写历史或者删库，这些 hash 在本仓库里也仍然能查到。
@@ -92,7 +91,7 @@ local      dot_zsh/lib/**
 
 ### 4.1 分支上的 commit
 
-工单是一个 PR，分支叫 `upstream-sync`，基于 `main`。分支上分两段：前面是本次会话已经处理过的 commit，后面是准备好、还没处理的 commit。
+工单是本地的 `upstream-sync` 分支，基于 `main`，上面是准备好、还没处理的 commit。工单分支不 push：它由 `main`、镜像分支和规则文件完全确定，换一台机器时重新运行准备任务就能得到同样的工单（R32）。
 
 `upstream-sync` 分支只在 worktree `~/Code/worktrees/chezmoi-upstream-sync` 里检出，准备任务和处理会话都在这里操作。`~/.local/share/chezmoi` 是 chezmoi 的源目录，`chezmoi apply` 部署的是这里检出的版本，所以它始终停在 `main` 上，只用来做收尾时的合并和 apply。这样处理到一半时，任何一次 apply 都不会把没处理的改动部署出去，日常改配置也不用等同步结束。两个目录共用同一个 `.git`，会话做好的 commit 不用 push 就能在源目录里合并。
 
@@ -127,12 +126,9 @@ Upstream-Decision: pending
 - 待处理列表等于镜像分支上起点之后的 commit，减去 `main` 上已经出现在 trailer 里的 commit。所以不按顺序处理也没有问题（R16），不需要另外的状态文件。
 - 起点写在规则文件的 `base` 行（3.1）。
 
-### 4.3 PR 的标题、描述和评论
+### 4.3 防止同时修改工单
 
-- 标题和描述由准备任务每次重写：待处理的数量、起始日期，按处理方式分组的清单，每项链接到镜像分支上的原 commit。
-- 中文报告的公开部分作为评论追加到 PR 上（R37）。本机影响写在本地的报告文件里，不发到 PR 上（R31）。
-- 处理会话开始时给 PR 加 `in-progress` 标签，结束时去掉。准备任务看到这个标签，只更新镜像，其余都不做，避免和处理会话同时改分支。标签在 GitHub 上，换一台机器也有效。
-- 标签挂了超过一天，准备任务在终端输出里提醒用户，因为处理会话可能中途中断，没来得及去掉标签。
+- 处理会话在 worktree 的 detached HEAD 上做处理过的 commit，收尾前不动工单分支（6.1、6.2）。准备任务发现 worktree 不在工单分支上就报错退出，所以不会改动正在处理的工单。会话中途中断时，worktree 留在 detached HEAD 上，下一次会话开始时由用户决定继续收尾还是放弃。
 - 准备任务另外用一个本地锁文件，防止两次准备任务同时运行，比如手动运行时 launchd 恰好也触发了一次。
 
 ## 5. 准备任务
@@ -141,37 +137,36 @@ Upstream-Decision: pending
 
 - 前几次手动运行，确认准备和报告的结果符合预期以后，再启用 launchd。
 - 启用后，launchd 每天定时运行一次。电脑睡眠时错过的会在唤醒后补跑；再加上登录时运行一次，覆盖关机的情况（R29，C7）。
-- 处理会话开始时检查报告是否对应工单当前的状态，不对应就当场重新生成。
+- 处理会话开始时先运行一次准备任务，工单总是对应最新的上游和 `main`。
 - 启用 launchd 以后也可以随时手动运行。
 
 ### 5.2 步骤
 
 1. 取得锁文件，已经有一次准备任务在运行就退出（4.3）。
-2. 更新镜像分支（第 2 节）并 push。PR 挂着 `in-progress` 标签时到此结束。
+2. 更新镜像分支（第 2 节）。worktree 不在工单分支上时到此结束（4.3）。
 3. 工单分支不包含 `main` 时，先把它重置到 `main`。处理会话合并以后，或者在 `main` 上直接提交了规则改动以后，原来准备好的 commit 是按旧规则生成的，不能直接 rebase，所以剩下的待处理 commit 全部按当前规则重新准备。
 4. 算出待处理列表（4.2），把还没准备的上游 commit 逐个准备到 `upstream-sync` 分支上（4.1）。某个 commit 应用失败时，比如它依赖一个被推迟的 commit，就生成一个说明失败原因的空 commit，交给处理会话。
-5. 用 `--force-with-lease` push 工单分支，远端分支在别处被改过时不会覆盖。没有待处理的 commit 时，只有远端已经有工单分支才 push，让它跟上 `main`。然后用 `gh` 新建或更新 PR；没有待处理的 commit 时不新建 PR。
-6. 生成报告：
+5. 生成报告：
    - 脚本为每个 commit 整理出结构化数据：上游 message、diff、每个文件的处理方式、对应的上游 PR。
    - 脚本在 worktree 里分别渲染每个 commit 前后受影响的目标，算出每个 commit 对渲染结果的改动。这部分只写进本地报告。
-   - `claude -p` 加载 skill，读结构化数据，写每个 commit 的中文说明和总览，按 R24 的三条标准逐个判断哪些改动要重点标出。它只读上游的公开内容，所以写出的内容可以公开。
+   - `claude -p` 加载 skill，读结构化数据，写每个 commit 的中文说明和总览，按 R24 的三条标准逐个判断哪些改动要重点标出。
    - 跟随或观察学习的文件里出现新工具或新概念时，起草简报，作为一个待处理的 commit 放到分支上（R38）。
-   - 这次运行准备了新的 commit 时，脚本把说明和总览作为一条新评论发到 PR 上；没有新 commit 就不发，避免重复的评论。完整报告连同本机影响每次都写到 `~/.local/state/upstream-sync/`。
+   - 报告连同本机影响写到 `~/.local/state/upstream-sync/`。
 
 ## 6. 处理会话
 
 ### 6.1 逐个决定
 
-用户在 worktree 里启动 agent，agent 加载 skill，按总览的顺序逐个处理：
+用户在 worktree 里启动 agent，agent 加载 skill，按总览的顺序逐个处理。处理过的 commit 做在 detached HEAD 上，起点是工单分支和 `main` 的分叉点：
 
-| 决定 | 分支上的操作 |
+| 决定 | 操作 |
 |---|---|
 | 接受 | 在 message 最前面加中文说明，`Upstream-Decision` 改成 `accepted`，签名 |
 | 接受后调整 | 同上，改成 `adjusted`，后面加一个本地修改的 commit，理由写在 message 里 |
 | 合并处理 | 几个 commit squash 成一个，附上所有上游原文和多个 `Upstream-Commit`，改成 `combined` |
 | 跳过 | 去掉内容，留成空 commit，写上中文说明和理由，改成 `skipped` |
-| 推迟 | 移到待处理部分的最后 |
-| 提前处理 | 移到待处理部分的最前面（R16） |
+| 推迟 | 这次不处理，收尾后留在工单里 |
+| 提前处理 | 先处理这一个，其余的收尾后按原来的顺序留在工单里（R16） |
 | 改变处理方式 | 加一个修改规则文件的 commit，原因写在 message 里（3.3），然后照常处理。确认采用新文件也是这种情况 |
 
 跳过一个改了跟随文件的 commit 会让文件偏离上游，违反 R17。遇到这种情况，skill 要求用户二选一：把这个文件改成自己维护，或者接受后用本地覆盖抵消。
@@ -187,7 +182,7 @@ Upstream-Decision: pending
    - 不做整体 apply，因为整体 apply 会覆盖和这次同步无关的机器上的改动，比如手动改过、还没收进仓库的配置。所有命令都带 `--exclude=encrypted`：apply 加密文件需要解密，只能由用户来做；上游的加密文件本来就归入不需要（C4），排除它们不会漏掉同步的内容。
 3. 对上一步的范围运行 `chezmoi apply --exclude=encrypted`。
 4. 验证（R27）：重新生成 chezmoi 配置并渲染，和合并前对比，确认本地差异仍然生效；列出要手动做的事，比如重新运行 `chezmoi init`、重启服务、删除上游已经删掉的文件在机器上的部署结果。
-5. 去掉 PR 的 `in-progress` 标签，把 worktree 切回工单分支，运行准备任务：它把工单分支重置到合并后的 `main`，按当前规则重新准备剩下的待处理 commit，再 push 工单分支（5.2）。然后 push `main`。顺序不能反过来：剩下的为零时，工单分支等于合并后的 `main`，先 push 它，GitHub 在 `main` 收到这个 commit 时把 PR 标成已合并；先 push `main` 的话，PR 的 head 和 base 相同，GitHub 只会关闭 PR。下次准备任务发现新的上游 commit 时再开新 PR。
+5. 把 worktree 切回工单分支，运行准备任务：它把工单分支重置到合并后的 `main`，按当前规则重新准备剩下的待处理 commit（5.2）。然后把 `main` 和镜像分支一起 push 到 origin（第 2 节）。
 
 这样每次会话处理的改动当次就生效（R21），没处理的留在工单里。每个 merge commit 对应一次会话，能看出哪些改动是同一次同步进来的。
 

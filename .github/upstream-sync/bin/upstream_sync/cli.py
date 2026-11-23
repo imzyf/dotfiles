@@ -5,12 +5,10 @@ from __future__ import annotations
 import argparse
 import datetime
 import os
-import re
 import sys
 
 from . import sync
 from .affected import AffectedError, affected
-from .github import GitHub, GitHubError
 from .gitcmd import GitError, git
 from .rules import REGISTERED, Report
 
@@ -26,10 +24,6 @@ def config() -> sync.Config:
     )
     cfg.url = os.environ.get("UPSTREAM_SYNC_URL", cfg.url)
     cfg.state_dir = os.environ.get("UPSTREAM_SYNC_STATE_DIR", cfg.state_dir)
-    origin = git("remote", "get-url", cfg.remote, cwd=cfg.repo).strip()
-    match = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?$", origin)
-    if match:
-        cfg.github_repo = match.group(1)
     return cfg
 
 
@@ -89,9 +83,7 @@ def cmd_affected(cfg: sync.Config, args: argparse.Namespace) -> int:
 
 
 def cmd_prepare(cfg: sync.Config, args: argparse.Namespace) -> int:
-    gh = None if args.local else GitHub(cfg.github_repo)
-    now = datetime.datetime.now(datetime.timezone.utc)
-    result = sync.run_task(cfg, gh, now, update_mirror_first=not args.no_mirror)
+    result = sync.run_task(cfg, datetime.date.today().isoformat(), update_mirror_first=not args.no_mirror)
     if result.report:
         print_report(result.report)
     for line in result.messages:
@@ -100,8 +92,6 @@ def cmd_prepare(cfg: sync.Config, args: argparse.Namespace) -> int:
         flag = "FAILED" if p.failed else f"{len(p.applied)} applied"
         print(f"{p.commit[:9]}  {flag:<10}  {p.subject}")
     print(f"prepared {len(result.prepared)} commits on {cfg.ticket} in {cfg.worktree}")
-    if result.pr_url:
-        print(f"ticket: {result.pr_url}")
     return 0
 
 
@@ -116,11 +106,10 @@ def main(argv: list[str] | None = None) -> int:
     affected_cmd.add_argument("new")
     prepare = sub.add_parser("prepare", help="prepare pending upstream commits on the ticket branch")
     prepare.add_argument("--no-mirror", action="store_true", help="skip updating the mirror branch")
-    prepare.add_argument("--local", action="store_true", help="do not push or touch the pull request")
     args = parser.parse_args(argv)
     handlers = {"affected": cmd_affected, "check": cmd_check, "mirror": cmd_mirror, "pending": cmd_pending, "prepare": cmd_prepare}
     try:
         return handlers[args.command](config(), args)
-    except (sync.SyncError, GitHubError, GitError, AffectedError) as error:
+    except (sync.SyncError, GitError, AffectedError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

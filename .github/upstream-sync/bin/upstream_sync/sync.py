@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import datetime
 import fcntl
 import os
 from contextlib import contextmanager
@@ -13,8 +12,6 @@ from dataclasses import dataclass, field
 from typing import Iterator
 
 from . import rules as rules_mod
-from . import ticket as ticket_mod
-from .github import IN_PROGRESS
 from .gitcmd import GitError, entry, git, rev, succeeds
 
 RULES_PATH = ".github/upstream-sync/rules"
@@ -34,8 +31,6 @@ class Config:
     mirror: str = "upstream"
     ticket: str = "upstream-sync"
     main: str = "main"
-    remote: str = "origin"
-    github_repo: str = "imzyf/dotfiles"
     state_dir: str = os.path.expanduser("~/.local/state/upstream-sync")
 
 
@@ -109,13 +104,16 @@ def pending(cfg: Config, base: str) -> list[Pending]:
 
 
 def ensure_worktree(cfg: Config) -> None:
-    """工单分支只在 worktree 里检出，源目录始终停在 main 上（设计 4.1）。"""
+    """工单分支只在 worktree 里检出，源目录始终停在 main 上（设计 4.1）。
+
+    处理会话进行中时 worktree 停在 detached HEAD 上，这里报错，准备任务就不会改动正在处理的工单（设计 4.3）。
+    """
     if rev(f"refs/heads/{cfg.ticket}", cfg.repo) is None:
         git("branch", "--no-track", cfg.ticket, cfg.main, cwd=cfg.repo)
     if not os.path.isdir(cfg.worktree):
         git("worktree", "prune", cwd=cfg.repo)  # 目录被手动删掉时，先清掉 Git 里的旧登记
         git("worktree", "add", "--quiet", cfg.worktree, cfg.ticket, cwd=cfg.repo)
-    head = git("symbolic-ref", "--quiet", "HEAD", cwd=cfg.worktree).strip()
+    head = git("symbolic-ref", "--quiet", "HEAD", cwd=cfg.worktree, check=False).strip()
     if head != f"refs/heads/{cfg.ticket}":
         raise SyncError(f"{cfg.worktree} is on {head or 'a detached HEAD'}, expected {cfg.ticket}")
     if git("status", "--porcelain", cwd=cfg.worktree).strip():
@@ -303,27 +301,11 @@ def prepare(cfg: Config) -> tuple[list[Prepared], rules_mod.Report]:
     return results, report
 
 
-def push_mirror(cfg: Config) -> None:
-    """镜像分支只会快进，所以普通 push 就够了。"""
-    git("push", "--quiet", cfg.remote, f"refs/heads/{cfg.mirror}:refs/heads/{cfg.mirror}", cwd=cfg.repo)
-
-
-def push_ticket(cfg: Config) -> None:
-    """工单分支会被 rebase，用 --force-with-lease：远端在别处被改过时不覆盖。"""
-    ref = f"refs/heads/{cfg.ticket}"
-    git("push", "--quiet", f"--force-with-lease={ref}", cfg.remote, f"{ref}:{ref}", cwd=cfg.repo)
-
-
 @dataclass
 class TaskResult:
     messages: list[str] = field(default_factory=list)
     prepared: list[Prepared] = field(default_factory=list)
     report: rules_mod.Report | None = None
-    pr_url: str | None = None
-
-
-def _parse_time(value: str) -> datetime.datetime:
-    return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 def reset_ticket(cfg: Config) -> str | None:
@@ -337,40 +319,15 @@ def reset_ticket(cfg: Config) -> str | None:
     return f"reset {cfg.ticket} to {cfg.main}"
 
 
-def run_task(cfg: Config, gh, now: datetime.datetime, update_mirror_first: bool = True) -> TaskResult:
-    """准备任务的完整步骤（设计 5.2）。gh 为 None 时只在本地运行，不 push，也不读写 PR。"""
+def run_task(cfg: Config, today: str, update_mirror_first: bool = True) -> TaskResult:
+    """准备任务的完整步骤（设计 5.2）。只改本地的镜像分支和工单分支，不 push。"""
     result = TaskResult()
     with lock(cfg.state_dir):
         if update_mirror_first:
-            result.messages.append(update_mirror(cfg, now.date().isoformat()))
-        if gh:
-            push_mirror(cfg)  # 也带上之前用 mirror 子命令或 --local 只在本地更新的镜像
-        pr = gh.find_pr(cfg.ticket) if gh else None
-        if pr and IN_PROGRESS in pr.labels:
-            result.pr_url = pr.url
-            result.messages.append(f"{pr.url} is labelled {IN_PROGRESS}; only the mirror was updated")
-            added = gh.label_added_at(pr.number, IN_PROGRESS)
-            if added and now - _parse_time(added) > datetime.timedelta(days=1):
-                result.messages.append(
-                    f"warning: the {IN_PROGRESS} label was added at {added}, more than a day ago. "
-                    "If no session is running, finish or abandon it and remove the label."
-                )
-            return result
+            result.messages.append(update_mirror(cfg, today))
         ensure_worktree(cfg)
         reset = reset_ticket(cfg)
         if reset:
             result.messages.append(reset)
         result.prepared, result.report = prepare(cfg)
-        if gh:
-            entries = ticket_mod.items(cfg.repo, cfg.main, cfg.ticket)
-            # 没有剩下的 commit 时也 push，远端的工单分支才会跟上 main，不留下过时的准备结果。
-            if entries or rev(f"refs/remotes/{cfg.remote}/{cfg.ticket}", cfg.repo):
-                push_ticket(cfg)
-            title = ticket_mod.title(entries)
-            body = ticket_mod.body(entries, cfg.github_repo, cfg.mirror)
-            if pr:
-                gh.edit_pr(pr.number, title, body)
-                result.pr_url = pr.url
-            elif entries:
-                result.pr_url = gh.create_pr(cfg.main, cfg.ticket, title, body)
     return result
