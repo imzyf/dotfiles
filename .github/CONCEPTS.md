@@ -10,7 +10,7 @@
 
 初始化保持交互式，因为它涉及账号相关的输入、系统级安装和存放在硬件上的 GPG 私钥。脚本负责文件同步表达不了的工具安装和机器状态。
 
-[`.chezmoiscripts`](../.chezmoiscripts/) 里的脚本使用 [chezmoi 的脚本生命周期](https://www.chezmoi.io/user-guide/use-scripts-to-perform-actions/)，本仓库没有自己的执行器。文件名不带排序前缀，所以一个脚本依赖同一阶段的另一个脚本时，先检查对方的结果再写入。`run_once` 和 `run_onchange` 的安装不做健康检查：工具被删掉，或者换了一张密钥不同的卡，都要显式重新调度脚本才会修复。
+[`.chezmoiscripts`](../.chezmoiscripts/) 里的脚本使用 [chezmoi 的脚本生命周期](https://www.chezmoi.io/user-guide/use-scripts-to-perform-actions/)，本仓库没有自己的执行器。文件名不带排序前缀，所以一个脚本依赖同一阶段的另一个脚本时，先检查对方的结果再写入。`run_once` 和 `run_onchange` 的安装不做健康检查：工具被删掉，或者换了一张密钥不同的卡，都要显式重新调度脚本才会修复。指定 target 的 apply 只运行其中的脚本，并按 target 路径的顺序运行，所以和它依赖的文件一起指定的 `after` 脚本会在这些文件写入之前运行；这些文件要在前一次调用里先 apply。
 
 重新调度单个 `run_onchange` 脚本，用 [`chezmoi state delete`](https://www.chezmoi.io/reference/commands/state/#delete) 删除 `entryState` bucket 里 key 为 `$HOME/.chezmoiscripts/<目标名>` 的记录，目标名去掉 `run_onchange_before_` 或 `run_onchange_after_` 前缀和 `.tmpl` 后缀。例如只重新调度 `run_onchange_after_setup-gitconfig.sh.tmpl`，再检查并 apply 这个脚本：
 
@@ -42,7 +42,7 @@ chezmoi apply "$HOME/.chezmoiscripts/setup-gitconfig.sh"
 
 - Coding agent 不能容忍延迟。`claude` 和 `pi` 由 `after` 阶段的一个 `run_once` 脚本用厂商安装程序安装，不固定版本；`claude` 自己更新，`pi` 只在运行 `pi update` 时更新，所以由 unattended-upgrades job 调用。Pi 用它的托管安装，不用 Homebrew formula 或 npm 包，因为只有托管安装固定了传递依赖。`codex` 来自 `homebrew/cask` 官方的 CLI cask，它的更新也交给同一个 job，它报告的更新命令是 `brew upgrade --cask codex`。
 - 和 agent 相关的 CLI（`ctx7`、`oracle`）也在 `Brewfile` 里；`oracle` 来自 `steipete/tap`，因为它没有自更新。`brew bundle` 没有 gh extension 的条目类型，所以 [`run_onchange_after_install-gh-extensions.sh`](../.chezmoiscripts/run_onchange_after_install-gh-extensions.sh) 在 apply 时安装 `gh stack` 和 `gh actions-lock`，不需要 gh 登录。Claude Code 的 sandbox 写不了 gh 的 extension 目录，agent 无法在第一次使用时自己安装。
-- 后台开发工具（`typescript`、`typescript-language-server`、Pyright、mbx）的版本固定在 `.github/dev-tools`。
+- 后台开发工具（`typescript`、`typescript-language-server`、Pyright、gopls、mbx）的版本固定在 `.github/dev-tools`。
 - 运行时（通过 proto 管理的 `node`、`bun`、`pnpm`、`go`，以及通过 rustup 管理的 Rust）由各自的管理器解析，不固定版本，也没有等待期。`oracle` 和 `ctx7` 的 formula 会拉入 Homebrew 的 `node`（`oracle` 还有 `pnpm`），本仓库的 `Brewfile` 还装了 Homebrew 的 `go`。它们在 `PATH` 上排在 proto 的 shim 后面，不是运行时渠道，所以这些 CLI 用的是本仓库不固定版本的 Node。
 - GUI 和日常 app 是 `Brewfile` 里的 cask，只在 App Store 上架的 app 是 `mas` 条目。
 
@@ -56,9 +56,11 @@ helper 把 Homebrew 升级和 Pi、gh extension、Rust 的更新、定期清理�
 
 有自己更新器的 app 不归这个 job 升级：[`dot_homebrew/brew.env`](../dot_homebrew/brew.env) 设置 Homebrew 的 [`HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS`](https://docs.brew.sh/Manpage#environment)，用 cask 自己的 `auto_updates` 声明，不另外维护一份列表。不带 `auto_updates` 的 cask，例如 `codex`，仍由 job 升级。后台 job 不加 `--greedy`，以保持这条边界。终端和后台 job 读的是同一个 `~/.homebrew/brew.env`，所以在终端里运行的 `brew upgrade` 也跳过这些 cask。
 
-npm 全局工具的精确版本在 [`.github/dev-tools/package.json`](dev-tools/package.json)，Pyright 在 [`.github/dev-tools/requirements.txt`](dev-tools/requirements.txt)，mbx 固定在[它的 release 安装脚本](dev-tools/install-mbx.sh)里，脚本用 release 的 `SHA256SUMS` 校验官方 release 包，再装到 `~/.local/bin`。一个共享的 `run_onchange` 安装脚本先安装 proto 声明的工具，再逐个协调这些声明，不删除机器上无关的工具；不要拆分这个安装脚本。`typescript`、`typescript-language-server` 和 Pyright 支撑 Claude Code 的 LSP 插件；workspace 自己的 `typescript` 提供不了 tsserver 时，`typescript-language-server` 回退到全局的 `typescript`。
+npm 全局工具的精确版本在 [`.github/dev-tools/package.json`](dev-tools/package.json)，Pyright 在 [`.github/dev-tools/requirements.txt`](dev-tools/requirements.txt)，gopls 作为 `tool` 声明在 [`.github/dev-tools/go.mod`](dev-tools/go.mod)，mbx 固定在[它的 release 安装脚本](dev-tools/install-mbx.sh)里，脚本用 release 的 `SHA256SUMS` 校验官方 release 包，再装到 `~/.local/bin`。一个共享的 `run_onchange` 安装脚本先安装 proto 声明的工具，再逐个协调这些声明，不删除机器上无关的工具；不要拆分这个安装脚本。`typescript`、`typescript-language-server`、Pyright 和 gopls 支撑 Claude Code 的 LSP 插件；workspace 自己的 `typescript` 提供不了 tsserver 时，`typescript-language-server` 回退到全局的 `typescript`。Rust 插件运行 [`~/.local/bin/rust-analyzer`](../dot_local/bin/executable_rust-analyzer)，它在每个项目里都用 stable 工具链的 rust-analyzer，因为固定了工具链的项目很少带这个工具链的 rust-analyzer 组件。
 
 这些声明都有发布时间等待期，被攻破的上游版本在固定到这里之前，有时间被发现并撤回。npm 和 PyPI 的等待期由安装脚本执行，它拒绝解析比等待期更新的包。[`dot_config/uv/uv.toml`](../dot_config/uv/uv.toml) 用 uv 的 `exclude-newer` 设置 PyPI 的等待期，安装脚本把同一个值写进自己的 `uv tool install` 命令，不依赖 uv 找到部署的文件。npm 的等待期由安装脚本用 `npm config set` 写进 `~/.npmrc`；写在 `.zshenv` 的环境变量会漏掉不继承这个环境的 npm 进程。`~/.npmrc` 还存放 registry token，所以源文件用命令声明这个设置，不管理整个文件。所有等待期是同一个值，一个值就够，因为这些声明只包含没人等着用的后台工具。
+
+npm 和 uv 的等待期也约束本机每个项目的依赖解析，所以 pnpm（[`config.yaml`](../private_Library/private_Preferences/pnpm/config.yaml)）、Bun（[`.bunfig.toml`](../dot_bunfig.toml)）和 Cargo（[`config.toml`](../dot_cargo/config.toml)）在用户配置里设了同样的等待期。每个工具都有自己的覆盖方式，可以让单条命令使用更新的版本。npm 的 `allow-git=none` 拒绝 git 依赖，因为它们没有发布时间，会绕过等待期。
 
 `Brewfile` 拥有 `proto` 可执行文件，只通过 Homebrew 升级。proto 的[自升级命令](https://moonrepo.dev/docs/proto/commands/upgrade)会在 `$PROTO_HOME/bin` 装一份副本，在本仓库的工具链 PATH 里遮住 Homebrew 的版本。[`dot_proto/dot_prototools`](../dot_proto/dot_prototools) 有意使用[版本别名](https://moonrepo.dev/docs/proto/commands/install#installing-one-tool)，包括 [Node 的 LTS](https://moonrepo.dev/docs/proto/commands/pin)，并开启 proto 的[自动安装和清理](https://moonrepo.dev/docs/proto/config#settings)；这个设置接受运行时版本随时变化，没有等待期。proto 的独立安装程序不是后备路径。
 
@@ -148,9 +150,9 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 ### Pi 配置
 
-`~/.pi/agent/models.json` 和 `~/.pi/agent/keybindings.json` 整份管理，`~/.pi/agent/settings.json` 只管理一部分。[设置 modifier](../private_dot_pi/private_agent/modify_private_settings.json) 替换[设置片段](../.chezmoitemplates/pi/settings.json)声明的每个顶层 key，包括整个 `modelThinkingLevels`，保留没声明的 key。apply 有意覆盖在 UI 里保存的启动默认值和各模型默认值，让多台设备共用源文件的配置。
+`~/.pi/agent/models.json` 整份管理，`~/.pi/agent/settings.json` 只管理一部分。[设置 modifier](../private_dot_pi/private_agent/modify_private_settings.json) 替换[设置片段](../.chezmoitemplates/pi/settings.json)声明的每个顶层 key，包括整个 `modelThinkingLevels`，保留没声明的 key。apply 有意覆盖在 UI 里保存的启动默认值和各模型默认值，让多台设备共用源文件的配置。
 
-临时的 `/model` 和 `/thinking` 选择仍然可用。apply 设置后，先 `/reload`，再用 `/model` 重新选模型，thinking 默认值才生效；resume 一个 session 可能恢复它记录的模型和 thinking 级别。`defaultProjectTrust = "always"` 有意让每个目录都加载项目本地的设置、资源、包和扩展，不弹信任提示。
+临时的 `/model` 和 `/thinking` 选择仍然可用。apply 设置后，先 `/reload`，再用 `/model` 重新选模型，thinking 默认值才生效；resume 一个 session 可能恢复它记录的模型和 thinking 级别。`defaultProjectTrust = "always"` 有意让每个目录都加载项目本地的设置、资源、包和扩展，不弹信任提示。`tuiMode = "regular"` 把选中文字交给终端，因为 fullscreen 模式的 Pi 在它运行的机器上复制选中的内容，在 Mac 上看别处托管的 session 时拿不到；Pi 在宽度变化后会重绘对话，所以调整窗口大小不会留下错位。
 
 本仓库把 Pi 的 [`enabledModels`](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/settings.md#model-and-thinking) 限制在 `rc-gateway/**` 和 `modelOverrides` 里的 `anthropic` 模型，不开放整个内置目录。[共享的模型覆盖](../.chezmoitemplates/pi/model-overrides.json)同时提供 Anthropic 的 `modelOverrides` 和 `enabledModels` 里的 `anthropic/` 条目。改了范围后要开新 session（`/new` 或新的 `pi` 进程），只 `/reload` 不会生效。gateway 的模式要保留 `**`，因为它的模型 ID 里有 `vendor/model` 形式的斜杠。
 
@@ -201,6 +203,8 @@ guard 的规则、解析器和测试归 agent-guard 包。本仓库拥有 [`dot_
 ## 共享 agent 指令
 
 Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitemplates/agents/`](../.chezmoitemplates/agents/) 下按顺序排列的片段，每个运行时的根文件按同样的顺序引入。本仓库不引入这些片段：Claude 的 `CLAUDE.md`、Codex 和 Pi 的 `AGENTS.md` 三个根文件都只引入本地的 [`local.md`](../.chezmoitemplates/agents/local.md)，三个运行时共用的全局指令都写在这个文件里。GnuPG 签名或解密失败后的恢复步骤只在出错时需要，所以跟随上游放在部署到 `~/.agents/gnupg.md` 的单独文件里，`local.md` 只要求失败时先读它。
+
+要对照 `local.md` 的基线和候选版本时，[`run-trial.ts`](instruction-eval/run-trial.ts) 用给定的文件作为全局指令运行一次 Claude Code 或 Codex 试验：model 进程限制在试验工作区里，只能通过一个工具运行 shell 命令，这个工具没有网络，读不到 home 目录的其他部分，只能写工作区；fixture 自己的指令在给定文件之后加载，和项目指令在全局指令之后加载一样。CLI 独立于本仓库频繁升级，升级可能在 model 开始第一轮之前就让启动失败，所以每批试验前先运行它的 `selftest`，不依赖 CI：已安装的 CLI 能启动、引用了给它的指令、加载了 fixture 自己的指令、能通过那个工具运行命令，并且从工具里读不到 home 目录、写不到工作区以外，才算通过。它没有 Pi 的条目，要从不在 sandbox 里的环境启动，因为 Seatbelt profile 不能套在另一个 profile 里。用例、评分和运行记录来自真实 session，不放进仓库。
 
 压缩提示仍然部署。运行时适配器在压缩后把[压缩提示](../.chezmoitemplates/agents/compaction-reminder.md)交给执行者。Codex 把托管的 [`compaction-reminder`](../dot_codex/managed-hooks/executable_compaction-reminder.tmpl) 作为 `compact` 来源的 `SessionStart` hook 运行，[requirements 脚本](../.chezmoiscripts/run_onchange_after_setup-codex-requirements.sh.tmpl)运行后才会生效。Codex 在压缩和下一轮之间退出时，[可能丢掉排队的提示](https://github.com/openai/codex/issues/56316)，托管 hook 在 resume 时补不回这段上下文。[Pi 的上下文扩展](../private_dot_pi/private_agent/extensions/compaction-reminder.ts.tmpl)把提示放在保留的压缩前消息之后、新消息之前。Claude Code 的设置片段注册 `post-compact-reminder.sh`，作为 `compact` 来源的 `SessionStart` hook 运行。
 
