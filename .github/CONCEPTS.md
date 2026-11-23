@@ -106,7 +106,7 @@ Codex Desktop 现在显示为 ChatGPT（`/Applications/ChatGPT.app`），bundle 
 
 Desktop 会生成 `node_repl` 的环境字段，之后还可能替换它的运行时表，apply 挡不住应用之后的回写。不要在源文件里声明旧的独立 `mcp_servers.computer-use`：源文件的声明可能覆盖同名插件的注册，和 [Desktop 拥有的运行时状态](https://github.com/openai/codex/issues/24387#issuecomment-4531286877)冲突。
 
-内置的 `computer-use` 和 `unified-computer-use` 插件保持启用，`unified-computer-use` 提供 Desktop 的 `cua_repl` 浏览器和电脑操作运行时。内置的 `code-review` 插件保持禁用，因为它在 `gh` 和 `liby-review` skill 之外又加了一条在 GitHub 上评论和合并 PR 的路径。
+内置的 `computer-use` 和 `unified-computer-use` 插件保持启用，`unified-computer-use` 提供 Desktop 的 `cua_repl` 浏览器和电脑操作运行时。内置的 `code-review` 插件保持禁用，因为它在 `gh` 和 `review` skill 之外又加了一条在 GitHub 上评论和合并 PR 的路径。
 
 Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 global state 或 persisted atom 里的旧副本。已注册的偏好在 [`.chezmoitemplates/codex/config.toml`](../.chezmoitemplates/codex/config.toml) 里管理。
 
@@ -212,7 +212,7 @@ Claude Code、Codex 和 Pi 共用的全局行为，在上游写成 [`.chezmoitem
 
 [`dot_agents/skills/<name>/SKILL.md`](../dot_agents/skills/) 是 chezmoi 管理的 skill 的源文件位置，部署到 `~/.agents/skills`；Claude Code 通过托管的 `~/.claude/skills` symlink 读取它，所以不要直接在 `~/.claude/skills` 下加 skill。用 `chezmoi source-path` 找到已安装 skill 的源文件，改源文件，不改部署后的副本。批量维护时排除不由本仓库管理的已安装 skill，只在用户点名时改它们；`~/.agents/.skill-lock.json` 是运行时的安装状态，不要动。`references`、`scripts` 和 `assets` 放在所属 skill 里面，没有索引、清单或分类目录。
 
-源文件只放本仓库自己写文字的 skill，本仓库的 skill 都跟随上游。上游 skill 文字的副本落后时没有任何提示，所以当本仓库需要给一个 CLI 写自己的规则时，它的 skill 在自己没覆盖的地方指向已安装版本的上游指南：`gh` 和 `oracle` 读取与已安装版本 tag 对应的上游 skill。这种 skill 不记录上游 tag，CLI 变化让它的文字过时时也没有提示。上游的 `review` skill 部署为 `liby-review`，避免和项目里同名的 `review` skill 冲突：上游文件映射到副本，本地模板只改 frontmatter 的 `name`。上游的 `glab` skill 和其他只适合上游的 skill，本仓库跳过。
+源文件只放本仓库自己写文字的 skill，本仓库的 skill 都跟随上游。上游 skill 文字的副本落后时没有任何提示，所以当本仓库需要给一个 CLI 写自己的规则时，它的 skill 在自己没覆盖的地方指向已安装版本的上游指南：`gh` 和 `oracle` 读取与已安装版本 tag 对应的上游 skill。这种 skill 不记录上游 tag，CLI 变化让它的文字过时时也没有提示。上游的 `glab` skill 和其他只适合上游的 skill，本仓库跳过。
 
 工具自带、原样使用的 skill 不放进源文件，`~/.agents/skills/<name>` 通过工具文档说明的方式，使用跟随工具版本的那一份。[Homebrew 安装脚本](../.chezmoiscripts/run_onchange_before_install-brew-packages.sh.tmpl)运行 `mk skill install` 和 `sessidx skill install`，分别链接到 Maskey.app 里的 skill 和 Homebrew `share` 目录下的 skill，每次升级都会换成新版本自带的 skill。Rex 和 Rexume 的 skill 是手动运行 `rex skill setup` 和 `rexume install` 时写入的 stub，使用时从 `rex` 和 `rexume` 读取指南。这些命令都只在运行时安装一次，手动删掉的 skill 要等对应命令再次运行才会回来。Surge 只在文档里给出 skill 的路径，所以 [`symlink_surge`](../dot_agents/skills/symlink_surge) 把 `~/.agents/skills/surge` 链接到 Surge.app 里的 skill。TypeSafe 的 skill 说明的是线上 API，没有本地工具，所以 [`.chezmoiexternal.toml`](../.chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml) 像 zsh 插件一样把它固定在上游的某个 commit。
 

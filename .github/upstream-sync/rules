@@ -17,6 +17,7 @@ follow     dot_agents/skills/deslop/**
 follow     dot_agents/skills/draft/**
 follow     dot_agents/skills/gh/**
 follow     dot_agents/skills/oracle/**
+follow     dot_agents/skills/review/**
 follow     dot_agents/skills/symlink_surge
 follow     dot_agents/skills/write-skill/**
 follow     dot_bunfig.toml
@@ -45,7 +46,6 @@ follow     private_dot_cache/private_codex-tmp/.keep
 follow     .chezmoiexternal.toml                                  > .chezmoitemplates/chezmoi/upstream.chezmoiexternal.toml
 follow     .chezmoitemplates/claude/settings.json                 > .chezmoitemplates/claude/upstream.settings.json
 follow     .chezmoitemplates/git/github.config                    > .chezmoitemplates/git/upstream.github.config
-follow     dot_agents/skills/review/SKILL.md                      > .chezmoitemplates/review/upstream.SKILL.md
 follow     dot_config/git/config.tmpl                             > .chezmoitemplates/git/upstream.config.tmpl
 follow     dot_zshrc                                              > .chezmoitemplates/zsh/upstream.dot_zshrc
 
@@ -70,7 +70,6 @@ local      .chezmoitemplates/agents/local.md
 local      .claude/skills/upstream-sync/**
 local      .github/docs/**
 local      .github/upstream-sync/**
-local      dot_agents/skills/liby-review/**
 local      dot_zsh/lib/**
 local      private_dot_ssh/encrypted_config.vps.asc
 
