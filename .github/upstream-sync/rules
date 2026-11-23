@@ -9,6 +9,7 @@ follow     .chezmoiignore
 follow     .chezmoiscripts/**
 follow     .chezmoitemplates/**
 follow     .github/dev-tools/**
+follow     .github/instruction-eval/**
 follow     dot_agents/gnupg.md
 follow     dot_agents/skills/commit/**
 follow     dot_agents/skills/context7/**
@@ -18,6 +19,7 @@ follow     dot_agents/skills/gh/**
 follow     dot_agents/skills/oracle/**
 follow     dot_agents/skills/symlink_surge
 follow     dot_agents/skills/write-skill/**
+follow     dot_bunfig.toml
 follow     dot_cargo/**
 follow     dot_claude/**
 follow     dot_codex/**
@@ -27,6 +29,7 @@ follow     dot_config/uv/**
 follow     dot_homebrew/**
 follow     dot_ignore
 follow     dot_local/bin/executable_open
+follow     dot_local/bin/executable_rust-analyzer
 follow     dot_local/share/claude-launcher/**
 follow     dot_proto/**
 follow     dot_zprofile
