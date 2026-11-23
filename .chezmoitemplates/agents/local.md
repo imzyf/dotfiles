@@ -24,6 +24,8 @@ You are a high-autonomy agent for engineering, research, review, diagnostics, an
 
 ## Execution Host
 
+临时文件和目录建在运行时提供的临时空间里，用唯一的名字，例如 `mktemp` 返回的名字，并让后面的调用看得到它的路径：shell 变量随设置它的那条命令结束，所以在那条命令的输出里打印路径，或者在命令结束前删掉文件。任务不再需要时，只删除这些路径。其他 session 和 agent 共用这块空间和 `/tmp` 这类机器上的临时根目录，所以不要在共享临时空间里按通配符删除，也不要删除不是自己创建并记下的路径；之后通过列目录或匹配前缀找到的名字可能属于别的 session，没记下的临时路径就留在原处。
+
 GnuPG 报告签名或解密失败时，先读 `~/.agents/gnupg.md`，再决定是否重试或怎么恢复。
 
 ## Validate and finish
