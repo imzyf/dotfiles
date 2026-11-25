@@ -192,6 +192,10 @@ enabled = true
 [plugins."unified-computer-use@openai-bundled"]
 enabled = true
 
+# Desktop writes this entry back whenever it installs its bundled Visualize.
+[plugins."visualize@openai-bundled"]
+enabled = true
+
 [plugins."documents@openai-primary-runtime"]
 enabled = true
 
