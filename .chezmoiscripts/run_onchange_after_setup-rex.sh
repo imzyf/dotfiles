@@ -6,6 +6,7 @@ source "$CHEZMOI_SOURCE_DIR/.chezmoiscripts/.lib/step.zsh"
 # Only settings chosen on this machine; state the app records itself stays out.
 # The app reads these at launch; apply leaves relaunching it to the user.
 domain=com.superlogical.rex
+defaults write $domain RexAppUpdateChannel -string snapshot
 # Without the migration marker, Rex replaces the saved grouping with priority at launch.
 defaults write $domain Workspace.activityGroupingResetToPriority -bool true
 defaults write $domain Workspace.activityGrouping -string session
@@ -27,6 +28,7 @@ defaults write $domain Workspace.usesStandardInactiveWindowPaneStyles -bool true
 defaults write $domain rex.agents.names-sessions -bool false
 # The Workspace.experiments.* settings need Developer Mode.
 defaults write $domain rex.developer-mode-enabled -bool true
+defaults write $domain rex.server.version-channel -string snapshot
 
 if [[ -n $(lsappinfo find bundleid=$domain) ]]; then
   print -u2 -r -- "$step_yellow!$step_reset Reopen the Rex app to apply its settings; leave Rex Server running"
