@@ -118,13 +118,13 @@ Desktop 把已注册的偏好存在 `[desktop]` 下，迁移后删除它们在 g
 
 [Codex requirements 脚本](../.chezmoiscripts/run_onchange_after_setup-codex-requirements.sh.tmpl)把渲染后的 requirements 装成 root 所有的 `/etc/codex/requirements.toml`，需要 sudo，所以在交互式终端里 apply。
 
-`development` 文件系统 profile 独立存在：`:root = write`；`~/.ssh` 整体拒绝，只放行 ssh 和 Git 签名验证用到的 `config`、`allowed_signers` 和 `known_hosts`；每个 workspace 根目录下的 `.env` 和 `.env.local` 只读；不复制各工具的缓存列表，也不放行宽泛的命令。程序可以通过正常接口使用凭据和环境文件，但修改或删除它们仍需要用户明确要求。文件系统权限不等于允许远程 Git 操作或涉及密钥的 chezmoi 操作。
+`development` 文件系统 profile 独立存在：`:root = write`；`~/.ssh` 整体拒绝，只放行 ssh 和 Git 签名验证用到的 `config`、`allowed_signers` 和 `known_hosts`；每个 workspace 根目录下的 `.env`、`.env.local`、`.git/config` 和 `.git/hooks` 只读，和 Claude Code、Pi 在工作目录里禁止写的 Git hook 和配置一致（linked worktree 的共享 Git 目录仍然可写，profile 里静态的路径规则跟不到它）；不复制各工具的缓存列表，也不放行宽泛的命令。程序可以通过正常接口使用凭据和环境文件，但修改或删除它们仍需要用户明确要求。文件系统权限不等于允许远程 Git 操作或涉及密钥的 chezmoi 操作。
 
 [Browser modifier](../dot_codex/browser/modify_config.toml) 把[它的模板](../.chezmoitemplates/codex/browser/config.toml)覆盖到 Desktop 写入的 full-CDP 和上传允许列表上；模板有意为 Browser 工具放宽限制，给予无需确认的 full-CDP 控制，让 agent 的运行不用等人在键盘前确认。
 
 [openai/codex#40254](https://github.com/openai/codex/issues/40254) 记录了当前 macOS 上的复现：没有显式的 Browser 缓存读规则时，Chrome 无法通过可信 RPC 的路径校验。保留 `~/.codex/plugins/cache/openai-bundled/browser` 作为唯一额外的只读路径，让可信 worker 能加载 Desktop 运行时拥有的 Browser 服务；chezmoi 的 `private_`、`readonly_` 源文件和 `chmod` 都不能建立可信的权限根。只有在删除源文件规则、apply 渲染后的配置、完全重启 Desktop、确认实际权限表里没有这条规则，并且在新任务里第一次初始化 Chrome 就成功（之前没有 Browser 尝试或重试）之后，才删除这个例外。
 
-`features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code、Codex 和 [Pi 的命令 sandbox](#pi-配置) 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。Claude Code 和 Codex 还允许 [`sandbox/allowed-host-service-sockets.json`](../.chezmoitemplates/sandbox/allowed-host-service-sockets.json) 里的 socket，通过这些服务可以在 sandbox 外启动任务，所以 Pi 不允许。Claude Code 和 Pi 还从同一个目录渲染写入路径、读取规则和 Mach lookup，Claude Code 另外加上 agent 状态的写入路径。共享域名列表包含由 `npmHost` 渲染出的 `npm.invalid` 和由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、Maskey 的 Keychain 服务等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
+`features.network_proxy = true` 对 sandbox 里的命令执行 `development` profile 的域名和 Unix socket 规则。Claude Code、Codex 和 [Pi 的命令 sandbox](#pi-配置) 从 [`sandbox/allowed-domains.json`](../.chezmoitemplates/sandbox/allowed-domains.json) 和 [`sandbox/allowed-unix-sockets.json`](../.chezmoitemplates/sandbox/allowed-unix-sockets.json) 渲染共享的域名和 socket 路径。Claude Code 和 Pi 还从同一个目录渲染写入路径、读取规则和 Mach lookup，Claude Code 另外加上 agent 状态的写入路径。共享域名列表包含由 `npmHost` 渲染出的 `npm.invalid` 和由 `tailnetDomain` 渲染出的 `*.invalid`；`invalid` 是保留的顶级域名，永远解析不到。`allow_local_binding` 让命令能监听本地端口、直接访问 loopback，开发服务器和浏览器 SSO 回调需要这一点。它也关掉了代理的私有地址检查：解析到私有地址的允许列表内主机名会被放行，云 metadata 端点这类不在列表里的私有或链路本地地址只因不在允许列表而被拒绝；Codex 把私有网段放进 `NO_PROXY`，所以直接连局域网地址会在 OS sandbox 里表现为连接错误，而不是策略拒绝。socket 条目允许访问 GnuPG、OrbStack 的 Docker daemon、Rex、ra broker、Maskey service 等本地服务，以及 Codex 设为命令 `TMPDIR` 的 `~/.cache/codex-tmp` 目录，工具会在那里绑定自己的 socket。Web search、MCP、Browser 和 Computer Use 有各自的网络控制。修改代理功能后重启 Desktop，命令才会使用新策略。
 
 代理在命令第一次被拒绝的请求时结束整个命令，并报告 `Network access to "<host>" was blocked: <reason>`；Claude Code 的 sandbox 只在 `<sandbox_violations>` 里列出拒绝，命令继续运行。所以 Claude Code 在命令正常工作之外报告的主机，在 Codex 下也会让这个命令失败。工具自己发出这类请求时，例如遥测、更新检查或平台探测，用工具的开关在 [`dot_zshenv`](../dot_zshenv) 里关掉，所有 zsh 都会读这个文件，包括终端和两个 agent 的命令。只有 zsh 启动时设不了开关的请求，才考虑加进共享允许列表；一个主机因为别的请求被允许后，它的开关仍然保持设置。
 
@@ -166,7 +166,7 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 [Pi 扩展包](https://github.com/Entwining/pi-extensions)负责编辑器、footer、guard 适配器、命令 sandbox 和推理问题的绕过，包括它们的测试和发布。压缩提示扩展留在本仓库，因为它渲染共享的提示文本。[`run_onchange_after_install-pi-extensions.sh`](../.chezmoiscripts/run_onchange_after_install-pi-extensions.sh) 在 CLI 安装之后安装这个 Git 包，包的注册交给 Pi，保留其他已安装的包和它们的资源过滤。
 
-命令 sandbox 让 `bash` 工具和 `!` 命令在 [sandbox 策略](../private_dot_pi/private_agent/extensions/sandbox.json.tmpl)下运行，策略文件不存在时拒绝运行这些命令。策略不允许的工作，例如 apply chezmoi、Homebrew、launchd 服务或操作 Rex，用 `--no-sandbox` 启动 Pi 来做。从另一个 agent 的 sandbox shell 里启动的 Pi 会拒绝运行命令，因为 Seatbelt 不能嵌套。
+命令 sandbox 让 `bash` 工具和 `!` 命令在 [sandbox 策略](../private_dot_pi/private_agent/extensions/sandbox.json.tmpl)下运行，策略文件不存在时拒绝运行这些命令。策略不允许的工作，例如 apply chezmoi、Homebrew 或 launchd 服务，在 Pi 里批准那条命令后运行；`!` 命令没有这种批准，要在用 `--no-sandbox` 启动的 session 里运行。从另一个 agent 的 sandbox shell 里启动的 Pi 会拒绝运行命令，因为 Seatbelt 不能嵌套。
 
 Pi 的 `npmCommand` 对整个 `@earendil-works/*` scope 使用 npm 的[发布时间豁免](https://docs.npmjs.com/cli/v11/using-npm/config/#min-release-age-exclude)，因为 Pi 固定同一次发布里的兄弟包。豁免保持在 scope 级别，这些依赖可以一起更新，第三方包仍受本机的等待期约束。扩展包用同样的等待期和豁免检查自己的开发依赖，因为安装 Git 包时也会解析它们。
 
@@ -238,13 +238,13 @@ agent 可以读 `~/.ssh` 顶层的客户端配置（`config`、`config.*`）、�
 
 ### 凭据
 
-凭据存放在 [Maskey](https://github.com/Entwining/maskey) 里，Maskey 把它们存进 iCloud Keychain，登录同一个 Apple 账号的每台 Mac 都能拿到，本仓库里没有副本。条目的形式是 `<namespace>/<NAME>`，NAME 就是使用者收到的环境变量名。本仓库的文件用 `mk run` 和 `mk get` 引用条目，用 `rg 'mk (run|get)'` 能找到所有使用者；其他条目不是本仓库的要求。
+凭据存放在 [Maskey](https://github.com/Entwining/maskey) 里，Maskey 的 `icloud` store 把它们存进 iCloud Keychain，登录同一个 Apple 账号的每台 Mac 都能拿到，本仓库里没有副本。条目的形式是 `<namespace>/<NAME>`，NAME 就是使用者收到的环境变量名。本仓库的文件用 `mk run` 和 `mk get` 引用条目，用 `rg 'mk (run|get)'` 能找到所有使用者；其他条目不是本仓库的要求。
 
-`mk run` 把选中的条目交给它启动的命令，并在命令输出里遮住每个选中条目的确切值，所以非机密的常量放在使用者里，存一个 `1` 会把输出里所有的 1 都遮住。`mk get` 把一个条目的值返回给读取它的调用者，前提是用户在 Maskey 里给这个条目授予了程序访问权限。之后任何能运行 `mk` 的程序都能读这个条目，所以只给下面用 `mk get` 读取的条目授权。
+`mk run` 把选中的条目交给它启动的命令，并在命令输出里遮住每个选中条目的确切值，所以非机密的常量放在使用者里，存一个 `1` 会把输出里所有的 1 都遮住。`mk get` 把一个条目的值返回给读取它的调用者，前提是用户在 Maskey 里给这个条目授予了程序访问权限。之后任何能运行 `mk` 的程序都能读这个条目，所以只给下面用 `mk get` 读取的条目授权。每个使用者都用 `--store icloud` 指定 store，因为有第二个 Maskey store 的 Mac 可以把它设为默认，不带 `--store` 的命令就会去那里找条目。
 
 各 namespace 的使用者：
 
 - `claude-gateway`：[Claude launcher](../dot_local/share/claude-launcher/bin/executable_claude) 只在 gateway 模式下用 `mk get` 读取这些条目，并自己设置 Vertex 开关；其他模式下，不管这些变量和开关是谁设的，launcher 都会取消设置，所以在 gateway session 里启动的 `claude` 按保存的模式运行，除非它自己的参数另有指定。启动 Claude Code 之前，launcher 把自己的 PID 导出为 `REXUME_LAUNCH_PID`，把解析出的 `claude --gateway` 或 `claude --subscription` 命令导出为 `REXUME_LAUNCH`，Rexume 用这条命令按会话原来的模式重新打开它。launcher 自己从不读取这两个变量，所以嵌套启动的 `claude` 仍然自己解析并声明模式。launcher 是 `PATH` 上排在 `~/.local/bin` 原生安装前面的可执行文件，不是 shell 函数，所以 Pi 的 bash、`timeout` 这类 wrapper 或脚本的子进程运行 `claude` 时，保存的模式同样生效。
-- `context7`：所有 Context7 的使用都经过 [Context7 skill](../dot_agents/skills/context7/SKILL.md)，它在 `mk run context7` 里运行 `ctx7` CLI，`CONTEXT7_API_KEY` 只到达 CLI 子进程。这个 namespace 还可以有一个可选的 `CONTEXT7_BASE_URL`，默认没有；它指向一个转发官方 `/api/v2` 查询 API 的可信反向代理，结尾不带斜杠，同时要把这个主机加进 Claude Code sandbox 的 `allowedDomains`。全局的 `--base-url` 对查询模式的请求有效，但上游只支持 MCP HTTP 方式的自定义部署，查询模式的私有部署不受支持。改 Context7 的配置后，通过 skill 运行一次 resolve 和 query 来验证。
+- `context7`：所有 Context7 的使用都经过 [Context7 skill](../dot_agents/skills/context7/SKILL.md)，它在 `mk run --store icloud context7` 里运行 `ctx7` CLI，`CONTEXT7_API_KEY` 只到达 CLI 子进程。这个 namespace 还可以有一个可选的 `CONTEXT7_BASE_URL`，默认没有；它指向一个转发官方 `/api/v2` 查询 API 的可信反向代理，结尾不带斜杠，同时要把这个主机加进 Claude Code sandbox 的 `allowedDomains`。全局的 `--base-url` 对查询模式的请求有效，但上游只支持 MCP HTTP 方式的自定义部署，查询模式的私有部署不受支持。改 Context7 的配置后，通过 skill 运行一次 resolve 和 query 来验证。
 - `glab`：[glab 设置脚本](../.chezmoiscripts/run_onchange_after_setup-glab.sh.tmpl)在 `mk run` 下的命令里，把私有 GitLab 的 OAuth application ID `GITLAB_CLIENT_ID` 写进 glab 的配置，变量名就是 glab 自己读的名字。
 - `pi` 和 `typesafe`：[Pi 模型配置](../private_dot_pi/private_agent/private_models.json.tmpl)用 `mk get` 从 `pi` namespace 读取 `ANTHROPIC_API_KEY` 和 `RC_GATEWAY_API_KEY`，从 `typesafe` namespace 读取 `TYPESAFE_API_KEY`。
