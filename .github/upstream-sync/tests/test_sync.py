@@ -17,6 +17,7 @@ ISOLATED_ENV = {
     "GIT_AUTHOR_EMAIL": "local@example.com",
     "GIT_COMMITTER_NAME": "Local User",
     "GIT_COMMITTER_EMAIL": "local@example.com",
+    "GIT_EDITOR": "true",
 }
 
 
@@ -125,6 +126,7 @@ class MirrorTest(Fixture):
         self.assertIn("up to date", sync.update_mirror(self.cfg, "2026-11-11"))
 
     def test_rewritten_history_keeps_archive_and_stops(self):
+        git("config", "tag.gpgSign", "true", cwd=self.repo)
         self.upstream_commit("next", {"docs/notes.md": "notes v2\n"})
         sync.update_mirror(self.cfg, "2026-11-11")
         old = rev("upstream", self.repo)

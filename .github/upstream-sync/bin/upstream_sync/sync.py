@@ -61,7 +61,8 @@ def update_mirror(cfg: Config, today: str) -> str:
     if old and not succeeds("merge-base", "--is-ancestor", old, new, cwd=cfg.repo):
         tag = f"upstream-archive/{today}"
         if rev(f"refs/tags/{tag}", cfg.repo) is None:
-            git("tag", tag, old, cwd=cfg.repo)
+            # tag.gpgSign 会把它变成要写说明的签名 tag，后台运行时无法输入。
+            git("tag", "--no-sign", tag, old, cwd=cfg.repo)
         raise SyncError(
             f"upstream history was rewritten: {old[:9]} is not an ancestor of {new[:9]}. "
             f"Kept the old mirror as tag {tag} and stopped without updating {cfg.mirror}."
