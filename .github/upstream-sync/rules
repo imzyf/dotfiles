@@ -95,6 +95,7 @@ watch      dot_local/bin/executable_snow
 watch      private_dot_oracle/**
 
 # 不需要
+skip       .chezmoiscripts/run_after_setup-npm-registry.sh.tmpl
 skip       .chezmoiscripts/run_onchange_after_deploy-rime.sh.tmpl
 skip       .chezmoitemplates/codex/global-state.json
 skip       .github/README_CN.md
