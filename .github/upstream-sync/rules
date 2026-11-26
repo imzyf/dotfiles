@@ -70,6 +70,7 @@ local      .chezmoitemplates/agents/local.md
 local      .claude/skills/upstream-sync/**
 local      .github/docs/**
 local      .github/upstream-sync/**
+local      dot_config/raycast/**
 local      dot_zsh/lib/**
 local      private_dot_ssh/encrypted_config.vps.asc
 
