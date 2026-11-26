@@ -164,6 +164,8 @@ glab 从 `~/.config/glab-cli` 读配置，由 `~/.zshenv` 用 `GLAB_CONFIG_DIR` 
 
 `maxTokens` 取工作窗口、厂商文档写明的输出上限和路由实际执行的上限三者中最小的一个。目录里宣称的上限本身不足以证明路由会执行它。厂商没有写输出上限时，用工作窗口。用 `pi --list-models rc-gateway` 检查渲染出的窗口和输出上限，推理映射另外验证。
 
+每个 `rc-gateway` 模型的 `cost` 取 gateway 为它固定使用的上游 provider 的基础定价，来源是 Vercel AI Gateway 按模型列出的 endpoints 里这个 provider 的那一行，换算成每百万 token 的美元价格；那一行没有列出的价格写 0。Pi 把缺少的 `cost` 当作 0，footer 就不显示 session 花费。footer 里的总额是按这些价格算出的估计，不是 gateway 的账单。
+
 [Pi 扩展包](https://github.com/Entwining/pi-extensions)负责编辑器、footer、guard 适配器、命令 sandbox 和推理问题的绕过，包括它们的测试和发布。压缩提示扩展留在本仓库，因为它渲染共享的提示文本。[`run_onchange_after_install-pi-extensions.sh`](../.chezmoiscripts/run_onchange_after_install-pi-extensions.sh) 在 CLI 安装之后安装这个 Git 包，包的注册交给 Pi，保留其他已安装的包和它们的资源过滤。
 
 命令 sandbox 让 `bash` 工具和 `!` 命令在 [sandbox 策略](../private_dot_pi/private_agent/extensions/sandbox.json.tmpl)下运行，策略文件不存在时拒绝运行这些命令。策略不允许的工作，例如 apply chezmoi、Homebrew 或 launchd 服务，在 Pi 里批准那条命令后运行；`!` 命令没有这种批准，要在用 `--no-sandbox` 启动的 session 里运行。从另一个 agent 的 sandbox shell 里启动的 Pi 会拒绝运行命令，因为 Seatbelt 不能嵌套。
