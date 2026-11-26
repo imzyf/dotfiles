@@ -7,9 +7,11 @@ encryption = "gpg"
   # `.invalid` is a reserved TLD that never resolves. Replace with upstream's
   # prompt when a registry is needed.
   npmHost = "npm.invalid"
-  # No Tailscale here. The sandbox allowlist renders `*.invalid`, a reserved
-  # TLD that never resolves; replace with upstream's prompt when a tailnet exists.
-  tailnetDomain = "invalid"
+  # No Tailscale here. The sandbox allowlist renders `*.tailnet.invalid` under
+  # the reserved `.invalid` TLD, which never resolves; Pi's sandbox runtime
+  # requires at least two labels after `*.`. Replace with upstream's prompt
+  # when a tailnet exists.
+  tailnetDomain = "tailnet.invalid"
 
 [edit]
   args = ["--wait"]
