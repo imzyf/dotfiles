@@ -3,7 +3,16 @@
   and ! commands. Claude Code adds agent-state write paths, which stay out here
   because they hold agent and tool configuration and executables that run
   outside the sandbox.
+
+  Claude Code's TMPDIR is writable for the result files its orchestrators
+  assign to Pi workers, as Claude Code and Codex workers already can; follow
+  it if Claude Code moves that directory. Its per-project directories, named
+  for absolute paths with "/" spelled "-", hold task output that orchestrators
+  read back and are denied whole: a glob reaching down to each session's tasks
+  leaves the directories above it movable. The other denies match what Claude
+  Code denies to its own commands.
 */ -}}
+{{- $claudeTmp := printf "/private/tmp/claude-%v" .chezmoi.uid -}}
 {
   "network": {
     "allowedDomains": {{ includeTemplate "sandbox/allowed-domains.json" . | fromJson | toPrettyJson | indent 4 | trim }},
@@ -15,7 +24,7 @@
   "filesystem": {
     "denyRead": {{ includeTemplate "sandbox/denied-read-paths.json" . | fromJson | toPrettyJson | indent 4 | trim }},
     "allowRead": {{ includeTemplate "sandbox/allowed-read-paths.json" . | fromJson | toPrettyJson | indent 4 | trim }},
-    "allowWrite": {{ includeTemplate "sandbox/allowed-write-paths.json" . | fromJson | toPrettyJson | indent 4 | trim }},
-    "denyWrite": []
+    "allowWrite": {{ concat (includeTemplate "sandbox/allowed-write-paths.json" . | fromJson) (list $claudeTmp) | toPrettyJson | indent 4 | trim }},
+    "denyWrite": {{ list (printf "%s/-*" $claudeTmp) (printf "%s/bash-edit-diff" $claudeTmp) (printf "%s/plugin-tool-staging" $claudeTmp) | toPrettyJson | indent 4 | trim }}
   }
 }
